@@ -107,7 +107,7 @@ object Zip4J {
       }
     }
 
-  //noinspection ConvertExpressionToSAM
+  // noinspection ConvertExpressionToSAM
   implicit val zip4jArchiveEntryFromUnderlying: ArchiveEntryFromUnderlying[Option, ZipParameters] =
     new ArchiveEntryFromUnderlying[Option, ZipParameters] {
       override def archiveEntry(underlying: ZipParameters): ArchiveEntry[Option, ZipParameters] =
@@ -120,7 +120,7 @@ object Zip4J {
         )
     }
 
-  //noinspection ConvertExpressionToSAM
+  // noinspection ConvertExpressionToSAM
   implicit val zip4jLocalFileHeaderArchiveEntryFromUnderlying: ArchiveEntryFromUnderlying[Option, LocalFileHeader] =
     new ArchiveEntryFromUnderlying[Option, LocalFileHeader] {
       override def archiveEntry(underlying: LocalFileHeader): ArchiveEntry[Option, LocalFileHeader] =

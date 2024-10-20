@@ -103,7 +103,7 @@ object Tar {
       }
     }
 
-  //noinspection ConvertExpressionToSAM
+  // noinspection ConvertExpressionToSAM
   implicit val tarArchiveEntryFromUnderlying: ArchiveEntryFromUnderlying[Option, TarArchiveEntry] =
     new ArchiveEntryFromUnderlying[Option, TarArchiveEntry] {
       override def archiveEntry(underlying: TarArchiveEntry): ArchiveEntry[Option, TarArchiveEntry] =

@@ -115,7 +115,7 @@ object Zip {
       }
     }
 
-  //noinspection ConvertExpressionToSAM
+  // noinspection ConvertExpressionToSAM
   implicit val zipArchiveEntryFromUnderlying: ArchiveEntryFromUnderlying[Option, ZipEntry] =
     new ArchiveEntryFromUnderlying[Option, ZipEntry] {
       override def archiveEntry(underlying: ZipEntry): ArchiveEntry[Option, ZipEntry] =
