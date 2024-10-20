@@ -71,12 +71,10 @@ def commonSettings(projectName: String) = Seq(
   semanticdbEnabled := true,
   semanticdbVersion := scalafixSemanticdb.revision,
 ) ++ scalafixSettings
-// .aggregate(docs)
 
 lazy val root =
   project
     .in(file("."))
-//    .settings(commonSettings)
     .settings(
       name := "zio-streams-compress",
       publish / skip := true,
@@ -94,6 +92,7 @@ lazy val root =
     .aggregate(brotli.projectRefs: _*)
     .aggregate(lz4.projectRefs: _*)
     .aggregate(example.projectRefs: _*)
+    .aggregate(docs)
 
 lazy val core = projectMatrix
   .in(file("core"))
@@ -111,7 +110,7 @@ lazy val gzip = projectMatrix
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings("gzip"))
   .jvmPlatform(scalaVersions)
-//.jsPlatform(scalaVersions)
+  //.jsPlatform(scalaVersions)
 
 lazy val zip = projectMatrix
   .in(file("zip"))
@@ -199,3 +198,21 @@ lazy val example = projectMatrix
     name := "zio-streams-compress-example"
   )
   .jvmPlatform(scalaVersions)
+
+lazy val docs = project
+  .in(file("docs-project"))
+  .dependsOn(core.jvm(_scala213))
+  .enablePlugins(WebsitePlugin)
+  .settings(commonSettings("docs"))
+  .settings(
+    scalacOptions -= "-Yno-imports",
+    scalacOptions -= "-Xfatal-warnings",
+    crossScalaVersions := List(_scala213),
+    projectName                                := "ZIO Streams Compress docs",
+    mainModuleName                             := "zio-streams-compress-docs",
+    projectStage                               := ProjectStage.Concept, // ProjectStage.ProductionReady,
+    ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(core.jvm(_scala213)),
+    readmeCredits :=
+      "This library is heavily inspired by [fs2-compress](https://github.com/lhns/fs2-compress).",
+    readmeLicense += s"\n\nCopyright 2024-${java.time.Year.now()} Erik van Oosten and the zio-streams-compress contributors."
+  )
