@@ -1,5 +1,6 @@
 val V = new {
   val brotli = "0.1.2"
+  val brotli4j = "1.17.0"
   val commonsCompress = "1.27.1"
   val logbackClassic = "1.5.11"
   val lz4 = "1.8.0"
@@ -80,14 +81,15 @@ lazy val root =
       publishArtifact := false,
     )
     .aggregate(core.projectRefs: _*)
+    .aggregate(brotli.projectRefs: _*)
+    .aggregate(brotli4j.projectRefs: _*)
+    .aggregate(bzip2.projectRefs: _*)
     .aggregate(gzip.projectRefs: _*)
+    .aggregate(lz4.projectRefs: _*)
+    .aggregate(tar.projectRefs: _*)
     .aggregate(zip.projectRefs: _*)
     .aggregate(zip4j.projectRefs: _*)
-    .aggregate(tar.projectRefs: _*)
     .aggregate(zstd.projectRefs: _*)
-    .aggregate(bzip2.projectRefs: _*)
-    .aggregate(brotli.projectRefs: _*)
-    .aggregate(lz4.projectRefs: _*)
     .aggregate(example.projectRefs: _*)
     .aggregate(docs)
 
@@ -102,12 +104,69 @@ lazy val core = projectMatrix
   .jvmPlatform(scalaVersions)
   .jsPlatform(scalaVersions)
 
+lazy val brotli = projectMatrix
+  .in(file("brotli"))
+  .dependsOn(core % "compile->compile;test->test")
+  .settings(commonSettings("brotli"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.brotli" % "dec" % V.brotli
+    )
+  )
+  .jvmPlatform(scalaVersions)
+
+lazy val brotli4j = projectMatrix
+  .in(file("brotli4j"))
+  .dependsOn(core % "compile->compile;test->test")
+  .settings(commonSettings("brotli4j"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.aayushatharva.brotli4j" % "brotli4j" % V.brotli4j
+    )
+  )
+  .jvmPlatform(scalaVersions)
+
+lazy val bzip2 = projectMatrix
+  .in(file("bzip2"))
+  .dependsOn(core % "compile->compile;test->test")
+  .settings(commonSettings("bzip2"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.apache.commons" % "commons-compress" % V.commonsCompress
+    )
+  )
+  .jvmPlatform(scalaVersions)
+
 lazy val gzip = projectMatrix
   .in(file("gzip"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings("gzip"))
   .jvmPlatform(scalaVersions)
 //.jsPlatform(scalaVersions)
+
+lazy val lz4 = projectMatrix
+  .in(file("lz4"))
+  .dependsOn(core % "compile->compile;test->test")
+  .settings(commonSettings("lz4"))
+  .settings(
+    name := "zio-streams-compress-lz4",
+    libraryDependencies ++= Seq(
+      "org.lz4" % "lz4-java" % V.lz4
+    ),
+  )
+  .jvmPlatform(scalaVersions)
+
+lazy val tar = projectMatrix
+  .in(file("tar"))
+  .dependsOn(core % "compile->compile;test->test")
+  .dependsOn(gzip % "test")
+  .settings(commonSettings("tar"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.apache.commons" % "commons-compress" % V.commonsCompress
+    )
+  )
+  .jvmPlatform(scalaVersions)
 
 lazy val zip = projectMatrix
   .in(file("zip"))
@@ -126,18 +185,6 @@ lazy val zip4j = projectMatrix
   )
   .jvmPlatform(scalaVersions)
 
-lazy val tar = projectMatrix
-  .in(file("tar"))
-  .dependsOn(core % "compile->compile;test->test")
-  .dependsOn(gzip % "test")
-  .settings(commonSettings("tar"))
-  .settings(
-    libraryDependencies ++= Seq(
-      "org.apache.commons" % "commons-compress" % V.commonsCompress
-    )
-  )
-  .jvmPlatform(scalaVersions)
-
 lazy val zstd = projectMatrix
   .in(file("zstd"))
   .dependsOn(core % "compile->compile;test->test")
@@ -146,40 +193,6 @@ lazy val zstd = projectMatrix
     libraryDependencies ++= Seq(
       "com.github.luben" % "zstd-jni" % V.zstdJni
     )
-  )
-  .jvmPlatform(scalaVersions)
-
-lazy val bzip2 = projectMatrix
-  .in(file("bzip2"))
-  .dependsOn(core % "compile->compile;test->test")
-  .settings(commonSettings("bzip2"))
-  .settings(
-    libraryDependencies ++= Seq(
-      "org.apache.commons" % "commons-compress" % V.commonsCompress
-    )
-  )
-  .jvmPlatform(scalaVersions)
-
-lazy val brotli = projectMatrix
-  .in(file("brotli"))
-  .dependsOn(core % "compile->compile;test->test")
-  .settings(commonSettings("brotli"))
-  .settings(
-    libraryDependencies ++= Seq(
-      "org.brotli" % "dec" % V.brotli
-    )
-  )
-  .jvmPlatform(scalaVersions)
-
-lazy val lz4 = projectMatrix
-  .in(file("lz4"))
-  .dependsOn(core % "compile->compile;test->test")
-  .settings(commonSettings("lz4"))
-  .settings(
-    name := "zio-streams-compress-lz4",
-    libraryDependencies ++= Seq(
-      "org.lz4" % "lz4-java" % V.lz4
-    ),
   )
   .jvmPlatform(scalaVersions)
 
