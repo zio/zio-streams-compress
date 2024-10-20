@@ -65,8 +65,8 @@ object Zip4JSpec extends ZIOSpecDefault {
                         .runCollect
         } yield
           assertTrue(
-            obtained.head == ("file1.txt", "Hello world!"),
-            obtained(1) == ("subdir/file2.txt", "Hello from subdir!"),
+            obtained.head == t("file1.txt", "Hello world!"),
+            obtained(1) == t("subdir/file2.txt", "Hello from subdir!"),
           )
       },
       test("zip4j unarchive with password") {
@@ -82,8 +82,8 @@ object Zip4JSpec extends ZIOSpecDefault {
                         .runCollect
         } yield
           assertTrue(
-            obtained.head == ("file1.txt", "Hello world!"),
-            obtained(1) == ("subdir/file2.txt", "Hello from subdir!"),
+            obtained.head == t("file1.txt", "Hello world!"),
+            obtained(1) == t("subdir/file2.txt", "Hello from subdir!"),
           )
       },
       test("zip4j round trip") {
