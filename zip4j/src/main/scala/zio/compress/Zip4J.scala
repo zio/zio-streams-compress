@@ -15,13 +15,12 @@ import java.time.Instant
 
 object Zip4JArchiver {
 
-  /**
-   * Makes a pipeline that accepts a stream of archive entries (with size), and produces a byte stream of a Zip archive
-   * (method: deflate, level: 5).
-   *
-   * @param password
-   *   password of the ZIP archive, or `None` if the archive is not password protected
-   */
+  /** Makes a pipeline that accepts a stream of archive entries (with size), and produces a byte stream of a Zip archive
+    * (method: deflate, level: 5).
+    *
+    * @param password
+    *   password of the ZIP archive, or `None` if the archive is not password protected
+    */
   def make(password: => Option[String] = None): Zip4JArchiver =
     new Zip4JArchiver(password)
 }
@@ -45,14 +44,13 @@ class Zip4JArchiver private (password: => Option[String]) extends Archiver[Some]
 
 object Zip4JUnarchiver {
 
-  /**
-   * Makes a pipeline that accepts a byte stream of a ZIP archive, and produces a stream of archive entries.
-   *
-   * @param password
-   *   password of the ZIP archive, or `None` if the archive is not password protected
-   * @param chunkSize
-   *   chunkSize of the archive entry content streams. Defaults to 64KiB.
-   */
+  /** Makes a pipeline that accepts a byte stream of a ZIP archive, and produces a stream of archive entries.
+    *
+    * @param password
+    *   password of the ZIP archive, or `None` if the archive is not password protected
+    * @param chunkSize
+    *   chunkSize of the archive entry content streams. Defaults to 64KiB.
+    */
   def make(
     password: Option[String] = None,
     chunkSize: Int = Defaults.DefaultChunkSize,

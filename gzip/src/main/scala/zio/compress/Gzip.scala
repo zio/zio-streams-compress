@@ -21,34 +21,31 @@ object GzipCompressor {
   )
   private val CompressionStrategies = Seq(DefaultStrategy, Filtered, HuffmanOnly)
 
-  /**
-   * Converts a deflate compression level from `Int` to [[zio.stream.compression.CompressionLevel]].
-   *
-   * @param level
-   *   a deflate compression level, valid values: -1 (default), 0 (no compression), 1 (fastest) to 9 (best compression)
-   */
+  /** Converts a deflate compression level from `Int` to [[zio.stream.compression.CompressionLevel]].
+    *
+    * @param level
+    *   a deflate compression level, valid values: -1 (default), 0 (no compression), 1 (fastest) to 9 (best compression)
+    */
   def intToCompressionLevel(level: Int): Option[CompressionLevel] =
     CompressionLevels.find(_.jValue == level)
 
-  /**
-   * Converts a deflate compression strategy from `Int` to [[zio.stream.compression.CompressionStrategy]].
-   *
-   * @param strategy
-   *   a deflate compression strategy, valid values: 0 (default), 1 (filtered) or 2 (huffman only)
-   */
+  /** Converts a deflate compression strategy from `Int` to [[zio.stream.compression.CompressionStrategy]].
+    *
+    * @param strategy
+    *   a deflate compression strategy, valid values: 0 (default), 1 (filtered) or 2 (huffman only)
+    */
   def intToCompressionStrategy(strategy: Int): Option[CompressionStrategy] =
     CompressionStrategies.find(_.jValue == strategy)
 
-  /**
-   * Make a pipeline that accepts a stream of bytes and produces a stream with Gzip compressed bytes.
-   *
-   * @param deflateLevel
-   *   the deflate compression level
-   * @param deflateStrategy
-   *   a deflate compression strategy, valid values: 0 (default), 1 (filtered) or 2 (huffman only)
-   * @param bufferSize
-   *   the maximum chunk size of the outgoing ZStream. Defaults to 64KiB.
-   */
+  /** Make a pipeline that accepts a stream of bytes and produces a stream with Gzip compressed bytes.
+    *
+    * @param deflateLevel
+    *   the deflate compression level
+    * @param deflateStrategy
+    *   a deflate compression strategy, valid values: 0 (default), 1 (filtered) or 2 (huffman only)
+    * @param bufferSize
+    *   the maximum chunk size of the outgoing ZStream. Defaults to 64KiB.
+    */
   def make(
     deflateLevel: Option[CompressionLevel] = None,
     deflateStrategy: Option[CompressionStrategy] = None,
@@ -72,12 +69,11 @@ class GzipCompressor private (
 
 object GzipDecompressor {
 
-  /**
-   * Makes a pipeline that accepts a Gzip compressed byte stream and produces a decompressed byte stream.
-   *
-   * @param bufferSize
-   *   the used buffer size. Defaults to 64KiB.
-   */
+  /** Makes a pipeline that accepts a Gzip compressed byte stream and produces a decompressed byte stream.
+    *
+    * @param bufferSize
+    *   the used buffer size. Defaults to 64KiB.
+    */
   def make(bufferSize: Int = Defaults.DefaultChunkSize): GzipDecompressor =
     new GzipDecompressor(bufferSize)
 }

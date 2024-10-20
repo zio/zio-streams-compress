@@ -7,14 +7,13 @@ import zio.compress.JavaIoInterop.viaInputStreamByte
 //noinspection ScalaFileName
 object BrotliDecompressor {
 
-  /**
-   * Makes a pipeline that accepts a Brotli compressed byte stream and produces a decompressed byte stream.
-   *
-   * @param customDictionary
-   *   a custom dictionary, or `None` for no custom dictionary
-   * @param chunkSize
-   *   The maximum chunk size of the outgoing ZStream. Defaults to `ZStream.DefaultChunkSize` (4KiB).
-   */
+  /** Makes a pipeline that accepts a Brotli compressed byte stream and produces a decompressed byte stream.
+    *
+    * @param customDictionary
+    *   a custom dictionary, or `None` for no custom dictionary
+    * @param chunkSize
+    *   The maximum chunk size of the outgoing ZStream. Defaults to `ZStream.DefaultChunkSize` (4KiB).
+    */
   def make(
     customDictionary: Option[Array[Byte]] = None,
     chunkSize: Int = ZStream.DefaultChunkSize,

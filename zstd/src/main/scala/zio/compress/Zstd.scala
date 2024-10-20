@@ -8,14 +8,13 @@ import java.io.BufferedInputStream
 
 object ZstdCompressor {
 
-  /**
-   * Make a pipeline that accepts a stream of bytes and produces a stream with Zstd compressed bytes.
-   *
-   * @param level
-   *   The compression level to use. Valid values: -22 to 22. Defaults to 3.
-   * @param workers
-   *   The number of worker threads to use for parallel compression. Defaults to no worker threads.
-   */
+  /** Make a pipeline that accepts a stream of bytes and produces a stream with Zstd compressed bytes.
+    *
+    * @param level
+    *   The compression level to use. Valid values: -22 to 22. Defaults to 3.
+    * @param workers
+    *   The number of worker threads to use for parallel compression. Defaults to no worker threads.
+    */
   def make(
     level: Option[Int] = None,
     workers: Option[Int] = None,
@@ -35,12 +34,11 @@ class ZstdCompressor private (level: Option[Int], workers: Option[Int]) extends 
 
 object ZstdDecompressor {
 
-  /**
-   * Makes a pipeline that accepts a Zstd compressed byte stream and produces a decompressed byte stream.
-   *
-   * @param chunkSize
-   *   The maximum chunk size of the outgoing ZStream. Defaults to `ZStream.DefaultChunkSize` (4KiB).
-   */
+  /** Makes a pipeline that accepts a Zstd compressed byte stream and produces a decompressed byte stream.
+    *
+    * @param chunkSize
+    *   The maximum chunk size of the outgoing ZStream. Defaults to `ZStream.DefaultChunkSize` (4KiB).
+    */
   def make(chunkSize: Int = ZStream.DefaultChunkSize): ZstdDecompressor =
     new ZstdDecompressor(chunkSize)
 }

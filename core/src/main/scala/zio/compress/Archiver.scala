@@ -9,10 +9,9 @@ trait Archiver[-Size[A] <: Option[A]] {
 
 object Archiver {
 
-  /**
-   * @return
-   *   a pipeline that checks if the uncompressed size of the entries match the size specified in the entry header
-   */
+  /** @return
+    *   a pipeline that checks if the uncompressed size of the entries match the size specified in the entry header
+    */
   def checkUncompressedSize[Size[A] <: Option[A]]: ZPipeline[
     Any,
     Throwable,

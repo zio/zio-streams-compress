@@ -14,9 +14,9 @@ import java.nio.file.attribute.FileTime
 
 object TarArchiver {
 
-  /**
-   * Makes a pipeline that accepts a stream of archive entries (with size), and produces a byte stream of a Tar archive.
-   */
+  /** Makes a pipeline that accepts a stream of archive entries (with size), and produces a byte stream of a Tar
+    * archive.
+    */
   def make(): TarArchiver =
     new TarArchiver()
 }
@@ -38,12 +38,11 @@ class TarArchiver private extends Archiver[Some] {
 
 object TarUnarchiver {
 
-  /**
-   * Makes a pipeline that accepts a byte stream of a Tar archive, and produces a stream of archive entries.
-   *
-   * @param chunkSize
-   *   chunkSize of the archive entry content streams. Defaults to 64KiB.
-   */
+  /** Makes a pipeline that accepts a byte stream of a Tar archive, and produces a stream of archive entries.
+    *
+    * @param chunkSize
+    *   chunkSize of the archive entry content streams. Defaults to 64KiB.
+    */
   def make(chunkSize: Int = Defaults.DefaultChunkSize): TarUnarchiver =
     new TarUnarchiver(chunkSize)
 }

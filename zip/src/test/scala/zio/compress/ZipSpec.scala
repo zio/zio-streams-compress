@@ -75,8 +75,7 @@ object ZipSpec extends ZIOSpecDefault {
               .via(ZipArchiver.make().archive)
               .via(ZipUnarchiver.make().unarchive)
               .runCollect
-        } yield
-          assertTrue(obtained.head._1.name == "readme.txt")
+        } yield assertTrue(obtained.head._1.name == "readme.txt")
       },
       test("copy zip entry") {
         val entry = ArchiveEntry(name = "test")

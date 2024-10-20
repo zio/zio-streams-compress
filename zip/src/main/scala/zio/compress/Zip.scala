@@ -19,14 +19,13 @@ object ZipMethod {
 
 object ZipArchiver {
 
-  /**
-   * Makes a pipeline that accepts a stream of archive entries, and produces a byte stream of a Zip archive.
-   *
-   * @param level
-   *   compression level (only applicable for method 'deflated'). Currently defaults to level 6.
-   * @param method
-   *   compression method: stored or deflated. Defaults to `ZipMethod.Deflated`.
-   */
+  /** Makes a pipeline that accepts a stream of archive entries, and produces a byte stream of a Zip archive.
+    *
+    * @param level
+    *   compression level (only applicable for method 'deflated'). Currently defaults to level 6.
+    * @param method
+    *   compression method: stored or deflated. Defaults to `ZipMethod.Deflated`.
+    */
   def make(
     level: Option[CompressionLevel] = None,
     method: ZipMethod = ZipMethod.Deflated,
@@ -55,12 +54,11 @@ class ZipArchiver private (level: Option[CompressionLevel], method: ZipMethod) e
 
 object ZipUnarchiver {
 
-  /**
-   * Makes a pipeline that accepts a byte stream of a ZIP archive, and produces a stream of archive entries.
-   *
-   * @param chunkSize
-   *   chunkSize of the archive entry content streams. Defaults to 64KiB.
-   */
+  /** Makes a pipeline that accepts a byte stream of a ZIP archive, and produces a stream of archive entries.
+    *
+    * @param chunkSize
+    *   chunkSize of the archive entry content streams. Defaults to 64KiB.
+    */
   def make(chunkSize: Int = Defaults.DefaultChunkSize): ZipUnarchiver =
     new ZipUnarchiver(chunkSize)
 }
