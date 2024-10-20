@@ -2,7 +2,6 @@ package zio.compress
 
 import zio._
 import zio.compress.ArchiveEntry.{ArchiveEntryFromUnderlying, ArchiveEntryToUnderlying}
-import zio.compress.Archiver.checkUncompressedSize
 import zio.compress.JavaIoInterop._
 import zio.compress.Zip._
 import zio.stream._
@@ -21,7 +20,7 @@ object ZipMethod {
 object ZipArchiver {
 
   /**
-   * Makes a pipeline that accepts a stream of archive entries (with size), and produces a byte stream of a Zip archive.
+   * Makes a pipeline that accepts a stream of archive entries, and produces a byte stream of a Zip archive.
    *
    * @param level
    *   compression level (only applicable for method 'deflated'). Currently defaults to level 6.
@@ -35,8 +34,8 @@ object ZipArchiver {
     new ZipArchiver(level.filter(_ != CompressionLevel.DefaultCompression), method)
 }
 
-class ZipArchiver private (level: Option[CompressionLevel], method: ZipMethod) extends Archiver[Some] {
-  override def archive: ZPipeline[Any, Throwable, (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]), Byte] =
+class ZipArchiver private (level: Option[CompressionLevel], method: ZipMethod) extends Archiver[Option] {
+  override def archive: ZPipeline[Any, Throwable, (ArchiveEntry[Option, Any], ZStream[Any, Throwable, Byte]), Byte] =
     viaOutputStream { outputStream =>
       val zipOutputStream = new ZipOutputStream(outputStream)
       level.foreach(l => zipOutputStream.setLevel(l.jValue))
@@ -44,7 +43,6 @@ class ZipArchiver private (level: Option[CompressionLevel], method: ZipMethod) e
       zipOutputStream
     } { case (entryStream, zipOutputStream) =>
       entryStream
-        .via(checkUncompressedSize)
         .mapZIO { case (archiveEntry, contentStream) =>
           def entry = archiveEntry.underlying[ZipEntry]
           ZIO.attemptBlocking(zipOutputStream.putNextEntry(entry)) *>

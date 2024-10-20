@@ -68,20 +68,15 @@ object ZipSpec extends ZIOSpecDefault {
           } yield assertTrue(obtained == genBytes)
         }
       },
-      test("zip archive wrong size") {
+      test("zip compress without entry size") {
         for {
-          obtained <- ZStream(
-                        archiveEntry("file1.txt", 12, "Hello world!"),
-                        archiveEntry("subdir/file2.txt", 999999, "Hello from subdir!"),
-                      )
-                        .via(ZipArchiver.make().archive)
-                        .runCollect
-                        .exit
+          obtained <-
+            ZStream(archiveEntry("readme.txt", "Hello world!"))
+              .via(ZipArchiver.make().archive)
+              .via(ZipUnarchiver.make().unarchive)
+              .runCollect
         } yield
-          assertTrue(
-            obtained.is(_.die).getMessage ==
-              "Entry size of 18 bytes does not match size of 999999 bytes specified in entry"
-          )
+          assertTrue(obtained.head._1.name == "readme.txt")
       },
       test("copy zip entry") {
         val entry = ArchiveEntry(name = "test")
@@ -94,11 +89,10 @@ object ZipSpec extends ZIOSpecDefault {
 
   private def archiveEntry(
     name: String,
-    size: Long,
     content: String,
-  ): (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]) = {
+  ): (ArchiveEntry[Option, Any], ZStream[Any, Throwable, Byte]) = {
     val contentBytes = content.getBytes(UTF_8)
-    (ArchiveEntry(name, Some(size)), ZStream.fromIterable(contentBytes))
+    (ArchiveEntry(name), ZStream.fromIterable(contentBytes))
   }
 
   // used to prevent compile warnings like:

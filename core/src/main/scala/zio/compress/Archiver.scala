@@ -3,7 +3,7 @@ package zio.compress
 import zio._
 import zio.stream.{ZPipeline, ZStream}
 
-trait Archiver[Size[A] <: Option[A]] {
+trait Archiver[-Size[A] <: Option[A]] {
   def archive: ZPipeline[Any, Throwable, (ArchiveEntry[Size, Any], ZStream[Any, Throwable, Byte]), Byte]
 }
 
