@@ -2,7 +2,6 @@
 //import MimaSettings.mimaSettings
 
 val V = new {
-  // val betterMonadicFor = "0.3.1"
   val brotli = "0.1.2"
   val commonsCompress = "1.27.1"
   val logbackClassic = "1.5.8"
@@ -30,7 +29,7 @@ inThisBuild(
     crossScalaVersions := List(scala3.value, scala213.value, scala212.value),
     ciEnabledBranches := Seq("master"),
     run / fork := true,
-    ciJvmOptions ++= Seq("-Xms6G", "-Xmx4G", "-Xss4M", "-XX:+UseG1GC"),
+    ciJvmOptions ++= Seq("-Xmx4G", "-Xss2M", "-XX:+UseG1GC"),
     scalafixDependencies ++= List(
       "com.github.vovapolu" %% "scaluzzi" % "0.1.23",
       "io.github.ghostbuster91.scalafix-unified" %% "unified" % "0.0.9",
