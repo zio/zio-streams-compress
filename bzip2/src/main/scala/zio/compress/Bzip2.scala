@@ -9,8 +9,7 @@ object Bzip2Compressor {
   /**
    * Make a pipeline that accepts a stream of bytes and produces a stream with Bzip2 compressed bytes.
    *
-   * Note: Bzip2 uses a lot of memory. See
-   * [[https://commons.apache.org/proper/commons-compress/apidocs/org/apache/commons/compress/compressors/bzip2/BZip2CompressorOutputStream.html javadoc of `BZip2CompressorOutputStream`]]
+   * Note: Bzip2 uses a lot of memory. See [[org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream]]
    * for an overview of the required heap size for each block size.
    *
    * @param blockSize
