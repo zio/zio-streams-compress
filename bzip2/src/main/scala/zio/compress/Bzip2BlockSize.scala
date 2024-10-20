@@ -23,14 +23,15 @@ object Bzip2BlockSize {
       BlockSize600KB,
       BlockSize700KB,
       BlockSize800KB,
-      BlockSize900KB
+      BlockSize900KB,
     )
 
-  /** Converts a bzip2 block size from [[Int]] to [[Bzip2BlockSize]].
-    *
-    * @param blockSize100KB
-    *   a bzip2 block size in 100KB increments, valid values: 1 to 9
-    */
+  /**
+   * Converts a bzip2 block size from [[Int]] to [[Bzip2BlockSize]].
+   *
+   * @param blockSize100KB
+   *   a bzip2 block size in 100KB increments, valid values: 1 to 9
+   */
   def fromBzip2BlockSize(blockSize100KB: Int): Option[Bzip2BlockSize] =
     Values.find(_.jValue == blockSize100KB)
 }

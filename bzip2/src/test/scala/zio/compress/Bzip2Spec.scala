@@ -18,35 +18,31 @@ object Bzip2Spec extends ZIOSpecDefault {
     suite("Bzip2")(
       test("bzip2 compress") {
         for {
-          obtained <- ZStream.fromChunk(clear)
-            .via(Bzip2Compressor.make().compress)
-            .runCollect
-        } yield {
-          assertTrue(compressed == obtained)
-        }
+          obtained <- ZStream
+                        .fromChunk(clear)
+                        .via(Bzip2Compressor.make().compress)
+                        .runCollect
+        } yield assertTrue(compressed == obtained)
       },
       test("bzip2 decompress") {
         for {
-          obtained <- ZStream.fromChunk(compressed)
-            .via(Bzip2Decompressor.make().decompress)
-            .runCollect
-        } yield {
-          assertTrue(clear == obtained)
-        }
+          obtained <- ZStream
+                        .fromChunk(compressed)
+                        .via(Bzip2Decompressor.make().decompress)
+                        .runCollect
+        } yield assertTrue(clear == obtained)
       },
       test("bzip2 round trip") {
         checkN(10)(Gen.int(40, 5000), Gen.chunkOfBounded(0, 20000)(Gen.byte)) { (chunkSize, genBytes) =>
           for {
-            obtained  <- ZStream
-              .fromChunk(genBytes)
-              .rechunk(chunkSize)
-              .via(Bzip2Compressor.make().compress)
-              .via(Bzip2Decompressor.make().decompress)
-              .runCollect
-          } yield {
-             assertTrue(obtained == genBytes)
-          }
+            obtained <- ZStream
+                          .fromChunk(genBytes)
+                          .rechunk(chunkSize)
+                          .via(Bzip2Compressor.make().compress)
+                          .via(Bzip2Decompressor.make().decompress)
+                          .runCollect
+          } yield assertTrue(obtained == genBytes)
         }
-      }
+      },
     )
 }

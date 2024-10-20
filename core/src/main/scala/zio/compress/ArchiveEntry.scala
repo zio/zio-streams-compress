@@ -4,14 +4,14 @@ import ArchiveEntry.ArchiveEntryToUnderlying
 
 import java.time.Instant
 
-case class ArchiveEntry[+Size[A] <: Option[A], +Underlying](
-    name: String,
-    uncompressedSize: Size[Long] = None: Option[Long],
-    isDirectory: Boolean = false,
-    lastModified: Option[Instant] = None,
-    lastAccess: Option[Instant] = None,
-    creation: Option[Instant] = None,
-    private val underlying: Underlying = ()
+final case class ArchiveEntry[+Size[A] <: Option[A], +Underlying](
+  name: String,
+  uncompressedSize: Size[Long] = None: Option[Long],
+  isDirectory: Boolean = false,
+  lastModified: Option[Instant] = None,
+  lastAccess: Option[Instant] = None,
+  creation: Option[Instant] = None,
+  private val underlying: Underlying = (),
 ) {
   def withName(name: String): ArchiveEntry[Size, Underlying] = copy(name = name)
 
@@ -31,7 +31,7 @@ case class ArchiveEntry[+Size[A] <: Option[A], +Underlying](
 
 object ArchiveEntry {
   def fromUnderlying[Size[A] <: Option[A], U](underlying: U)(implicit
-      U: ArchiveEntryFromUnderlying[Size, U]
+    U: ArchiveEntryFromUnderlying[Size, U]
   ): ArchiveEntry[Option, U] =
     U.archiveEntry(underlying)
 

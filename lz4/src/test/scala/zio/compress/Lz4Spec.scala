@@ -18,26 +18,22 @@ object Lz4Spec extends ZIOSpecDefault {
       test("lz4 decompress") {
         for {
           obtained <- ZStream
-            .fromChunk(compressed)
-            .via(Lz4Decompressor.make().decompress)
-            .runCollect
-        } yield {
-          assertTrue(clear == obtained)
-        }
+                        .fromChunk(compressed)
+                        .via(Lz4Decompressor.make().decompress)
+                        .runCollect
+        } yield assertTrue(clear == obtained)
       },
       test("lz4 round trip") {
         checkN(10)(Gen.int(40, 5000), Gen.chunkOfBounded(0, 20000)(Gen.byte)) { (chunkSize, genBytes) =>
           for {
             obtained <- ZStream
-              .fromChunk(genBytes)
-              .rechunk(chunkSize)
-              .via(Lz4Compressor.make().compress)
-              .via(Lz4Decompressor.make().decompress)
-              .runCollect
-          } yield {
-            assertTrue(obtained == genBytes)
-          }
+                          .fromChunk(genBytes)
+                          .rechunk(chunkSize)
+                          .via(Lz4Compressor.make().compress)
+                          .via(Lz4Decompressor.make().decompress)
+                          .runCollect
+          } yield assertTrue(obtained == genBytes)
         }
-      }
+      },
     )
-  }
+}

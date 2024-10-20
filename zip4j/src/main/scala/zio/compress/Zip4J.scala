@@ -15,12 +15,13 @@ import java.time.Instant
 
 object Zip4JArchiver {
 
-  /** Makes a pipeline that accepts a stream of archive entries (with size), and produces a byte stream of a Zip archive
-    * (method: deflate, level: 5).
-    *
-    * @param password
-    *   password of the ZIP archive, or `None` if the archive is not password protected
-    */
+  /**
+   * Makes a pipeline that accepts a stream of archive entries (with size), and produces a byte stream of a Zip archive
+   * (method: deflate, level: 5).
+   *
+   * @param password
+   *   password of the ZIP archive, or `None` if the archive is not password protected
+   */
   def make(password: => Option[String] = None): Zip4JArchiver =
     new Zip4JArchiver(password)
 }
@@ -44,31 +45,32 @@ class Zip4JArchiver private (password: => Option[String]) extends Archiver[Some]
 
 object Zip4JUnarchiver {
 
-  /** Makes a pipeline that accepts a byte stream of a ZIP archive, and produces a stream of archive entries.
-    *
-    * @param password
-    *   password of the ZIP archive, or `None` if the archive is not password protected
-    * @param chunkSize
-    *   chunkSize of the archive entry content streams. Defaults to 64KiB.
-    */
+  /**
+   * Makes a pipeline that accepts a byte stream of a ZIP archive, and produces a stream of archive entries.
+   *
+   * @param password
+   *   password of the ZIP archive, or `None` if the archive is not password protected
+   * @param chunkSize
+   *   chunkSize of the archive entry content streams. Defaults to 64KiB.
+   */
   def make(
-      password: Option[String] = None,
-      chunkSize: Int = Defaults.DefaultChunkSize
+    password: Option[String] = None,
+    chunkSize: Int = Defaults.DefaultChunkSize,
   ): Zip4JUnarchiver =
     new Zip4JUnarchiver(password, chunkSize)
 }
 
 class Zip4JUnarchiver private (password: Option[String], chunkSize: Int) extends Unarchiver[Option, LocalFileHeader] {
   override def unarchive
-      : ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, LocalFileHeader], ZStream[Any, IOException, Byte])] =
+    : ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, LocalFileHeader], ZStream[Any, IOException, Byte])] =
     viaInputStream[(ArchiveEntry[Option, LocalFileHeader], ZStream[Any, IOException, Byte])]() { inputStream =>
       for {
         zipInputStream <- ZIO.acquireRelease(
-          ZIO.attemptBlocking(new ZipInputStream(inputStream, password.map(_.toCharArray).orNull))
-        ) { zipInputStream =>
-          ZIO.attemptBlocking(zipInputStream.close()).orDie
-        }
-      } yield {
+                            ZIO.attemptBlocking(new ZipInputStream(inputStream, password.map(_.toCharArray).orNull))
+                          ) { zipInputStream =>
+                            ZIO.attemptBlocking(zipInputStream.close()).orDie
+                          }
+      } yield
         ZStream.repeatZIOOption {
           for {
             entry <- ZIO.attemptBlocking(Option(zipInputStream.getNextEntry)).some
@@ -78,7 +80,6 @@ class Zip4JUnarchiver private (password: Option[String], chunkSize: Int) extends
             (archiveEntry, ZStream.fromInputStream(zipInputStream, chunkSize))
           }
         }
-      }
     }
 }
 
@@ -96,7 +97,7 @@ object Zip4J {
         val fileOrDirName = entry.name match {
           case name if entry.isDirectory && !name.endsWith("/") => name + "/"
           case name if !entry.isDirectory && name.endsWith("/") => name.dropRight(1)
-          case name => name
+          case name                                             => name
         }
 
         zipEntry.setFileNameInZip(fileOrDirName)
@@ -106,6 +107,7 @@ object Zip4J {
       }
     }
 
+  //noinspection ConvertExpressionToSAM
   implicit val zip4jArchiveEntryFromUnderlying: ArchiveEntryFromUnderlying[Option, ZipParameters] =
     new ArchiveEntryFromUnderlying[Option, ZipParameters] {
       override def archiveEntry(underlying: ZipParameters): ArchiveEntry[Option, ZipParameters] =
@@ -114,10 +116,11 @@ object Zip4J {
           isDirectory = underlying.getFileNameInZip.endsWith("/"), // TODO entry.isDirectory
           uncompressedSize = Some(underlying.getEntrySize).filterNot(_ == -1),
           lastModified = Some(underlying.getLastModifiedFileTime).map(Instant.ofEpochMilli),
-          underlying = underlying
+          underlying = underlying,
         )
     }
 
+  //noinspection ConvertExpressionToSAM
   implicit val zip4jLocalFileHeaderArchiveEntryFromUnderlying: ArchiveEntryFromUnderlying[Option, LocalFileHeader] =
     new ArchiveEntryFromUnderlying[Option, LocalFileHeader] {
       override def archiveEntry(underlying: LocalFileHeader): ArchiveEntry[Option, LocalFileHeader] =
@@ -126,7 +129,7 @@ object Zip4J {
           isDirectory = underlying.isDirectory,
           uncompressedSize = Some(underlying.getUncompressedSize).filterNot(_ == -1),
           lastModified = Some(underlying.getLastModifiedTime).map(Instant.ofEpochMilli),
-          underlying = underlying
+          underlying = underlying,
         )
     }
 }

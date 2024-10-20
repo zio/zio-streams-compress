@@ -39,6 +39,7 @@ project/plugins/project/
 .cache
 .lib/
 .bsp/
+.sbt/
 
 ## sbt-hackling
 libling/

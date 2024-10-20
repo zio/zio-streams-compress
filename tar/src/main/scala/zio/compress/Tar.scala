@@ -14,9 +14,9 @@ import java.nio.file.attribute.FileTime
 
 object TarArchiver {
 
-  /** Makes a pipeline that accepts a stream of archive entries (with size), and produces a byte stream of a Tar
-    * archive.
-    */
+  /**
+   * Makes a pipeline that accepts a stream of archive entries (with size), and produces a byte stream of a Tar archive.
+   */
   def make(): TarArchiver =
     new TarArchiver()
 }
@@ -38,25 +38,26 @@ class TarArchiver private extends Archiver[Some] {
 
 object TarUnarchiver {
 
-  /** Makes a pipeline that accepts a byte stream of a Tar archive, and produces a stream of archive entries.
-    *
-    * @param chunkSize
-    *   chunkSize of the archive entry content streams. Defaults to 64KiB.
-    */
+  /**
+   * Makes a pipeline that accepts a byte stream of a Tar archive, and produces a stream of archive entries.
+   *
+   * @param chunkSize
+   *   chunkSize of the archive entry content streams. Defaults to 64KiB.
+   */
   def make(chunkSize: Int = Defaults.DefaultChunkSize): TarUnarchiver =
     new TarUnarchiver(chunkSize)
 }
 
 class TarUnarchiver private (chunkSize: Int) extends Unarchiver[Option, TarArchiveEntry] {
   override def unarchive
-      : ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, TarArchiveEntry], ZStream[Any, IOException, Byte])] =
+    : ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, TarArchiveEntry], ZStream[Any, IOException, Byte])] =
     viaInputStream[(ArchiveEntry[Option, TarArchiveEntry], ZStream[Any, IOException, Byte])]() { inputStream =>
       for {
-        tarInputStream <- ZIO.acquireRelease(ZIO.attemptBlocking(new TarArchiveInputStream(inputStream))) {
-          tarInputStream =>
+        tarInputStream <-
+          ZIO.acquireRelease(ZIO.attemptBlocking(new TarArchiveInputStream(inputStream))) { tarInputStream =>
             ZIO.attemptBlocking(tarInputStream.close()).orDie
-        }
-      } yield {
+          }
+      } yield
         ZStream.repeatZIOOption {
           for {
             entry <- ZIO.attemptBlocking(Option(tarInputStream.getNextEntry)).some
@@ -67,7 +68,6 @@ class TarUnarchiver private (chunkSize: Int) extends Unarchiver[Option, TarArchi
             (archiveEntry, ZStream.fromInputStream(new BufferedInputStream(tarInputStream, chunkSize), chunkSize))
           }
         }
-      }
     }
 }
 
@@ -79,7 +79,7 @@ object Tar {
         val fileOrDirName = entry.name match {
           case name if entry.isDirectory && !name.endsWith("/") => name + "/"
           case name if !entry.isDirectory && name.endsWith("/") => name.dropRight(1)
-          case name => name
+          case name                                             => name
         }
 
         val tarEntry = underlying match {
@@ -103,6 +103,7 @@ object Tar {
       }
     }
 
+  //noinspection ConvertExpressionToSAM
   implicit val tarArchiveEntryFromUnderlying: ArchiveEntryFromUnderlying[Option, TarArchiveEntry] =
     new ArchiveEntryFromUnderlying[Option, TarArchiveEntry] {
       override def archiveEntry(underlying: TarArchiveEntry): ArchiveEntry[Option, TarArchiveEntry] =
@@ -113,7 +114,7 @@ object Tar {
           lastModified = Option(underlying.getLastModifiedTime).map(_.toInstant),
           lastAccess = Option(underlying.getLastAccessTime).map(_.toInstant),
           creation = Option(underlying.getCreationTime).map(_.toInstant),
-          underlying = underlying
+          underlying = underlying,
         )
     }
 }

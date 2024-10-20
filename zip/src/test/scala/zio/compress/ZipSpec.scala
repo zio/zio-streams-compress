@@ -23,15 +23,17 @@ object ZipSpec extends ZIOSpecDefault {
    * }}}
    */
   private val zipArchive = Chunk.fromArray(
-    Base64.getDecoder.decode(
-      "UEsDBBQACAAIAC11SlkAAAAAAAAAAAwAAAAJABwAZmlsZTEudHh0VVQJAAN2ywdndssHZ3V4CwAB" +
-        "BOgDAAAE6AMAAPNIzcnJVyjPL8pJUQQAUEsHCJUZhRsOAAAADAAAAFBLAwQUAAgACAAtdUpZAAAA" +
-        "AAAAAAASAAAAEAAcAHN1YmRpci9maWxlMi50eHRVVAkAA3bLB2d2ywdndXgLAAEE6AMAAAToAwAA" +
-        "80jNyclXSCvKz1UoLk1KySxSBABQSwcIe/g7bxQAAAASAAAAUEsBAh4DFAAIAAgALXVKWZUZhRsO" +
-        "AAAADAAAAAkAGAAAAAAAAQAAALSBAAAAAGZpbGUxLnR4dFVUBQADdssHZ3V4CwABBOgDAAAE6AMA" +
-        "AFBLAQIeAxQACAAIAC11Sll7+DtvFAAAABIAAAAQABgAAAAAAAEAAAC0gWEAAABzdWJkaXIvZmls" +
-        "ZTIudHh0VVQFAAN2ywdndXgLAAEE6AMAAAToAwAAUEsFBgAAAAACAAIApQAAAM8AAAAAAA=="
-    )
+    Base64
+      .getDecoder
+      .decode(
+        "UEsDBBQACAAIAC11SlkAAAAAAAAAAAwAAAAJABwAZmlsZTEudHh0VVQJAAN2ywdndssHZ3V4CwAB" +
+          "BOgDAAAE6AMAAPNIzcnJVyjPL8pJUQQAUEsHCJUZhRsOAAAADAAAAFBLAwQUAAgACAAtdUpZAAAA" +
+          "AAAAAAASAAAAEAAcAHN1YmRpci9maWxlMi50eHRVVAkAA3bLB2d2ywdndXgLAAEE6AMAAAToAwAA" +
+          "80jNyclXSCvKz1UoLk1KySxSBABQSwcIe/g7bxQAAAASAAAAUEsBAh4DFAAIAAgALXVKWZUZhRsO" +
+          "AAAADAAAAAkAGAAAAAAAAQAAALSBAAAAAGZpbGUxLnR4dFVUBQADdssHZ3V4CwABBOgDAAAE6AMA" +
+          "AFBLAQIeAxQACAAIAC11Sll7+DtvFAAAABIAAAAQABgAAAAAAAEAAAC0gWEAAABzdWJkaXIvZmls" +
+          "ZTIudHh0VVQFAAN2ywdndXgLAAEE6AMAAAToAwAAUEsFBgAAAAACAAIApQAAAM8AAAAAAA=="
+      )
   )
 
   override def spec: Spec[TestEnvironment with Scope, Any] =
@@ -39,52 +41,47 @@ object ZipSpec extends ZIOSpecDefault {
       test("zip unarchive") {
         for {
           obtained <- ZStream
-            .fromChunk(zipArchive)
-            .via(ZipUnarchiver.make().unarchive)
-            .mapZIO { case (archiveEntry, stream) =>
-              for {
-                content <- stream.runCollect
-              } yield {
-                archiveEntry.name -> new String(content.toArray)
-              }
-            }
-            .runCollect
-        } yield {
+                        .fromChunk(zipArchive)
+                        .via(ZipUnarchiver.make().unarchive)
+                        .mapZIO { case (archiveEntry, stream) =>
+                          for {
+                            content <- stream.runCollect
+                          } yield archiveEntry.name -> new String(content.toArray)
+                        }
+                        .runCollect
+        } yield
           assertTrue(
-            obtained.head == ("file1.txt", "Hello world!"),
-            obtained(1) == ("subdir/file2.txt", "Hello from subdir!")
+            obtained.head == t("file1.txt", "Hello world!"),
+            obtained(1) == t("subdir/file2.txt", "Hello from subdir!"),
           )
-        }
       },
       test("zip round trip") {
         checkN(10)(Gen.int(40, 5000), Gen.chunkOfBounded(0, 20000)(Gen.byte)) { (chunkSize, genBytes) =>
           for {
-            obtained <- ZStream
-              .fromChunk(genBytes)
-              .rechunk(chunkSize)
-              .via(ArchiveSingleFileCompressor.forName(ZipArchiver.make(), "test", genBytes.length).compress)
-              .via(ArchiveSingleFileDecompressor(ZipUnarchiver.make()).decompress)
-              .runCollect
-          } yield {
-            assertTrue(obtained == genBytes)
-          }
+            obtained <-
+              ZStream
+                .fromChunk(genBytes)
+                .rechunk(chunkSize)
+                .via(ArchiveSingleFileCompressor.forName(ZipArchiver.make(), "test", genBytes.length.toLong).compress)
+                .via(ArchiveSingleFileDecompressor(ZipUnarchiver.make()).decompress)
+                .runCollect
+          } yield assertTrue(obtained == genBytes)
         }
       },
       test("zip archive wrong size") {
         for {
           obtained <- ZStream(
-            archiveEntry("file1.txt", 12, "Hello world!"),
-            archiveEntry("subdir/file2.txt", 999999, "Hello from subdir!")
-          )
-            .via(ZipArchiver.make().archive)
-            .runCollect
-            .exit
-        } yield {
+                        archiveEntry("file1.txt", 12, "Hello world!"),
+                        archiveEntry("subdir/file2.txt", 999999, "Hello from subdir!"),
+                      )
+                        .via(ZipArchiver.make().archive)
+                        .runCollect
+                        .exit
+        } yield
           assertTrue(
             obtained.is(_.die).getMessage ==
               "Entry size of 18 bytes does not match size of 999999 bytes specified in entry"
           )
-        }
       },
       test("copy zip entry") {
         val entry = ArchiveEntry(name = "test")
@@ -96,11 +93,15 @@ object ZipSpec extends ZIOSpecDefault {
     )
 
   private def archiveEntry(
-      name: String,
-      size: Long,
-      content: String
+    name: String,
+    size: Long,
+    content: String,
   ): (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]) = {
     val contentBytes = content.getBytes(UTF_8)
     (ArchiveEntry(name, Some(size)), ZStream.fromIterable(contentBytes))
   }
+
+  // used to prevent compile warnings like:
+  // [error] too many arguments (2) for method ==: (x$1: Any)Boolean
+  private def t(s1: String, s2: String): (String, String) = (s1, s2)
 }

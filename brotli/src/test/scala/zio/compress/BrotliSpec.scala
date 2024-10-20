@@ -16,12 +16,11 @@ object BrotliSpec extends ZIOSpecDefault {
     suite("Brotli")(
       test("brotli decompress") {
         for {
-          obtained <- ZStream.fromChunk(compressed)
-            .via(BrotliDecompressor.make().decompress)
-            .runCollect
-        } yield {
-          assertTrue(clear == obtained)
-        }
+          obtained <- ZStream
+                        .fromChunk(compressed)
+                        .via(BrotliDecompressor.make().decompress)
+                        .runCollect
+        } yield assertTrue(clear == obtained)
       }
     )
 

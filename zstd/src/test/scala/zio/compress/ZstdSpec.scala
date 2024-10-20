@@ -18,26 +18,22 @@ object ZstdSpec extends ZIOSpecDefault {
       test("zstd decompress") {
         for {
           obtained <- ZStream
-            .fromChunk(compressed)
-            .via(ZstdDecompressor.make().decompress)
-            .runCollect
-        } yield {
-          assertTrue(clear == obtained)
-        }
+                        .fromChunk(compressed)
+                        .via(ZstdDecompressor.make().decompress)
+                        .runCollect
+        } yield assertTrue(clear == obtained)
       },
       test("zstd round trip") {
         checkN(10)(Gen.int(40, 5000), Gen.chunkOfBounded(0, 20000)(Gen.byte)) { (chunkSize, genBytes) =>
           for {
             obtained <- ZStream
-              .fromChunk(genBytes)
-              .rechunk(chunkSize)
-              .via(ZstdCompressor.make().compress)
-              .via(ZstdDecompressor.make().decompress)
-              .runCollect
-          } yield {
-            assertTrue(obtained == genBytes)
-          }
+                          .fromChunk(genBytes)
+                          .rechunk(chunkSize)
+                          .via(ZstdCompressor.make().compress)
+                          .via(ZstdDecompressor.make().decompress)
+                          .runCollect
+          } yield assertTrue(obtained == genBytes)
         }
-      }
+      },
     )
 }

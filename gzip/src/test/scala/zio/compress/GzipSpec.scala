@@ -17,27 +17,24 @@ object GzipSpec extends ZIOSpecDefault {
     suite("Gzip")(
       test("gzip decompress") {
         for {
-          obtained <- ZStream.fromChunk(compressed)
-            .via(GzipDecompressor.make().decompress)
-            .runCollect
-        } yield {
-          assertTrue(clear == obtained)
-        }
+          obtained <- ZStream
+                        .fromChunk(compressed)
+                        .via(GzipDecompressor.make().decompress)
+                        .runCollect
+        } yield assertTrue(clear == obtained)
       },
       test("gzip round trip") {
         checkN(10)(Gen.int(40, 5000), Gen.chunkOfBounded(0, 20000)(Gen.byte)) { (chunkSize, genBytes) =>
           for {
-            obtained  <- ZStream
-              .fromChunk(genBytes)
-              .rechunk(chunkSize)
-              .via(GzipCompressor.make().compress)
-              .via(GzipDecompressor.make().decompress)
-              .runCollect
-          } yield {
-            assertTrue(obtained == genBytes)
-          }
+            obtained <- ZStream
+                          .fromChunk(genBytes)
+                          .rechunk(chunkSize)
+                          .via(GzipCompressor.make().compress)
+                          .via(GzipDecompressor.make().decompress)
+                          .runCollect
+          } yield assertTrue(obtained == genBytes)
         }
-      }
+      },
     )
 
 }

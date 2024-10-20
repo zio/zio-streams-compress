@@ -14,11 +14,12 @@ object Lz4CompressorBlockSize {
   case object BlockSize1MiB extends Lz4CompressorBlockSize
   case object BlockSize4MiB extends Lz4CompressorBlockSize
 
-  /** Converts a Lz4 block size indicator into a [[Lz4CompressorBlockSize]].
-    *
-    * @param indicator
-    *   the Lz4 block size indicator, valid values: 4 (64KiB), 5 (256KiB), 6 (1MiB), 7 (4MiB)
-    */
+  /**
+   * Converts a Lz4 block size indicator into a [[Lz4CompressorBlockSize]].
+   *
+   * @param indicator
+   *   the Lz4 block size indicator, valid values: 4 (64KiB), 5 (256KiB), 6 (1MiB), 7 (4MiB)
+   */
   def fromLz4BlockSizeIndicator(indicator: Int): Option[Lz4CompressorBlockSize] =
     indicator match {
       case 4 => Some(BlockSize64KiB)
@@ -31,19 +32,20 @@ object Lz4CompressorBlockSize {
 
 object Lz4Compressor {
 
-  /** Make a pipeline that accepts a stream of bytes and produces a stream with Lz4 compressed bytes.
-    *
-    * @param blockSize
-    *   the block size to use. Defaults to 256KiB.
-    */
+  /**
+   * Make a pipeline that accepts a stream of bytes and produces a stream with Lz4 compressed bytes.
+   *
+   * @param blockSize
+   *   the block size to use. Defaults to 256KiB.
+   */
   def make(
-      blockSize: Lz4CompressorBlockSize = Lz4CompressorBlockSize.BlockSize256KiB
+    blockSize: Lz4CompressorBlockSize = Lz4CompressorBlockSize.BlockSize256KiB
   ): Lz4Compressor = {
     val lz4BlockSize = blockSize match {
-      case Lz4CompressorBlockSize.BlockSize64KiB => BLOCKSIZE.SIZE_64KB
+      case Lz4CompressorBlockSize.BlockSize64KiB  => BLOCKSIZE.SIZE_64KB
       case Lz4CompressorBlockSize.BlockSize256KiB => BLOCKSIZE.SIZE_256KB
-      case Lz4CompressorBlockSize.BlockSize1MiB => BLOCKSIZE.SIZE_1MB
-      case Lz4CompressorBlockSize.BlockSize4MiB => BLOCKSIZE.SIZE_4MB
+      case Lz4CompressorBlockSize.BlockSize1MiB   => BLOCKSIZE.SIZE_1MB
+      case Lz4CompressorBlockSize.BlockSize4MiB   => BLOCKSIZE.SIZE_4MB
     }
     new Lz4Compressor(lz4BlockSize)
   }
@@ -56,11 +58,12 @@ class Lz4Compressor private (blockSize: LZ4FrameOutputStream.BLOCKSIZE) extends 
 
 object Lz4Decompressor {
 
-  /** Makes a pipeline that accepts a Lz4 compressed byte stream and produces a decompressed byte stream.
-    *
-    * @param chunkSize
-    *   The maximum chunk size of the outgoing ZStream. Defaults to `ZStream.DefaultChunkSize` (4KiB).
-    */
+  /**
+   * Makes a pipeline that accepts a Lz4 compressed byte stream and produces a decompressed byte stream.
+   *
+   * @param chunkSize
+   *   The maximum chunk size of the outgoing ZStream. Defaults to `ZStream.DefaultChunkSize` (4KiB).
+   */
   def make(chunkSize: Int = ZStream.DefaultChunkSize): Lz4Decompressor =
     new Lz4Decompressor(chunkSize)
 }

@@ -20,17 +20,17 @@ object ZipMethod {
 
 object ZipArchiver {
 
-  /** Makes a pipeline that accepts a stream of archive entries (with size), and produces a byte stream of a Zip
-    * archive.
-    *
-    * @param level
-    *   compression level (only applicable for method 'deflated'). Currently defaults to level 6.
-    * @param method
-    *   compression method: stored or deflated. Defaults to `ZipMethod.Deflated`.
-    */
+  /**
+   * Makes a pipeline that accepts a stream of archive entries (with size), and produces a byte stream of a Zip archive.
+   *
+   * @param level
+   *   compression level (only applicable for method 'deflated'). Currently defaults to level 6.
+   * @param method
+   *   compression method: stored or deflated. Defaults to `ZipMethod.Deflated`.
+   */
   def make(
-      level: Option[CompressionLevel] = None,
-      method: ZipMethod = ZipMethod.Deflated
+    level: Option[CompressionLevel] = None,
+    method: ZipMethod = ZipMethod.Deflated,
   ): ZipArchiver =
     new ZipArchiver(level.filter(_ != CompressionLevel.DefaultCompression), method)
 }
@@ -57,24 +57,25 @@ class ZipArchiver private (level: Option[CompressionLevel], method: ZipMethod) e
 
 object ZipUnarchiver {
 
-  /** Makes a pipeline that accepts a byte stream of a ZIP archive, and produces a stream of archive entries.
-    *
-    * @param chunkSize
-    *   chunkSize of the archive entry content streams. Defaults to 64KiB.
-    */
+  /**
+   * Makes a pipeline that accepts a byte stream of a ZIP archive, and produces a stream of archive entries.
+   *
+   * @param chunkSize
+   *   chunkSize of the archive entry content streams. Defaults to 64KiB.
+   */
   def make(chunkSize: Int = Defaults.DefaultChunkSize): ZipUnarchiver =
     new ZipUnarchiver(chunkSize)
 }
 
 class ZipUnarchiver private (chunkSize: Int) extends Unarchiver[Option, ZipEntry] {
   override def unarchive
-      : ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, ZipEntry], ZStream[Any, IOException, Byte])] =
+    : ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, ZipEntry], ZStream[Any, IOException, Byte])] =
     viaInputStream[(ArchiveEntry[Option, ZipEntry], ZStream[Any, IOException, Byte])]() { inputStream =>
       for {
         zipInputStream <- ZIO.acquireRelease(ZIO.attemptBlocking(new ZipInputStream(inputStream))) { zipInputStream =>
-          ZIO.attemptBlocking(zipInputStream.close()).orDie
-        }
-      } yield {
+                            ZIO.attemptBlocking(zipInputStream.close()).orDie
+                          }
+      } yield
         ZStream.repeatZIOOption {
           for {
             entry <- ZIO.attemptBlocking(Option(zipInputStream.getNextEntry)).some
@@ -85,7 +86,6 @@ class ZipUnarchiver private (chunkSize: Int) extends Unarchiver[Option, ZipEntry
             (archiveEntry, ZStream.fromInputStream(zipInputStream, chunkSize))
           }
         }
-      }
     }
 }
 
@@ -102,7 +102,7 @@ object Zip {
             val fileOrDirName = entry.name match {
               case name if entry.isDirectory && !name.endsWith("/") => name + "/"
               case name if !entry.isDirectory && name.endsWith("/") => name.dropRight(1)
-              case name => name
+              case name                                             => name
             }
             new ZipEntry(fileOrDirName)
         }
@@ -115,6 +115,7 @@ object Zip {
       }
     }
 
+  //noinspection ConvertExpressionToSAM
   implicit val zipArchiveEntryFromUnderlying: ArchiveEntryFromUnderlying[Option, ZipEntry] =
     new ArchiveEntryFromUnderlying[Option, ZipEntry] {
       override def archiveEntry(underlying: ZipEntry): ArchiveEntry[Option, ZipEntry] =
@@ -125,7 +126,7 @@ object Zip {
           lastModified = Option(underlying.getLastModifiedTime).map(_.toInstant),
           lastAccess = Option(underlying.getLastAccessTime).map(_.toInstant),
           creation = Option(underlying.getCreationTime).map(_.toInstant),
-          underlying = underlying
+          underlying = underlying,
         )
     }
 }
