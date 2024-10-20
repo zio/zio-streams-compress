@@ -22,7 +22,7 @@ object GzipCompressor {
   private val CompressionStrategies = Seq(DefaultStrategy, Filtered, HuffmanOnly)
 
   /**
-   * Converts a deflate compression level from [[Int]] to [[CompressionLevel]].
+   * Converts a deflate compression level from `Int` to [[CompressionLevel]].
    *
    * @param level
    *   a deflate compression level, valid values: -1 (default), 0 (no compression), 1 (fastest) to 9 (best compression)
@@ -31,7 +31,7 @@ object GzipCompressor {
     CompressionLevels.find(_.jValue == level)
 
   /**
-   * Converts a deflate compression strategy from [[Int]] to [[CompressionStrategy]].
+   * Converts a deflate compression strategy from `Int` to [[CompressionStrategy]].
    *
    * @param strategy
    *   a deflate compression strategy, valid values: 0 (default), 1 (filtered) or 2 (huffman only)

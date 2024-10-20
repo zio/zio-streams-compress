@@ -27,7 +27,7 @@ object Bzip2BlockSize {
     )
 
   /**
-   * Converts a bzip2 block size from [[Int]] to [[Bzip2BlockSize]].
+   * Converts a bzip2 block size from `Int` to [[Bzip2BlockSize]].
    *
    * @param blockSize100KB
    *   a bzip2 block size in 100KB increments, valid values: 1 to 9
