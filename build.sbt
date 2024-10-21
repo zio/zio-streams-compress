@@ -4,7 +4,7 @@
 val V = new {
   val brotli = "0.1.2"
   val commonsCompress = "1.27.1"
-  val logbackClassic = "1.5.8"
+  val logbackClassic = "1.5.11"
   val lz4 = "1.8.0"
   val zio = "2.1.11"
   val zip4j = "2.11.5"
