@@ -1,6 +1,3 @@
-//import sbt.Def
-//import MimaSettings.mimaSettings
-
 val V = new {
   val brotli = "0.1.2"
   val commonsCompress = "1.27.1"
@@ -11,18 +8,17 @@ val V = new {
   val zstdJni = "1.5.6-6"
 }
 
-enablePlugins(ZioSbtEcosystemPlugin, ZioSbtCiPlugin)
+val _scala212 = "2.12.20"
+val _scala213 = "2.13.15"
+val _scala3 = "3.3.4"
+val scalaVersions = List(_scala3, _scala213, _scala212)
 
-lazy val _scala212 = "2.12.20"
-lazy val _scala213 = "2.13.15"
-lazy val _scala3 = "3.3.4"
-lazy val scalaVersions = Seq(_scala3, _scala213, _scala212)
+enablePlugins(ZioSbtEcosystemPlugin, ZioSbtCiPlugin)
 
 inThisBuild(
   List(
     name := "ZIO Streams Compress",
-    scalaVersion := _scala213,
-    // zio-sbt defines these 'scala*' settings, but we need to define them here to override the defaults and better control them
+    // zio-sbt defines these 'scala*' settings, we redefine them here for better control
     scala212 := _scala212,
     scala213 := _scala213,
     scala3 := _scala3,
@@ -30,10 +26,6 @@ inThisBuild(
     ciEnabledBranches := Seq("main"),
     run / fork := true,
     ciJvmOptions ++= Seq("-Xmx4G", "-Xss2M", "-XX:+UseG1GC"),
-    scalafixDependencies ++= List(
-      "com.github.vovapolu" %% "scaluzzi" % "0.1.23",
-      "io.github.ghostbuster91.scalafix-unified" %% "unified" % "0.0.9",
-    ),
     developers := List(
       Developer(
         "erikvanoosten",
@@ -42,8 +34,13 @@ inThisBuild(
         url("https://github.com/erikvanoosten"),
       )
     ),
-    semanticdbEnabled := true,
+    semanticdbEnabled := Keys.scalaBinaryVersion.value != "3",
+    // semanticdbOptions += "-P:semanticdb:synthetics:on",
     semanticdbVersion := scalafixSemanticdb.revision,
+    scalafixDependencies ++= List(
+      "com.github.vovapolu" %% "scaluzzi" % "0.1.23",
+      "io.github.ghostbuster91.scalafix-unified" %% "unified" % "0.0.9",
+    ),
   )
 )
 
@@ -69,7 +66,7 @@ def commonSettings(projectName: String) = Seq(
       case _            => List.empty
     }
   },
-) ++ scalafixSettings
+)
 
 lazy val root =
   project
@@ -79,7 +76,6 @@ lazy val root =
       publish / skip := true,
       crossScalaVersions := Nil, // https://www.scala-sbt.org/1.x/docs/Cross-Build.html#Cross+building+a+project+statefully,
       publishArtifact := false,
-      // commands += lint
     )
     .aggregate(core.projectRefs: _*)
     .aggregate(gzip.projectRefs: _*)
