@@ -26,6 +26,7 @@ inThisBuild(
     ciEnabledBranches := Seq("main"),
     run / fork := true,
     ciJvmOptions ++= Seq("-Xmx4G", "-Xss2M", "-XX:+UseG1GC"),
+    versionScheme := Some("early-semver"),
     developers := List(
       Developer(
         "erikvanoosten",
