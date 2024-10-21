@@ -19,16 +19,16 @@ object BrotliQuality {
   def apply(level: Int): Option[BrotliQuality] =
     if (0 <= level && level <= 11) Some(new BrotliQuality(level)) else None
 
-  val CompressionLevel0 = new BrotliQuality(0)
-  val CompressionLevel1 = new BrotliQuality(1)
-  val CompressionLevel2 = new BrotliQuality(2)
-  val CompressionLevel3 = new BrotliQuality(3)
-  val CompressionLevel4 = new BrotliQuality(4)
-  val CompressionLevel5 = new BrotliQuality(5)
-  val CompressionLevel6 = new BrotliQuality(6)
-  val CompressionLevel7 = new BrotliQuality(7)
-  val CompressionLevel8 = new BrotliQuality(8)
-  val CompressionLevel9 = new BrotliQuality(9)
-  val CompressionLevel10 = new BrotliQuality(10)
-  val CompressionLevel11 = new BrotliQuality(11)
+  val Quality0 = new BrotliQuality(0)
+  val Quality1 = new BrotliQuality(1)
+  val Quality2 = new BrotliQuality(2)
+  val Quality3 = new BrotliQuality(3)
+  val Quality4 = new BrotliQuality(4)
+  val Quality5 = new BrotliQuality(5)
+  val Quality6 = new BrotliQuality(6)
+  val Quality7 = new BrotliQuality(7)
+  val Quality8 = new BrotliQuality(8)
+  val Quality9 = new BrotliQuality(9)
+  val Quality10 = new BrotliQuality(10)
+  val Quality11 = new BrotliQuality(11)
 }
