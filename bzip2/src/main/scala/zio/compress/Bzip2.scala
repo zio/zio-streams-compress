@@ -23,7 +23,7 @@ class Bzip2Compressor private (blockSize: Option[Bzip2BlockSize]) extends Compre
   override def compress: ZPipeline[Any, Throwable, Byte, Byte] =
     viaOutputStreamByte { outputStream =>
       blockSize match {
-        case Some(bs) => new BZip2CompressorOutputStream(outputStream, bs.jValue)
+        case Some(bs) => new BZip2CompressorOutputStream(outputStream, bs.hundredKbIncrements)
         case None     => new BZip2CompressorOutputStream(outputStream)
       }
     }

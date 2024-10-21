@@ -5,17 +5,10 @@ import zio.compress.ArchiveEntry.{ArchiveEntryFromUnderlying, ArchiveEntryToUnde
 import zio.compress.JavaIoInterop._
 import zio.compress.Zip._
 import zio.stream._
-import zio.stream.compression.CompressionLevel
 
 import java.io.IOException
 import java.nio.file.attribute.FileTime
 import java.util.zip.{ZipEntry, ZipInputStream, ZipOutputStream}
-
-sealed abstract class ZipMethod(val jValue: Int)
-object ZipMethod {
-  case object Stored extends ZipMethod(ZipEntry.STORED)
-  case object Deflated extends ZipMethod(ZipEntry.DEFLATED)
-}
 
 object ZipArchiver {
 
@@ -23,22 +16,30 @@ object ZipArchiver {
     *
     * @param level
     *   compression level (only applicable for method 'deflated'). Currently defaults to level 6.
-    * @param method
-    *   compression method: stored or deflated. Defaults to `ZipMethod.Deflated`.
+    * @param zipMethod
+    *   zip method: stored (no compression) or deflated. Defaults to deflated.
     */
   def make(
-    level: Option[CompressionLevel] = None,
-    method: ZipMethod = ZipMethod.Deflated,
+    level: Option[DeflateCompressionLevel] = None,
+    zipMethod: Option[ZipMethod] = None,
   ): ZipArchiver =
-    new ZipArchiver(level.filter(_ != CompressionLevel.DefaultCompression), method)
+    new ZipArchiver(level, zipMethod)
 }
 
-class ZipArchiver private (level: Option[CompressionLevel], method: ZipMethod) extends Archiver[Option] {
+class ZipArchiver private (
+  level: Option[DeflateCompressionLevel],
+  zipMethod: Option[ZipMethod],
+) extends Archiver[Option] {
   override def archive: ZPipeline[Any, Throwable, (ArchiveEntry[Option, Any], ZStream[Any, Throwable, Byte]), Byte] =
     viaOutputStream { outputStream =>
       val zipOutputStream = new ZipOutputStream(outputStream)
-      level.foreach(l => zipOutputStream.setLevel(l.jValue))
-      zipOutputStream.setMethod(method.jValue)
+      level.foreach(l => zipOutputStream.setLevel(l.level))
+      zipMethod
+        .map {
+          case ZipMethod.Deflated => ZipEntry.DEFLATED
+          case ZipMethod.Stored   => ZipEntry.STORED
+        }
+        .foreach(zipOutputStream.setMethod)
       zipOutputStream
     } { case (entryStream, zipOutputStream) =>
       entryStream

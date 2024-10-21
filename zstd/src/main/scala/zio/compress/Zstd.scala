@@ -11,23 +11,33 @@ object ZstdCompressor {
   /** Make a pipeline that accepts a stream of bytes and produces a stream with Zstd compressed bytes.
     *
     * @param level
-    *   The compression level to use. Valid values: -22 to 22. Defaults to 3.
+    *   The compression level to use. Defaults to level 3.
     * @param workers
-    *   The number of worker threads to use for parallel compression. Defaults to no worker threads.
+    *   The number of worker threads to use for parallel compression. Set to 0 to detect the number of CPU cores and use
+    *   that number of worker threads. The actual number of worker threads is capped. Valid values: 0 and higher.
+    *   Defaults to 1.
+    * @param customDictionary
+    *   a custom dictionary, or `None` for no custom dictionary
     */
   def make(
-    level: Option[Int] = None,
+    level: Option[ZstdCompressionLevel] = None,
     workers: Option[Int] = None,
+    customDictionary: Option[Array[Byte]] = None,
   ): ZstdCompressor =
-    new ZstdCompressor(level, workers)
+    new ZstdCompressor(level, workers, customDictionary)
 }
 
-class ZstdCompressor private (level: Option[Int], workers: Option[Int]) extends Compressor {
+class ZstdCompressor private (
+  level: Option[ZstdCompressionLevel],
+  workers: Option[Int],
+  customDictionary: Option[Array[Byte]],
+) extends Compressor {
   override def compress: ZPipeline[Any, Throwable, Byte, Byte] =
     viaOutputStreamByte { outputStream =>
       val zstdOutputStream = new ZstdOutputStream(outputStream)
-      level.foreach(zstdOutputStream.setLevel)
+      level.foreach(l => zstdOutputStream.setLevel(l.level))
       workers.foreach(zstdOutputStream.setWorkers)
+      customDictionary.foreach(zstdOutputStream.setDict)
       zstdOutputStream
     }
 }

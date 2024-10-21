@@ -1,70 +1,38 @@
 package zio.compress
 
+import zio.compress.DeflateStrategy.{Filtered, HuffmanOnly}
 import zio.stream._
-import zio.stream.compression.CompressionLevel._
-import zio.stream.compression.CompressionStrategy._
-import zio.stream.compression.{CompressionLevel, CompressionStrategy}
 
 object GzipCompressor {
-  private val CompressionLevels = Seq(
-    DefaultCompression,
-    NoCompression,
-    BestSpeed,
-    CompressionLevel2,
-    CompressionLevel3,
-    CompressionLevel4,
-    CompressionLevel5,
-    CompressionLevel6,
-    CompressionLevel7,
-    CompressionLevel8,
-    BestCompression,
-  )
-  private val CompressionStrategies = Seq(DefaultStrategy, Filtered, HuffmanOnly)
-
-  /** Converts a deflate compression level from `Int` to [[zio.stream.compression.CompressionLevel]].
-    *
-    * @param level
-    *   a deflate compression level, valid values: -1 (default), 0 (no compression), 1 (fastest) to 9 (best compression)
-    */
-  def intToCompressionLevel(level: Int): Option[CompressionLevel] =
-    CompressionLevels.find(_.jValue == level)
-
-  /** Converts a deflate compression strategy from `Int` to [[zio.stream.compression.CompressionStrategy]].
-    *
-    * @param strategy
-    *   a deflate compression strategy, valid values: 0 (default), 1 (filtered) or 2 (huffman only)
-    */
-  def intToCompressionStrategy(strategy: Int): Option[CompressionStrategy] =
-    CompressionStrategies.find(_.jValue == strategy)
 
   /** Make a pipeline that accepts a stream of bytes and produces a stream with Gzip compressed bytes.
     *
     * @param deflateLevel
     *   the deflate compression level
     * @param deflateStrategy
-    *   a deflate compression strategy, valid values: 0 (default), 1 (filtered) or 2 (huffman only)
+    *   a deflate compression strategy
     * @param bufferSize
     *   the maximum chunk size of the outgoing ZStream. Defaults to 64KiB.
     */
   def make(
-    deflateLevel: Option[CompressionLevel] = None,
-    deflateStrategy: Option[CompressionStrategy] = None,
+    deflateLevel: Option[DeflateCompressionLevel] = None,
+    deflateStrategy: Option[DeflateStrategy] = None,
     bufferSize: Int = Defaults.DefaultChunkSize,
   ): GzipCompressor =
-    new GzipCompressor(
-      deflateLevel.getOrElse(DefaultCompression),
-      deflateStrategy.getOrElse(CompressionStrategy.DefaultStrategy),
-      bufferSize,
-    )
+    new GzipCompressor(deflateLevel, deflateStrategy, bufferSize)
 }
 
 class GzipCompressor private (
-  deflateLevel: CompressionLevel,
-  deflateStrategy: CompressionStrategy,
+  deflateLevel: Option[DeflateCompressionLevel],
+  deflateStrategy: Option[DeflateStrategy],
   bufferSize: Int,
 ) extends Compressor {
   override def compress: ZPipeline[Any, Nothing, Byte, Byte] =
-    ZPipeline.gzip(bufferSize, deflateLevel, deflateStrategy)
+    ZPipeline.gzip(
+      bufferSize,
+      Parameters.levelToZio(deflateLevel),
+      Parameters.strategyToZio(deflateStrategy),
+    )
 }
 
 object GzipDecompressor {
@@ -81,4 +49,35 @@ object GzipDecompressor {
 class GzipDecompressor private (bufferSize: Int) extends Decompressor {
   override def decompress: ZPipeline[Any, Throwable, Byte, Byte] =
     ZPipeline.gunzip(bufferSize)
+}
+
+private object Parameters {
+  private val ZioCompressionLevels = IndexedSeq(
+    zio.stream.compression.CompressionLevel.NoCompression,
+    zio.stream.compression.CompressionLevel.BestSpeed,
+    zio.stream.compression.CompressionLevel.CompressionLevel2,
+    zio.stream.compression.CompressionLevel.CompressionLevel3,
+    zio.stream.compression.CompressionLevel.CompressionLevel4,
+    zio.stream.compression.CompressionLevel.CompressionLevel5,
+    zio.stream.compression.CompressionLevel.CompressionLevel6,
+    zio.stream.compression.CompressionLevel.CompressionLevel7,
+    zio.stream.compression.CompressionLevel.CompressionLevel8,
+    zio.stream.compression.CompressionLevel.BestCompression,
+  )
+
+  def levelToZio(level: Option[DeflateCompressionLevel]): zio.stream.compression.CompressionLevel =
+    level match {
+      case Some(l) => ZioCompressionLevels
+          .find(_.jValue == l.level)
+          .getOrElse(sys.error(s"BUG: Invalid compression level: ${l.level}"))
+      case None =>
+        zio.stream.compression.CompressionLevel.DefaultCompression
+    }
+
+  def strategyToZio(strategy: Option[DeflateStrategy]): zio.stream.compression.CompressionStrategy =
+    strategy match {
+      case Some(Filtered)    => zio.stream.compression.CompressionStrategy.Filtered
+      case Some(HuffmanOnly) => zio.stream.compression.CompressionStrategy.HuffmanOnly
+      case None              => zio.stream.compression.CompressionStrategy.DefaultStrategy
+    }
 }

@@ -1,36 +1,31 @@
 package zio.compress
 
-sealed abstract class Bzip2BlockSize(val jValue: Int)
+/** Bzip2 block size.
+  *
+  * @param hundredKbIncrements
+  *   a bzip2 block size in 100KB increments, valid values: 1 to 9
+  */
+final case class Bzip2BlockSize(hundredKbIncrements: Int)
 
 object Bzip2BlockSize {
-  case object BlockSize100KB extends Bzip2BlockSize(1)
-  case object BlockSize200KB extends Bzip2BlockSize(2)
-  case object BlockSize300KB extends Bzip2BlockSize(3)
-  case object BlockSize400KB extends Bzip2BlockSize(4)
-  case object BlockSize500KB extends Bzip2BlockSize(5)
-  case object BlockSize600KB extends Bzip2BlockSize(6)
-  case object BlockSize700KB extends Bzip2BlockSize(7)
-  case object BlockSize800KB extends Bzip2BlockSize(8)
-  case object BlockSize900KB extends Bzip2BlockSize(9)
 
-  private val Values: Seq[Bzip2BlockSize] =
-    Seq(
-      BlockSize100KB,
-      BlockSize200KB,
-      BlockSize300KB,
-      BlockSize400KB,
-      BlockSize500KB,
-      BlockSize600KB,
-      BlockSize700KB,
-      BlockSize800KB,
-      BlockSize900KB,
-    )
-
-  /** Converts a bzip2 block size from `Int` to [[Bzip2BlockSize]].
+  /** Makes a bzip2 block size.
     *
-    * @param blockSize100KB
+    * @param hundredKbIncrements
     *   a bzip2 block size in 100KB increments, valid values: 1 to 9
+    * @return
+    *   a [[Bzip2BlockSize]] or `None` if the block size is not valid
     */
-  def fromBzip2BlockSize(blockSize100KB: Int): Option[Bzip2BlockSize] =
-    Values.find(_.jValue == blockSize100KB)
+  def apply(hundredKbIncrements: Int): Option[Bzip2BlockSize] =
+    if (1 <= hundredKbIncrements && hundredKbIncrements <= 9) Some(new Bzip2BlockSize(hundredKbIncrements)) else None
+
+  val BlockSize100KB = new Bzip2BlockSize(1)
+  val BlockSize200KB = new Bzip2BlockSize(2)
+  val BlockSize300KB = new Bzip2BlockSize(3)
+  val BlockSize400KB = new Bzip2BlockSize(4)
+  val BlockSize500KB = new Bzip2BlockSize(5)
+  val BlockSize600KB = new Bzip2BlockSize(6)
+  val BlockSize700KB = new Bzip2BlockSize(7)
+  val BlockSize800KB = new Bzip2BlockSize(8)
+  val BlockSize900KB = new Bzip2BlockSize(9)
 }
