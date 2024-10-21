@@ -14,15 +14,20 @@ archive formats with [ZIO Streams](https://zio.dev).
 In order to use this library, we need to add one of the following line in our `build.sbt` file:
 
 ```sbt
+libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli" % "<version>"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli4j" % "<version>"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-bzip2" % "<version>"
 libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "<version>"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-lz4" % "<version>"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "<version>"
 libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "<version>"
 libraryDependencies += "dev.zio" %% "zio-streams-compress-zip4j" % "<version>"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "<version>"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-bzip2" % "<version>"
 libraryDependencies += "dev.zio" %% "zio-streams-compress-zstd" % "<version>"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli" % "<version>"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-lz4" % "<version>"
 ```
+
+For Brotli you can choose between the 'brotli' and the 'brotli4j' version. The first is based on the official Java
+library but only does decompression. The second is based on [Brotli4J](https://github.com/hyperxpro/Brotli4j) which does
+compression and decompression.
 
 For ZIP files you can choose between the 'zip' and the 'zip4j' version. The first allows you to tweak the compression
 level, while the second allows you work with password-protected ZIP files.
