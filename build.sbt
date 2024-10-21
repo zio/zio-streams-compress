@@ -220,7 +220,7 @@ lazy val docs = project
     crossScalaVersions := List(_scala213),
     projectName := "ZIO Streams Compress docs",
     mainModuleName := "zio-streams-compress-docs",
-    projectStage := ProjectStage.Concept, // ProjectStage.ProductionReady,
+    projectStage := ProjectStage.ProductionReady,
     ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(core.jvm(_scala213)),
     readmeCredits :=
       "This library is heavily inspired by [fs2-compress](https://github.com/lhns/fs2-compress).",
