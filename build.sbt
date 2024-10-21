@@ -23,8 +23,8 @@ inThisBuild(
     scala213 := _scala213,
     scala3 := _scala3,
     crossScalaVersions := List(scala3.value, scala213.value, scala212.value),
-    ciEnabledBranches := Seq("main"),
     run / fork := true,
+    ciEnabledBranches := Seq("main"),
     ciJvmOptions ++= Seq("-Xmx4G", "-Xss2M", "-XX:+UseG1GC"),
     versionScheme := Some("early-semver"),
     developers := List(
@@ -35,8 +35,9 @@ inThisBuild(
         url("https://github.com/erikvanoosten"),
       )
     ),
+    // Needed for scalafix:
     semanticdbEnabled := Keys.scalaBinaryVersion.value != "3",
-    // semanticdbOptions += "-P:semanticdb:synthetics:on",
+    // semanticdbOptions += "-P:semanticdb:synthetics:on", // Causes errors during lint
     semanticdbVersion := scalafixSemanticdb.revision,
     scalafixDependencies ++= List(
       "com.github.vovapolu" %% "scaluzzi" % "0.1.23",
