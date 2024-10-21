@@ -27,7 +27,7 @@ inThisBuild(
     scala213 := _scala213,
     scala3 := _scala3,
     crossScalaVersions := List(scala3.value, scala213.value, scala212.value),
-    ciEnabledBranches := Seq("master"),
+    ciEnabledBranches := Seq("main"),
     run / fork := true,
     ciJvmOptions ++= Seq("-Xmx4G", "-Xss2M", "-XX:+UseG1GC"),
     scalafixDependencies ++= List(

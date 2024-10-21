@@ -11,7 +11,7 @@ env:
     - published
   push:
     branches:
-    - master
+    - main
   pull_request:
     branches-ignore:
     - gh-pages
