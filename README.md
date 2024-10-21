@@ -32,6 +32,12 @@ Currently only jvm is supported. PRs for scala-js and scala-native are welcome.
 ### Example
 
 ```scala
+// Example.sc
+// Run with: scala-cli Example.sc
+//> using dep dev.zio:zio-streams-compress-gzip:0.0.1
+//> using dep dev.zio:zio-streams-compress-zip:0.0.1
+//> using dep dev.zio:zio-streams-compress-tar:0.0.1
+
 import zio._
 import zio.compress.{ArchiveEntry, GzipCompressor, GzipDecompressor, TarUnarchiver, ZipArchiver}
 import zio.stream._
