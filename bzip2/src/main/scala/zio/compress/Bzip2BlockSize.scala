@@ -5,7 +5,7 @@ package zio.compress
   * @param hundredKbIncrements
   *   a bzip2 block size in 100KB increments, valid values: 1 to 9
   */
-final case class Bzip2BlockSize(hundredKbIncrements: Int)
+final case class Bzip2BlockSize private (hundredKbIncrements: Int)
 
 object Bzip2BlockSize {
 

@@ -56,3 +56,9 @@ object ZstdCompressionLevel {
   val VeryHighCompressionLevel: ZstdCompressionLevel = CompressionLevel19
   val UltraCompressionLevel: ZstdCompressionLevel = CompressionLevelUltra22
 }
+
+// The minimum level of -131072 was calculated as `-(1L << 17)`
+// and was derived from the C implementation of Zstd. See:
+// https://github.com/facebook/zstd/blob/b880f20d52a925ebee373b5050c206ba325d935d/lib/compress/zstd_compress.c#L6988,
+// https://github.com/facebook/zstd/blob/b880f20d52a925ebee373b5050c206ba325d935d/lib/zstd.h#L1249 and
+// https://github.com/facebook/zstd/blob/b880f20d52a925ebee373b5050c206ba325d935d/lib/zstd.h#L142-L143.
