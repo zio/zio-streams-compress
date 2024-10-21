@@ -42,6 +42,8 @@ inThisBuild(
         url("https://github.com/erikvanoosten"),
       )
     ),
+    semanticdbEnabled := true,
+    semanticdbVersion := scalafixSemanticdb.revision,
   )
 )
 
@@ -67,8 +69,6 @@ def commonSettings(projectName: String) = Seq(
       case _            => List.empty
     }
   },
-  semanticdbEnabled := true,
-  semanticdbVersion := scalafixSemanticdb.revision,
 ) ++ scalafixSettings
 
 lazy val root =
