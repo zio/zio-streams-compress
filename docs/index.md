@@ -1,7 +1,7 @@
 ---
 id: index
 title: "Compression and archives with zio-streams"
-sidebar_label: "Getting Started"
+sidebar_label: "ZIO Streams Compress"
 ---
 
 [ZIO Streams Compress](https://github.com/zio/zio-streams-compress) integrates several compression algorithms and
