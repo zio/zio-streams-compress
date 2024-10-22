@@ -8,8 +8,8 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.util.Base64
 
 object Brotli4JSpec extends ZIOSpecDefault {
-  private val clear = Chunk.fromArray("hello world!".getBytes(UTF_8))
-  private val compressed = Chunk.fromArray(Base64.getDecoder.decode("iwWAaGVsbG8gd29ybGQhAw=="))
+  private final val clear = Chunk.fromArray("hello world!".getBytes(UTF_8))
+  private final val compressed = Chunk.fromArray(Base64.getDecoder.decode("iwWAaGVsbG8gd29ybGQhAw=="))
 
   override def spec: Spec[TestEnvironment with Scope, Any] =
     suite("Brotli4J")(

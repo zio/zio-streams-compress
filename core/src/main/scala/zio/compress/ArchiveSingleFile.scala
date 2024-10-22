@@ -1,12 +1,13 @@
 package zio.compress
 
+import zio.Trace
 import zio.stream._
 
-class ArchiveSingleFileCompressor[Size[A] <: Option[A]] private (
+final class ArchiveSingleFileCompressor[Size[A] <: Option[A]] private (
   archiver: Archiver[Size],
   entry: ArchiveEntry[Size, Any],
 ) extends Compressor {
-  override def compress: ZPipeline[Any, Throwable, Byte, Byte] =
+  override def compress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     ZPipeline.fromFunction { stream =>
       ZStream((entry, stream)).via(archiver.archive)
     }
@@ -26,10 +27,10 @@ object ArchiveSingleFileCompressor {
     new ArchiveSingleFileCompressor(archiver, ArchiveEntry(name, Some(size)))
 }
 
-class ArchiveSingleFileDecompressor[Size[A] <: Option[A], Underlying] private (
+final class ArchiveSingleFileDecompressor[Size[A] <: Option[A], Underlying] private (
   unarchiver: Unarchiver[Size, Underlying]
 ) extends Decompressor {
-  override def decompress: ZPipeline[Any, Throwable, Byte, Byte] =
+  override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     ZPipeline.fromFunction { stream =>
       stream
         .via(unarchiver.unarchive)

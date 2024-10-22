@@ -9,8 +9,8 @@ import java.util.Base64
 
 object Bzip2Spec extends ZIOSpecDefault {
 
-  private val clear = Chunk.fromArray("Hello world!".getBytes(UTF_8))
-  private val compressed = Chunk.fromArray(
+  private final val clear = Chunk.fromArray("Hello world!".getBytes(UTF_8))
+  private final val compressed = Chunk.fromArray(
     Base64.getDecoder.decode("QlpoOTFBWSZTWQNY9XcAAAEVgGAAAEAGBJCAIAAxBkxBA0wi4Itio54u5IpwoSAGseru")
   )
 

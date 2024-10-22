@@ -1,6 +1,6 @@
 package zio.compress
 
-sealed trait DeflateStrategy
+sealed trait DeflateStrategy extends Product with Serializable
 
 object DeflateStrategy {
   case object Filtered extends DeflateStrategy

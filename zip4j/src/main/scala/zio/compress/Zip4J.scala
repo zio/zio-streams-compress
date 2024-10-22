@@ -25,8 +25,10 @@ object Zip4JArchiver {
     new Zip4JArchiver(password)
 }
 
-class Zip4JArchiver private (password: => Option[String]) extends Archiver[Some] {
-  override def archive: ZPipeline[Any, Throwable, (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]), Byte] =
+final class Zip4JArchiver private (password: => Option[String]) extends Archiver[Some] {
+  override def archive(implicit
+    trace: Trace
+  ): ZPipeline[Any, Throwable, (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]), Byte] =
     viaOutputStream { outputStream =>
       new ZipOutputStream(outputStream, password.map(_.toCharArray).orNull)
     } { case (entryStream, zipOutputStream) =>
@@ -58,9 +60,11 @@ object Zip4JUnarchiver {
     new Zip4JUnarchiver(password, chunkSize)
 }
 
-class Zip4JUnarchiver private (password: Option[String], chunkSize: Int) extends Unarchiver[Option, LocalFileHeader] {
-  override def unarchive
-    : ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, LocalFileHeader], ZStream[Any, IOException, Byte])] =
+final class Zip4JUnarchiver private (password: Option[String], chunkSize: Int)
+    extends Unarchiver[Option, LocalFileHeader] {
+  override def unarchive(implicit
+    trace: Trace
+  ): ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, LocalFileHeader], ZStream[Any, IOException, Byte])] =
     viaInputStream[(ArchiveEntry[Option, LocalFileHeader], ZStream[Any, IOException, Byte])]() { inputStream =>
       for {
         zipInputStream <- ZIO.acquireRelease(

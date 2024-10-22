@@ -1,5 +1,6 @@
 package zio.compress
 
+import zio.Trace
 import zio.compress.DeflateStrategy.{Filtered, HuffmanOnly}
 import zio.stream._
 
@@ -22,12 +23,12 @@ object GzipCompressor {
     new GzipCompressor(deflateLevel, deflateStrategy, bufferSize)
 }
 
-class GzipCompressor private (
+final class GzipCompressor private (
   deflateLevel: Option[DeflateCompressionLevel],
   deflateStrategy: Option[DeflateStrategy],
   bufferSize: Int,
 ) extends Compressor {
-  override def compress: ZPipeline[Any, Nothing, Byte, Byte] =
+  override def compress(implicit trace: Trace): ZPipeline[Any, Nothing, Byte, Byte] =
     ZPipeline.gzip(
       bufferSize,
       Parameters.levelToZio(deflateLevel),
@@ -46,8 +47,8 @@ object GzipDecompressor {
     new GzipDecompressor(bufferSize)
 }
 
-class GzipDecompressor private (bufferSize: Int) extends Decompressor {
-  override def decompress: ZPipeline[Any, Throwable, Byte, Byte] =
+final class GzipDecompressor private (bufferSize: Int) extends Decompressor {
+  override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     ZPipeline.gunzip(bufferSize)
 }
 

@@ -27,12 +27,12 @@ object Brotli4JCompressor {
     new Brotli4JCompressor(quality, lgwin, mode)
 }
 
-class Brotli4JCompressor private (
+final class Brotli4JCompressor private (
   quality: Option[BrotliQuality],
   lgwin: Option[BrotliLogWindow],
   mode: Option[BrotliMode],
 ) extends Compressor {
-  override def compress: ZPipeline[Any, Throwable, Byte, Byte] =
+  override def compress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     BrotliLoader.ensureAvailability() >>>
       viaOutputStreamByte { outputStream =>
         val brotliMode = mode.map {
@@ -61,8 +61,8 @@ object Brotli4JDecompressor {
     new Brotli4JDecompressor(chunkSize)
 }
 
-class Brotli4JDecompressor private (chunkSize: Int) extends Decompressor {
-  override def decompress: ZPipeline[Any, Throwable, Byte, Byte] =
+final class Brotli4JDecompressor private (chunkSize: Int) extends Decompressor {
+  override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     BrotliLoader.ensureAvailability() >>>
       viaInputStreamByte(chunkSize) { inputStream =>
         new BrotliInputStream(inputStream)

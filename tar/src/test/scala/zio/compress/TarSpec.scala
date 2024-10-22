@@ -22,7 +22,7 @@ object TarSpec extends ZIOSpecDefault {
    *   rm -rf tgztempdir
    * }}}
    */
-  private val tgzArchive = Chunk.fromArray(
+  private final val tgzArchive = Chunk.fromArray(
     Base64
       .getDecoder
       .decode(

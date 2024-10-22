@@ -1,6 +1,7 @@
 package zio.compress
 
 import com.github.luben.zstd.{ZstdInputStream, ZstdOutputStream}
+import zio.Trace
 import zio.compress.JavaIoInterop.{viaInputStreamByte, viaOutputStreamByte}
 import zio.stream._
 
@@ -27,12 +28,12 @@ object ZstdCompressor {
     new ZstdCompressor(level, workers, customDictionary)
 }
 
-class ZstdCompressor private (
+final class ZstdCompressor private (
   level: Option[ZstdCompressionLevel],
   workers: Option[Int],
   customDictionary: Option[Array[Byte]],
 ) extends Compressor {
-  override def compress: ZPipeline[Any, Throwable, Byte, Byte] =
+  override def compress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     viaOutputStreamByte { outputStream =>
       val zstdOutputStream = new ZstdOutputStream(outputStream)
       level.foreach(l => zstdOutputStream.setLevel(l.level))
@@ -53,8 +54,8 @@ object ZstdDecompressor {
     new ZstdDecompressor(chunkSize)
 }
 
-class ZstdDecompressor private (chunkSize: Int) extends Decompressor {
-  override def decompress: ZPipeline[Any, Throwable, Byte, Byte] =
+final class ZstdDecompressor private (chunkSize: Int) extends Decompressor {
+  override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     // ZstdInputStream.read does not try to read the requested number of bytes, but it does have a good
     // `available()` implementation, so with buffering we can still get full chunks.
     viaInputStreamByte(chunkSize) { inputStream =>

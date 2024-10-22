@@ -1,8 +1,9 @@
 package zio.compress
 
-import zio.stream._
 import org.brotli.dec.BrotliInputStream
 import zio.compress.JavaIoInterop.viaInputStreamByte
+import zio.stream._
+import zio.Trace
 
 //noinspection ScalaFileName
 object BrotliDecompressor {
@@ -22,8 +23,8 @@ object BrotliDecompressor {
 }
 
 //noinspection ScalaFileName
-class BrotliDecompressor private (customDictionary: Option[Array[Byte]], chunkSize: Int) extends Decompressor {
-  override def decompress: ZPipeline[Any, Throwable, Byte, Byte] =
+final class BrotliDecompressor private (customDictionary: Option[Array[Byte]], chunkSize: Int) extends Decompressor {
+  override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     // BrotliInputStream.read does its best to read as many bytes as requested; no buffering needed.
     viaInputStreamByte(chunkSize) { inputStream =>
       // We don't read byte-by-byte so we set the smallest byte-by-byte buffer size possible.

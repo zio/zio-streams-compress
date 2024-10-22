@@ -1,8 +1,9 @@
 package zio.compress
 
-import zio.stream._
 import org.apache.commons.compress.compressors.bzip2.{BZip2CompressorInputStream, BZip2CompressorOutputStream}
 import zio.compress.JavaIoInterop.{viaInputStreamByte, viaOutputStreamByte}
+import zio.stream._
+import zio.Trace
 
 object Bzip2Compressor {
 
@@ -19,8 +20,8 @@ object Bzip2Compressor {
     new Bzip2Compressor(blockSize)
 }
 
-class Bzip2Compressor private (blockSize: Option[Bzip2BlockSize]) extends Compressor {
-  override def compress: ZPipeline[Any, Throwable, Byte, Byte] =
+final class Bzip2Compressor private (blockSize: Option[Bzip2BlockSize]) extends Compressor {
+  override def compress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     viaOutputStreamByte { outputStream =>
       blockSize match {
         case Some(bs) => new BZip2CompressorOutputStream(outputStream, bs.hundredKbIncrements)
@@ -40,8 +41,8 @@ object Bzip2Decompressor {
     new Bzip2Decompressor(chunkSize)
 }
 
-class Bzip2Decompressor private (chunkSize: Int) extends Decompressor {
-  override def decompress: ZPipeline[Any, Throwable, Byte, Byte] =
+final class Bzip2Decompressor private (chunkSize: Int) extends Decompressor {
+  override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     // BrotliInputStream.read does its best to read as many bytes as requested; no buffering needed.
     viaInputStreamByte(chunkSize)(new BZip2CompressorInputStream(_))
 }

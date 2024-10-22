@@ -35,11 +35,11 @@ object ArchiveEntry {
   ): ArchiveEntry[Option, U] =
     U.archiveEntry(underlying)
 
-  trait ArchiveEntryToUnderlying[+Underlying] {
+  trait ArchiveEntryToUnderlying[+Underlying] extends Serializable {
     def underlying[S[A] <: Option[A]](entry: ArchiveEntry[S, Any], underlying: Any): Underlying
   }
 
-  trait ArchiveEntryFromUnderlying[+Size[A] <: Option[A], Underlying] {
+  trait ArchiveEntryFromUnderlying[+Size[A] <: Option[A], Underlying] extends Serializable {
     def archiveEntry(underlying: Underlying): ArchiveEntry[Size, Underlying]
   }
 }

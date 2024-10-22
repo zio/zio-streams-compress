@@ -22,7 +22,7 @@ object ZipSpec extends ZIOSpecDefault {
    *   rm -rf ziptempdir
    * }}}
    */
-  private val zipArchive = Chunk.fromArray(
+  private final val zipArchive = Chunk.fromArray(
     Base64
       .getDecoder
       .decode(

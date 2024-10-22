@@ -21,8 +21,10 @@ object TarArchiver {
     new TarArchiver()
 }
 
-class TarArchiver private extends Archiver[Some] {
-  override def archive: ZPipeline[Any, Throwable, (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]), Byte] =
+final class TarArchiver private extends Archiver[Some] {
+  override def archive(implicit
+    trace: Trace
+  ): ZPipeline[Any, Throwable, (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]), Byte] =
     viaOutputStream(new TarArchiveOutputStream(_)) { case (entryStream, tarOutputStream) =>
       entryStream
         .via(checkUncompressedSize)
@@ -47,9 +49,10 @@ object TarUnarchiver {
     new TarUnarchiver(chunkSize)
 }
 
-class TarUnarchiver private (chunkSize: Int) extends Unarchiver[Option, TarArchiveEntry] {
-  override def unarchive
-    : ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, TarArchiveEntry], ZStream[Any, IOException, Byte])] =
+final class TarUnarchiver private (chunkSize: Int) extends Unarchiver[Option, TarArchiveEntry] {
+  override def unarchive(implicit
+    trace: Trace
+  ): ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, TarArchiveEntry], ZStream[Any, IOException, Byte])] =
     viaInputStream[(ArchiveEntry[Option, TarArchiveEntry], ZStream[Any, IOException, Byte])]() { inputStream =>
       for {
         tarInputStream <-
