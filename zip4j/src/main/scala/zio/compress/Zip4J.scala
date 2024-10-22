@@ -15,17 +15,24 @@ import java.time.Instant
 
 object Zip4JArchiver {
 
-  /** Makes a pipeline that accepts a stream of archive entries (with size), and produces a byte stream of a Zip archive
-    * (method: deflate, level: 5).
+  /** An [[Archiver]] for ZIP, based on the Zip4J library.
+    *
+    * The archive entries require the uncompressed size.
     *
     * @param password
     *   password of the ZIP archive, or `None` if the archive is not password protected
     */
-  def make(password: => Option[String] = None): Zip4JArchiver =
+  def apply(password: => Option[String] = None): Zip4JArchiver =
     new Zip4JArchiver(password)
+
+  /** See [[apply]] and [[Archiver.archive]]. */
+  def archive: ZPipeline[Any, Throwable, (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]), Byte] =
+    apply().archive
 }
 
 final class Zip4JArchiver private (password: => Option[String]) extends Archiver[Some] {
+
+  /** @inheritdoc */
   override def archive(implicit
     trace: Trace
   ): ZPipeline[Any, Throwable, (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]), Byte] =
@@ -46,22 +53,31 @@ final class Zip4JArchiver private (password: => Option[String]) extends Archiver
 
 object Zip4JUnarchiver {
 
-  /** Makes a pipeline that accepts a byte stream of a ZIP archive, and produces a stream of archive entries.
+  /** An [[Unarchiver]] for ZIP, based on the Zip4J library.
+    *
+    * The archive entries might have the uncompressed size.
     *
     * @param password
     *   password of the ZIP archive, or `None` if the archive is not password protected
     * @param chunkSize
     *   chunkSize of the archive entry content streams. Defaults to 64KiB.
     */
-  def make(
+  def apply(
     password: Option[String] = None,
     chunkSize: Int = Defaults.DefaultChunkSize,
   ): Zip4JUnarchiver =
     new Zip4JUnarchiver(password, chunkSize)
+
+  /** See [[apply]] and [[Unarchiver.unarchive]]. */
+  def unarchive
+    : ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, LocalFileHeader], ZStream[Any, IOException, Byte])] =
+    apply().unarchive
 }
 
 final class Zip4JUnarchiver private (password: Option[String], chunkSize: Int)
     extends Unarchiver[Option, LocalFileHeader] {
+
+  /** @inheritdoc */
   override def unarchive(implicit
     trace: Trace
   ): ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, LocalFileHeader], ZStream[Any, IOException, Byte])] =

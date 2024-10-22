@@ -198,7 +198,7 @@ lazy val zstd = projectMatrix
 
 lazy val example = projectMatrix
   .in(file("example"))
-  .dependsOn(gzip, tar, zip)
+  .dependsOn(gzip, tar, zip4j)
   .settings(commonSettings("example"))
   .settings(
     publishArtifact := false,

@@ -6,7 +6,7 @@ import zio.stream._
 
 object GzipCompressor {
 
-  /** Make a pipeline that accepts a stream of bytes and produces a stream with Gzip compressed bytes.
+  /** A [[Compressor]] for Gzip, based on ZIO's native support (which uses the JVM standard library).
     *
     * @param deflateLevel
     *   the deflate compression level
@@ -15,12 +15,15 @@ object GzipCompressor {
     * @param bufferSize
     *   the maximum chunk size of the outgoing ZStream. Defaults to 64KiB.
     */
-  def make(
+  def apply(
     deflateLevel: Option[DeflateCompressionLevel] = None,
     deflateStrategy: Option[DeflateStrategy] = None,
     bufferSize: Int = Defaults.DefaultChunkSize,
   ): GzipCompressor =
     new GzipCompressor(deflateLevel, deflateStrategy, bufferSize)
+
+  /** See [[apply]] and [[Compressor.compress]]. */
+  def compress: ZPipeline[Any, Nothing, Byte, Byte] = apply().compress
 }
 
 final class GzipCompressor private (
@@ -28,6 +31,8 @@ final class GzipCompressor private (
   deflateStrategy: Option[DeflateStrategy],
   bufferSize: Int,
 ) extends Compressor {
+
+  /** @inheritdoc */
   override def compress(implicit trace: Trace): ZPipeline[Any, Nothing, Byte, Byte] =
     ZPipeline.gzip(
       bufferSize,
@@ -38,16 +43,21 @@ final class GzipCompressor private (
 
 object GzipDecompressor {
 
-  /** Makes a pipeline that accepts a Gzip compressed byte stream and produces a decompressed byte stream.
+  /** A [[Decompressor]] for Gzip, based on ZIO's native support (which uses the JVM standard library).
     *
     * @param bufferSize
     *   the used buffer size. Defaults to 64KiB.
     */
-  def make(bufferSize: Int = Defaults.DefaultChunkSize): GzipDecompressor =
+  def apply(bufferSize: Int = Defaults.DefaultChunkSize): GzipDecompressor =
     new GzipDecompressor(bufferSize)
+
+  /** See [[apply]] and [[Decompressor.decompress]]. */
+  def decompress: ZPipeline[Any, Throwable, Byte, Byte] = apply().decompress
 }
 
 final class GzipDecompressor private (bufferSize: Int) extends Decompressor {
+
+  /** @inheritdoc */
   override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     ZPipeline.gunzip(bufferSize)
 }

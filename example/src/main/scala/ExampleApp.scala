@@ -1,5 +1,5 @@
 import zio._
-import zio.compress.{ArchiveEntry, GzipCompressor, GzipDecompressor, TarUnarchiver, ZipArchiver}
+import zio.compress.{ArchiveEntry, GzipCompressor, GzipDecompressor, TarUnarchiver, Zip4JArchiver}
 import zio.stream._
 
 import java.nio.charset.StandardCharsets.UTF_8
@@ -10,14 +10,14 @@ object ExampleApp extends ZIOAppDefault {
       // Compress a file with GZIP
       _ <- ZStream
              .fromFileName("file")
-             .via(GzipCompressor.make().compress)
+             .via(GzipCompressor.compress)
              .run(ZSink.fromFileName("file.gz"))
 
       // List all items in a gzip tar archive:
       _ <- ZStream
              .fromFileName("file.tgz")
-             .via(GzipDecompressor.make().decompress)
-             .via(TarUnarchiver.make().unarchive)
+             .via(GzipDecompressor.decompress)
+             .via(TarUnarchiver.unarchive)
              .mapZIO { case (archiveEntry, contentStream) =>
                for {
                  content <- contentStream.runCollect
@@ -26,9 +26,9 @@ object ExampleApp extends ZIOAppDefault {
              }
              .runDrain
 
-      // Create a ZIP archive (use the zip4j version for password support)
+      // Create an encrypted ZIP archive
       _ <- ZStream(archiveEntry("file1.txt", "Hello world!".getBytes(UTF_8)))
-             .via(ZipArchiver.make().archive)
+             .via(Zip4JArchiver(password = Some("it is a secret")).archive)
              .run(ZSink.fromFileName("file.zip"))
     } yield ()
 

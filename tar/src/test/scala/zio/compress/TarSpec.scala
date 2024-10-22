@@ -39,8 +39,8 @@ object TarSpec extends ZIOSpecDefault {
         for {
           obtained <- ZStream
                         .fromChunk(tgzArchive)
-                        .via(GzipDecompressor.make().decompress)
-                        .via(TarUnarchiver.make().unarchive)
+                        .via(GzipDecompressor.decompress)
+                        .via(TarUnarchiver.unarchive)
                         .mapZIO { case (archiveEntry, stream) =>
                           for {
                             content <- stream.runCollect
@@ -60,8 +60,8 @@ object TarSpec extends ZIOSpecDefault {
               ZStream
                 .fromChunk(genBytes)
                 .rechunk(chunkSize)
-                .via(ArchiveSingleFileCompressor.forName(TarArchiver.make(), "test", genBytes.length.toLong).compress)
-                .via(ArchiveSingleFileDecompressor(TarUnarchiver.make()).decompress)
+                .via(ArchiveSingleFileCompressor.forName(TarArchiver(), "test", genBytes.length.toLong).compress)
+                .via(ArchiveSingleFileDecompressor(TarUnarchiver()).decompress)
                 .runCollect
           } yield assertTrue(obtained == genBytes)
         }
@@ -72,7 +72,7 @@ object TarSpec extends ZIOSpecDefault {
                         archiveEntry("file1.txt", 12, "Hello world!"),
                         archiveEntry("subdir/file2.txt", 999999, "Hello from subdir!"),
                       )
-                        .via(TarArchiver.make().archive)
+                        .via(TarArchiver.archive)
                         .runCollect
                         .exit
         } yield
@@ -94,8 +94,8 @@ object TarSpec extends ZIOSpecDefault {
       //            archiveEntry("file1.txt", 12, "Hello world!"),
       //            archiveEntry("subdir/file2.txt", 18, "Hello from subdir!")
       //          )
-      //            .via(TarArchiver.make().archive)
-      //            .via(GzipCompressor.make().compress)
+      //            .via(TarArchiver.archive)
+      //            .via(GzipCompressor.compress)
       //            .runCollect
       //        } yield {
       //          println(Base64.getEncoder.encodeToString(obtained.toArray))

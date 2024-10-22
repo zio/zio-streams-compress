@@ -12,24 +12,32 @@ import java.util.zip.{ZipEntry, ZipInputStream, ZipOutputStream}
 
 object ZipArchiver {
 
-  /** Makes a pipeline that accepts a stream of archive entries, and produces a byte stream of a Zip archive.
+  /** An [[Archiver]] for ZIP, based on the JVM standard library.
+    *
+    * The archive entries do not require an uncompressed size.
     *
     * @param level
     *   compression level (only applicable for method 'deflated'). Currently defaults to level 6.
     * @param zipMethod
     *   zip method: stored (no compression) or deflated. Defaults to deflated.
     */
-  def make(
+  def apply(
     level: Option[DeflateCompressionLevel] = None,
     zipMethod: Option[ZipMethod] = None,
   ): ZipArchiver =
     new ZipArchiver(level, zipMethod)
+
+  /** See [[apply]] and [[Archiver.archive]]. */
+  def archive: ZPipeline[Any, Throwable, (ArchiveEntry[Option, Any], ZStream[Any, Throwable, Byte]), Byte] =
+    apply().archive
 }
 
 final class ZipArchiver private (
   level: Option[DeflateCompressionLevel],
   zipMethod: Option[ZipMethod],
 ) extends Archiver[Option] {
+
+  /** @inheritdoc */
   override def archive(implicit
     trace: Trace
   ): ZPipeline[Any, Throwable, (ArchiveEntry[Option, Any], ZStream[Any, Throwable, Byte]), Byte] =
@@ -57,16 +65,24 @@ final class ZipArchiver private (
 
 object ZipUnarchiver {
 
-  /** Makes a pipeline that accepts a byte stream of a ZIP archive, and produces a stream of archive entries.
+  /** An [[Unarchiver]] for ZIP, based on the JVM standard library.
+    *
+    * The archive entries might have the uncompressed size.
     *
     * @param chunkSize
     *   chunkSize of the archive entry content streams. Defaults to 64KiB.
     */
-  def make(chunkSize: Int = Defaults.DefaultChunkSize): ZipUnarchiver =
+  def apply(chunkSize: Int = Defaults.DefaultChunkSize): ZipUnarchiver =
     new ZipUnarchiver(chunkSize)
+
+  /** See [[apply]] and [[Unarchiver.unarchive]]. */
+  def unarchive: ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, ZipEntry], ZStream[Any, IOException, Byte])] =
+    apply().unarchive
 }
 
 final class ZipUnarchiver private (chunkSize: Int) extends Unarchiver[Option, ZipEntry] {
+
+  /** @inheritdoc */
   override def unarchive(implicit
     trace: Trace
   ): ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, ZipEntry], ZStream[Any, IOException, Byte])] =

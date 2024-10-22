@@ -9,7 +9,7 @@ import java.io.BufferedInputStream
 
 object ZstdCompressor {
 
-  /** Make a pipeline that accepts a stream of bytes and produces a stream with Zstd compressed bytes.
+  /** A [[Compressor]] for Zstd, based on the com.github.luben:zstd-jni library.
     *
     * @param level
     *   The compression level to use. Defaults to level 3.
@@ -20,12 +20,15 @@ object ZstdCompressor {
     * @param customDictionary
     *   a custom dictionary, or `None` for no custom dictionary
     */
-  def make(
+  def apply(
     level: Option[ZstdCompressionLevel] = None,
     workers: Option[Int] = None,
     customDictionary: Option[Array[Byte]] = None,
   ): ZstdCompressor =
     new ZstdCompressor(level, workers, customDictionary)
+
+  /** See [[apply]] and [[Compressor.compress]]. */
+  def compress: ZPipeline[Any, Throwable, Byte, Byte] = apply().compress
 }
 
 final class ZstdCompressor private (
@@ -33,6 +36,8 @@ final class ZstdCompressor private (
   workers: Option[Int],
   customDictionary: Option[Array[Byte]],
 ) extends Compressor {
+
+  /** @inheritdoc */
   override def compress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     viaOutputStreamByte { outputStream =>
       val zstdOutputStream = new ZstdOutputStream(outputStream)
@@ -45,16 +50,21 @@ final class ZstdCompressor private (
 
 object ZstdDecompressor {
 
-  /** Makes a pipeline that accepts a Zstd compressed byte stream and produces a decompressed byte stream.
+  /** A [[Decompressor]] for Zstd, based on the com.github.luben:zstd-jni library.
     *
     * @param chunkSize
     *   The maximum chunk size of the outgoing ZStream. Defaults to `ZStream.DefaultChunkSize` (4KiB).
     */
-  def make(chunkSize: Int = ZStream.DefaultChunkSize): ZstdDecompressor =
+  def apply(chunkSize: Int = ZStream.DefaultChunkSize): ZstdDecompressor =
     new ZstdDecompressor(chunkSize)
+
+  /** See [[apply]] and [[Decompressor.decompress]]. */
+  def decompress: ZPipeline[Any, Throwable, Byte, Byte] = apply().decompress
 }
 
 final class ZstdDecompressor private (chunkSize: Int) extends Decompressor {
+
+  /** @inheritdoc */
   override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     // ZstdInputStream.read does not try to read the requested number of bytes, but it does have a good
     // `available()` implementation, so with buffering we can still get full chunks.

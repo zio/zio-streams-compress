@@ -14,14 +14,21 @@ import java.nio.file.attribute.FileTime
 
 object TarArchiver {
 
-  /** Makes a pipeline that accepts a stream of archive entries (with size), and produces a byte stream of a Tar
-    * archive.
+  /** An [[Archiver]] for Tar, based on the Apache Commons Compress library.
+    *
+    * The archive entries require the uncompressed size.
     */
-  def make(): TarArchiver =
+  def apply(): TarArchiver =
     new TarArchiver()
+
+  /** See [[apply]] and [[Archiver.archive]]. */
+  def archive: ZPipeline[Any, Throwable, (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]), Byte] =
+    apply().archive
 }
 
 final class TarArchiver private extends Archiver[Some] {
+
+  /** @inheritdoc */
   override def archive(implicit
     trace: Trace
   ): ZPipeline[Any, Throwable, (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]), Byte] =
@@ -40,16 +47,25 @@ final class TarArchiver private extends Archiver[Some] {
 
 object TarUnarchiver {
 
-  /** Makes a pipeline that accepts a byte stream of a Tar archive, and produces a stream of archive entries.
+  /** An [[Unarchiver]] for Tar, based on the Apache Commons Compress library.
+    *
+    * The archive entries might have a known uncompressed size.
     *
     * @param chunkSize
     *   chunkSize of the archive entry content streams. Defaults to 64KiB.
     */
-  def make(chunkSize: Int = Defaults.DefaultChunkSize): TarUnarchiver =
+  def apply(chunkSize: Int = Defaults.DefaultChunkSize): TarUnarchiver =
     new TarUnarchiver(chunkSize)
+
+  /** See [[apply]] and [[Unarchiver.unarchive]]. */
+  def unarchive
+    : ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, TarArchiveEntry], ZStream[Any, IOException, Byte])] =
+    apply().unarchive
 }
 
 final class TarUnarchiver private (chunkSize: Int) extends Unarchiver[Option, TarArchiveEntry] {
+
+  /** @inheritdoc */
   override def unarchive(implicit
     trace: Trace
   ): ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, TarArchiveEntry], ZStream[Any, IOException, Byte])] =

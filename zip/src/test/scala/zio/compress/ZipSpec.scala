@@ -42,7 +42,7 @@ object ZipSpec extends ZIOSpecDefault {
         for {
           obtained <- ZStream
                         .fromChunk(zipArchive)
-                        .via(ZipUnarchiver.make().unarchive)
+                        .via(ZipUnarchiver.unarchive)
                         .mapZIO { case (archiveEntry, stream) =>
                           for {
                             content <- stream.runCollect
@@ -62,8 +62,8 @@ object ZipSpec extends ZIOSpecDefault {
               ZStream
                 .fromChunk(genBytes)
                 .rechunk(chunkSize)
-                .via(ArchiveSingleFileCompressor.forName(ZipArchiver.make(), "test", genBytes.length.toLong).compress)
-                .via(ArchiveSingleFileDecompressor(ZipUnarchiver.make()).decompress)
+                .via(ArchiveSingleFileCompressor.forName(ZipArchiver(), "test", genBytes.length.toLong).compress)
+                .via(ArchiveSingleFileDecompressor(ZipUnarchiver()).decompress)
                 .runCollect
           } yield assertTrue(obtained == genBytes)
         }
@@ -72,8 +72,8 @@ object ZipSpec extends ZIOSpecDefault {
         for {
           obtained <-
             ZStream(archiveEntry("readme.txt", "Hello world!"))
-              .via(ZipArchiver.make().archive)
-              .via(ZipUnarchiver.make().unarchive)
+              .via(ZipArchiver.archive)
+              .via(ZipUnarchiver.unarchive)
               .runCollect
         } yield assertTrue(obtained.head._1.name == "readme.txt")
       },

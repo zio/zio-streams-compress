@@ -10,7 +10,7 @@ import zio.stream._
 
 object Brotli4JCompressor {
 
-  /** Make a pipeline that accepts a stream of bytes and produces a stream with Brotli compressed bytes.
+  /** A [[Compressor]] for Brotli, based on the Brotli4J library.
     *
     * @param quality
     *   The compression quality to use, or `None` for the default.
@@ -19,12 +19,15 @@ object Brotli4JCompressor {
     * @param mode
     *   type of encoding to use, or `None` for the default.
     */
-  def make(
+  def apply(
     quality: Option[BrotliQuality] = None,
     lgwin: Option[BrotliLogWindow] = None,
     mode: Option[BrotliMode] = None,
   ): Brotli4JCompressor =
     new Brotli4JCompressor(quality, lgwin, mode)
+
+  /** See [[apply]] and [[Compressor.compress]]. */
+  def compress: ZPipeline[Any, Throwable, Byte, Byte] = apply().compress
 }
 
 final class Brotli4JCompressor private (
@@ -32,6 +35,8 @@ final class Brotli4JCompressor private (
   lgwin: Option[BrotliLogWindow],
   mode: Option[BrotliMode],
 ) extends Compressor {
+
+  /** @inheritdoc */
   override def compress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     BrotliLoader.ensureAvailability() >>>
       viaOutputStreamByte { outputStream =>
@@ -50,18 +55,23 @@ final class Brotli4JCompressor private (
 
 object Brotli4JDecompressor {
 
-  /** Makes a pipeline that accepts a Brotli compressed byte stream and produces a decompressed byte stream.
+  /** A [[Decompressor]] for Brotli, based on the Brotli4J library.
     *
     * @param chunkSize
     *   The maximum chunk size of the outgoing ZStream. Defaults to `ZStream.DefaultChunkSize` (4KiB).
     */
-  def make(
+  def apply(
     chunkSize: Int = ZStream.DefaultChunkSize
   ): Brotli4JDecompressor =
     new Brotli4JDecompressor(chunkSize)
+
+  /** See [[apply]] and [[Decompressor.decompress]]. */
+  def decompress: ZPipeline[Any, Throwable, Byte, Byte] = apply().decompress
 }
 
 final class Brotli4JDecompressor private (chunkSize: Int) extends Decompressor {
+
+  /** @inheritdoc */
   override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     BrotliLoader.ensureAvailability() >>>
       viaInputStreamByte(chunkSize) { inputStream =>
