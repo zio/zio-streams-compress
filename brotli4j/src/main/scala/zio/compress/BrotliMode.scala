@@ -1,6 +1,6 @@
 package zio.compress
 
-sealed trait BrotliMode
+sealed trait BrotliMode extends Product with Serializable
 
 object BrotliMode {
 

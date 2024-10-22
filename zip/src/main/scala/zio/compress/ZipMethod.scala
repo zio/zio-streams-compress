@@ -1,6 +1,6 @@
 package zio.compress
 
-sealed trait ZipMethod
+sealed trait ZipMethod extends Product with Serializable
 
 object ZipMethod {
   case object Stored extends ZipMethod

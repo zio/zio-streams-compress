@@ -188,7 +188,8 @@ private[compress] object JavaIoInterop {
     }
 }
 
-private[compress] class QueueOutputStream[E](runtime: Runtime[Any], queue: Queue[Take[E, Byte]]) extends OutputStream {
+private[compress] final class QueueOutputStream[E](runtime: Runtime[Any], queue: Queue[Take[E, Byte]])
+    extends OutputStream {
   override def write(b: Int): Unit =
     offer(Take.single(b.toByte))
 

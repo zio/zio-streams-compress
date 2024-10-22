@@ -2,6 +2,7 @@ package zio.compress
 
 import net.jpountz.lz4.LZ4FrameOutputStream.BLOCKSIZE
 import net.jpountz.lz4.{LZ4FrameInputStream, LZ4FrameOutputStream}
+import zio.Trace
 import zio.compress.JavaIoInterop.{viaInputStreamByte, viaOutputStreamByte}
 import zio.stream._
 
@@ -20,8 +21,8 @@ object Lz4Compressor {
     new Lz4Compressor(blockSize)
 }
 
-class Lz4Compressor private (blockSize: Lz4CompressorBlockSize) extends Compressor {
-  override def compress: ZPipeline[Any, Throwable, Byte, Byte] = {
+final class Lz4Compressor private (blockSize: Lz4CompressorBlockSize) extends Compressor {
+  override def compress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] = {
     val lz4BlockSize = blockSize match {
       case Lz4CompressorBlockSize.BlockSize64KiB  => BLOCKSIZE.SIZE_64KB
       case Lz4CompressorBlockSize.BlockSize256KiB => BLOCKSIZE.SIZE_256KB
@@ -43,8 +44,8 @@ object Lz4Decompressor {
     new Lz4Decompressor(chunkSize)
 }
 
-class Lz4Decompressor private (chunkSize: Int) extends Decompressor {
-  override def decompress: ZPipeline[Any, Throwable, Byte, Byte] =
+final class Lz4Decompressor private (chunkSize: Int) extends Decompressor {
+  override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     // LZ4FrameInputStream.read does not try to read the requested number of bytes, but it does have a good
     // `available()` implementation, so with buffering we can still get full chunks.
     viaInputStreamByte(chunkSize) { inputStream =>

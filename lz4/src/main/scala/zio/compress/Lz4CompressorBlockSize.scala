@@ -1,6 +1,6 @@
 package zio.compress
 
-sealed trait Lz4CompressorBlockSize
+sealed trait Lz4CompressorBlockSize extends Product with Serializable
 
 object Lz4CompressorBlockSize {
   case object BlockSize64KiB extends Lz4CompressorBlockSize

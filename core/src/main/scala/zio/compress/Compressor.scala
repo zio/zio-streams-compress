@@ -1,13 +1,14 @@
 package zio.compress
 
 import zio.stream._
+import zio.Trace
 
-trait Compressor {
-  def compress: ZPipeline[Any, Throwable, Byte, Byte]
+trait Compressor extends Serializable {
+  def compress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte]
 }
 
 object Compressor {
   def empty: Compressor = new Compressor {
-    override def compress: ZPipeline[Any, Nothing, Byte, Byte] = ZPipeline.identity
+    override def compress(implicit trace: Trace): ZPipeline[Any, Nothing, Byte, Byte] = ZPipeline.identity
   }
 }

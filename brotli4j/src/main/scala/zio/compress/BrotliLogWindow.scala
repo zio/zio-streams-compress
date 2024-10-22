@@ -5,7 +5,7 @@ package zio.compress
   * @param lgwin
   *   lgwin log2(LZ window size), valid values: 10 to 24
   */
-final case class BrotliLogWindow private (lgwin: Int)
+final case class BrotliLogWindow private (lgwin: Int) extends AnyVal
 
 object BrotliLogWindow {
 

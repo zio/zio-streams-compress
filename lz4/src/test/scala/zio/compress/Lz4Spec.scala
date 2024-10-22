@@ -8,8 +8,8 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.util.Base64
 
 object Lz4Spec extends ZIOSpecDefault {
-  private val clear = Chunk.fromArray("Hello world!".getBytes(UTF_8))
-  private val compressed = Chunk.fromArray(
+  private final val clear = Chunk.fromArray("Hello world!".getBytes(UTF_8))
+  private final val compressed = Chunk.fromArray(
     Base64.getDecoder.decode("BCJNGGRApwwAAIBIZWxsbyB3b3JsZCEAAAAAcXerxA==")
   )
 

@@ -26,11 +26,13 @@ object ZipArchiver {
     new ZipArchiver(level, zipMethod)
 }
 
-class ZipArchiver private (
+final class ZipArchiver private (
   level: Option[DeflateCompressionLevel],
   zipMethod: Option[ZipMethod],
 ) extends Archiver[Option] {
-  override def archive: ZPipeline[Any, Throwable, (ArchiveEntry[Option, Any], ZStream[Any, Throwable, Byte]), Byte] =
+  override def archive(implicit
+    trace: Trace
+  ): ZPipeline[Any, Throwable, (ArchiveEntry[Option, Any], ZStream[Any, Throwable, Byte]), Byte] =
     viaOutputStream { outputStream =>
       val zipOutputStream = new ZipOutputStream(outputStream)
       level.foreach(l => zipOutputStream.setLevel(l.level))
@@ -64,9 +66,10 @@ object ZipUnarchiver {
     new ZipUnarchiver(chunkSize)
 }
 
-class ZipUnarchiver private (chunkSize: Int) extends Unarchiver[Option, ZipEntry] {
-  override def unarchive
-    : ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, ZipEntry], ZStream[Any, IOException, Byte])] =
+final class ZipUnarchiver private (chunkSize: Int) extends Unarchiver[Option, ZipEntry] {
+  override def unarchive(implicit
+    trace: Trace
+  ): ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, ZipEntry], ZStream[Any, IOException, Byte])] =
     viaInputStream[(ArchiveEntry[Option, ZipEntry], ZStream[Any, IOException, Byte])]() { inputStream =>
       for {
         zipInputStream <- ZIO.acquireRelease(ZIO.attemptBlocking(new ZipInputStream(inputStream))) { zipInputStream =>

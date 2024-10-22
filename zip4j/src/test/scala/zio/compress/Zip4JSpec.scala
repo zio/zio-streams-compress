@@ -20,7 +20,7 @@ object Zip4JSpec extends ZIOSpecDefault {
    *   rm -rf ziptempdir
    * }}}
    */
-  private val zipArchive = Chunk.fromArray(
+  private final val zipArchive = Chunk.fromArray(
     Base64
       .getDecoder
       .decode(
@@ -35,7 +35,7 @@ object Zip4JSpec extends ZIOSpecDefault {
   )
 
   /* Created as above, with password "secret" (using the `-e` option)  */
-  private val encryptedZipArchive = Chunk.fromArray(
+  private final val encryptedZipArchive = Chunk.fromArray(
     Base64
       .getDecoder
       .decode(
