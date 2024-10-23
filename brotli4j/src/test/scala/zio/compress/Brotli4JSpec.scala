@@ -17,7 +17,7 @@ object Brotli4JSpec extends ZIOSpecDefault {
         for {
           obtained <- ZStream
                         .fromChunk(compressed)
-                        .via(Brotli4JDecompressor.make().decompress)
+                        .via(Brotli4JDecompressor.decompress)
                         .runCollect
         } yield assertTrue(clear == obtained)
       },
@@ -27,8 +27,8 @@ object Brotli4JSpec extends ZIOSpecDefault {
             obtained <- ZStream
                           .fromChunk(genBytes)
                           .rechunk(chunkSize)
-                          .via(Brotli4JCompressor.make().compress)
-                          .via(Brotli4JDecompressor.make().decompress)
+                          .via(Brotli4JCompressor.compress)
+                          .via(Brotli4JDecompressor.decompress)
                           .runCollect
           } yield assertTrue(obtained == genBytes)
         }

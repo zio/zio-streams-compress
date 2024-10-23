@@ -56,7 +56,7 @@ object Zip4JSpec extends ZIOSpecDefault {
         for {
           obtained <- ZStream
                         .fromChunk(zipArchive)
-                        .via(Zip4JUnarchiver.make().unarchive)
+                        .via(Zip4JUnarchiver.unarchive)
                         .mapZIO { case (archiveEntry, stream) =>
                           for {
                             content <- stream.runCollect
@@ -73,7 +73,7 @@ object Zip4JSpec extends ZIOSpecDefault {
         for {
           obtained <- ZStream
                         .fromChunk(encryptedZipArchive)
-                        .via(Zip4JUnarchiver.make(password = Some("secret")).unarchive)
+                        .via(Zip4JUnarchiver(password = Some("secret")).unarchive)
                         .mapZIO { case (archiveEntry, stream) =>
                           for {
                             content <- stream.runCollect
@@ -93,8 +93,8 @@ object Zip4JSpec extends ZIOSpecDefault {
               ZStream
                 .fromChunk(genBytes)
                 .rechunk(chunkSize)
-                .via(ArchiveSingleFileCompressor.forName(Zip4JArchiver.make(), "test", genBytes.length.toLong).compress)
-                .via(ArchiveSingleFileDecompressor(Zip4JUnarchiver.make()).decompress)
+                .via(ArchiveSingleFileCompressor.forName(Zip4JArchiver(), "test", genBytes.length.toLong).compress)
+                .via(ArchiveSingleFileDecompressor(Zip4JUnarchiver()).decompress)
                 .runCollect
           } yield assertTrue(obtained == genBytes)
         }
@@ -105,7 +105,7 @@ object Zip4JSpec extends ZIOSpecDefault {
                         archiveEntry("file1.txt", 12, "Hello world!"),
                         archiveEntry("subdir/file2.txt", 999999, "Hello from subdir!"),
                       )
-                        .via(Zip4JArchiver.make().archive)
+                        .via(Zip4JArchiver.archive)
                         .runCollect
                         .exit
         } yield

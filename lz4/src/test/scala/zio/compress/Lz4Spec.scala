@@ -19,7 +19,7 @@ object Lz4Spec extends ZIOSpecDefault {
         for {
           obtained <- ZStream
                         .fromChunk(compressed)
-                        .via(Lz4Decompressor.make().decompress)
+                        .via(Lz4Decompressor.decompress)
                         .runCollect
         } yield assertTrue(clear == obtained)
       },
@@ -29,8 +29,8 @@ object Lz4Spec extends ZIOSpecDefault {
             obtained <- ZStream
                           .fromChunk(genBytes)
                           .rechunk(chunkSize)
-                          .via(Lz4Compressor.make().compress)
-                          .via(Lz4Decompressor.make().decompress)
+                          .via(Lz4Compressor.compress)
+                          .via(Lz4Decompressor.decompress)
                           .runCollect
           } yield assertTrue(obtained == genBytes)
         }

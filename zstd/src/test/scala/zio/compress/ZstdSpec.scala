@@ -19,7 +19,7 @@ object ZstdSpec extends ZIOSpecDefault {
         for {
           obtained <- ZStream
                         .fromChunk(compressed)
-                        .via(ZstdDecompressor.make().decompress)
+                        .via(ZstdDecompressor.decompress)
                         .runCollect
         } yield assertTrue(clear == obtained)
       },
@@ -29,8 +29,8 @@ object ZstdSpec extends ZIOSpecDefault {
             obtained <- ZStream
                           .fromChunk(genBytes)
                           .rechunk(chunkSize)
-                          .via(ZstdCompressor.make().compress)
-                          .via(ZstdDecompressor.make().decompress)
+                          .via(ZstdCompressor.compress)
+                          .via(ZstdDecompressor.decompress)
                           .runCollect
           } yield assertTrue(obtained == genBytes)
         }

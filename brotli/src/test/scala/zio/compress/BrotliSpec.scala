@@ -18,7 +18,7 @@ object BrotliSpec extends ZIOSpecDefault {
         for {
           obtained <- ZStream
                         .fromChunk(compressed)
-                        .via(BrotliDecompressor.make().decompress)
+                        .via(BrotliDecompressor.decompress)
                         .runCollect
         } yield assertTrue(clear == obtained)
       }
