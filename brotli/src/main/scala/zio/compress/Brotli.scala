@@ -28,7 +28,6 @@ object BrotliDecompressor {
 //noinspection ScalaFileName
 final class BrotliDecompressor private (customDictionary: Option[Array[Byte]], chunkSize: Int) extends Decompressor {
 
-  /** @inheritdoc */
   override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     // BrotliInputStream.read does its best to read as many bytes as requested; no buffering needed.
     viaInputStreamByte(chunkSize) { inputStream =>

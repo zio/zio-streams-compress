@@ -14,7 +14,6 @@ object Compressor extends Serializable {
   /** A compressor that does nothing; it passes all bytes through unchanged. */
   def empty: Compressor = new Compressor {
 
-    /** @inheritdoc */
     override def compress(implicit trace: Trace): ZPipeline[Any, Nothing, Byte, Byte] =
       ZPipeline.identity
   }

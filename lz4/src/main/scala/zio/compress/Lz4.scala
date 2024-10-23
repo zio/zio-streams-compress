@@ -26,7 +26,6 @@ object Lz4Compressor {
 
 final class Lz4Compressor private (blockSize: Lz4CompressorBlockSize) extends Compressor {
 
-  /** @inheritdoc */
   override def compress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] = {
     val lz4BlockSize = blockSize match {
       case Lz4CompressorBlockSize.BlockSize64KiB  => BLOCKSIZE.SIZE_64KB
@@ -54,7 +53,6 @@ object Lz4Decompressor {
 
 final class Lz4Decompressor private (chunkSize: Int) extends Decompressor {
 
-  /** @inheritdoc */
   override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     // LZ4FrameInputStream.read does not try to read the requested number of bytes, but it does have a good
     // `available()` implementation, so with buffering we can still get full chunks.

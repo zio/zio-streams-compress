@@ -37,7 +37,6 @@ final class ZstdCompressor private (
   customDictionary: Option[Array[Byte]],
 ) extends Compressor {
 
-  /** @inheritdoc */
   override def compress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     viaOutputStreamByte { outputStream =>
       val zstdOutputStream = new ZstdOutputStream(outputStream)
@@ -64,7 +63,6 @@ object ZstdDecompressor {
 
 final class ZstdDecompressor private (chunkSize: Int) extends Decompressor {
 
-  /** @inheritdoc */
   override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     // ZstdInputStream.read does not try to read the requested number of bytes, but it does have a good
     // `available()` implementation, so with buffering we can still get full chunks.

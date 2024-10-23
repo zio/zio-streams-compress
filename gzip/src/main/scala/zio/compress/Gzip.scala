@@ -32,7 +32,6 @@ final class GzipCompressor private (
   bufferSize: Int,
 ) extends Compressor {
 
-  /** @inheritdoc */
   override def compress(implicit trace: Trace): ZPipeline[Any, Nothing, Byte, Byte] =
     ZPipeline.gzip(
       bufferSize,
@@ -57,7 +56,6 @@ object GzipDecompressor {
 
 final class GzipDecompressor private (bufferSize: Int) extends Decompressor {
 
-  /** @inheritdoc */
   override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     ZPipeline.gunzip(bufferSize)
 }

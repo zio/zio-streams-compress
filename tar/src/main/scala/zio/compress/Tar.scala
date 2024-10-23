@@ -28,7 +28,6 @@ object TarArchiver {
 
 final class TarArchiver private extends Archiver[Some] {
 
-  /** @inheritdoc */
   override def archive(implicit
     trace: Trace
   ): ZPipeline[Any, Throwable, (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]), Byte] =
@@ -65,7 +64,6 @@ object TarUnarchiver {
 
 final class TarUnarchiver private (chunkSize: Int) extends Unarchiver[Option, TarArchiveEntry] {
 
-  /** @inheritdoc */
   override def unarchive(implicit
     trace: Trace
   ): ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, TarArchiveEntry], ZStream[Any, IOException, Byte])] =

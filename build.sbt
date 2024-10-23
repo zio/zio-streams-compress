@@ -49,15 +49,6 @@ inThisBuild(
 
 def commonSettings(projectName: String) = Seq(
   name := s"zio-streams-compress-$projectName",
-//    Compile / compile / scalacOptions ++=
-//      optionsOn("2.13")("-Wconf:cat=unused-nowarn:s").value,
-  // scalacOptions -= "-Xlint:infer-any",
-  // workaround for bad constant pool issue
-  //  (Compile / doc) := Def.taskDyn {
-  //    val default = (Compile / doc).taskValue
-  //    Def.task(default.value)
-  //  }.value,
-  //  Test / scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule)),
   libraryDependencies ++= Seq(
     "dev.zio" %%% "zio-test" % V.zio % Test,
     "dev.zio" %%% "zio-test-sbt" % V.zio % Test,

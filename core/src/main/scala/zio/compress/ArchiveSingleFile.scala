@@ -8,7 +8,6 @@ final class ArchiveSingleFileCompressor[Size[A] <: Option[A]] private (
   entry: ArchiveEntry[Size, Any],
 ) extends Compressor {
 
-  /** @inheritdoc */
   override def compress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     ZPipeline.fromFunction { stream =>
       ZStream((entry, stream)).via(archiver.archive)
@@ -33,7 +32,6 @@ final class ArchiveSingleFileDecompressor[Size[A] <: Option[A], Underlying] priv
   unarchiver: Unarchiver[Size, Underlying]
 ) extends Decompressor {
 
-  /** @inheritdoc */
   override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     ZPipeline.fromFunction { stream =>
       stream

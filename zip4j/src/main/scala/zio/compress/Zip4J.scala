@@ -32,7 +32,6 @@ object Zip4JArchiver {
 
 final class Zip4JArchiver private (password: => Option[String]) extends Archiver[Some] {
 
-  /** @inheritdoc */
   override def archive(implicit
     trace: Trace
   ): ZPipeline[Any, Throwable, (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]), Byte] =
@@ -77,7 +76,6 @@ object Zip4JUnarchiver {
 final class Zip4JUnarchiver private (password: Option[String], chunkSize: Int)
     extends Unarchiver[Option, LocalFileHeader] {
 
-  /** @inheritdoc */
   override def unarchive(implicit
     trace: Trace
   ): ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, LocalFileHeader], ZStream[Any, IOException, Byte])] =

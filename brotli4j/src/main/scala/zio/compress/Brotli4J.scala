@@ -36,7 +36,6 @@ final class Brotli4JCompressor private (
   mode: Option[BrotliMode],
 ) extends Compressor {
 
-  /** @inheritdoc */
   override def compress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     BrotliLoader.ensureAvailability() >>>
       viaOutputStreamByte { outputStream =>
@@ -71,7 +70,6 @@ object Brotli4JDecompressor {
 
 final class Brotli4JDecompressor private (chunkSize: Int) extends Decompressor {
 
-  /** @inheritdoc */
   override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     BrotliLoader.ensureAvailability() >>>
       viaInputStreamByte(chunkSize) { inputStream =>

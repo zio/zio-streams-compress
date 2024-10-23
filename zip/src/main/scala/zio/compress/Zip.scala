@@ -37,7 +37,6 @@ final class ZipArchiver private (
   zipMethod: Option[ZipMethod],
 ) extends Archiver[Option] {
 
-  /** @inheritdoc */
   override def archive(implicit
     trace: Trace
   ): ZPipeline[Any, Throwable, (ArchiveEntry[Option, Any], ZStream[Any, Throwable, Byte]), Byte] =
@@ -82,7 +81,6 @@ object ZipUnarchiver {
 
 final class ZipUnarchiver private (chunkSize: Int) extends Unarchiver[Option, ZipEntry] {
 
-  /** @inheritdoc */
   override def unarchive(implicit
     trace: Trace
   ): ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, ZipEntry], ZStream[Any, IOException, Byte])] =

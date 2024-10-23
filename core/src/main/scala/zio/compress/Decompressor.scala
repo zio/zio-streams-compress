@@ -14,7 +14,6 @@ object Decompressor {
   /** A decompressor that does nothing; it passes all bytes through unchanged. */
   def empty: Decompressor = new Decompressor {
 
-    /** @inheritdoc */
     override def decompress(implicit trace: Trace): ZPipeline[Any, Nothing, Byte, Byte] =
       ZPipeline.identity
   }

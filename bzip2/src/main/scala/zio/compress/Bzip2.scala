@@ -25,7 +25,6 @@ object Bzip2Compressor {
 
 final class Bzip2Compressor private (blockSize: Option[Bzip2BlockSize]) extends Compressor {
 
-  /** @inheritdoc */
   override def compress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     viaOutputStreamByte { outputStream =>
       blockSize match {
@@ -51,7 +50,6 @@ object Bzip2Decompressor {
 
 final class Bzip2Decompressor private (chunkSize: Int) extends Decompressor {
 
-  /** @inheritdoc */
   override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
     // BrotliInputStream.read does its best to read as many bytes as requested; no buffering needed.
     viaInputStreamByte(chunkSize)(new BZip2CompressorInputStream(_))
