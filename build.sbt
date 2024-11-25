@@ -6,7 +6,7 @@ val V = new {
   val lz4 = "1.8.0"
   val zio = "2.1.13"
   val zip4j = "2.11.5"
-  val zstdJni = "1.5.6-7"
+  val zstdJni = "1.5.6-8"
 }
 
 val _scala212 = "2.12.20"
