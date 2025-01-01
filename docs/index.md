@@ -9,12 +9,6 @@ archive formats with [ZIO Streams](https://zio.dev).
 
 @PROJECT_BADGES@ [![Scala Steward badge](https://img.shields.io/badge/Scala_Steward-helping-blue.svg?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAMAAAARSr4IAAAAVFBMVEUAAACHjojlOy5NWlrKzcYRKjGFjIbp293YycuLa3pYY2LSqql4f3pCUFTgSjNodYRmcXUsPD/NTTbjRS+2jomhgnzNc223cGvZS0HaSD0XLjbaSjElhIr+AAAAAXRSTlMAQObYZgAAAHlJREFUCNdNyosOwyAIhWHAQS1Vt7a77/3fcxxdmv0xwmckutAR1nkm4ggbyEcg/wWmlGLDAA3oL50xi6fk5ffZ3E2E3QfZDCcCN2YtbEWZt+Drc6u6rlqv7Uk0LdKqqr5rk2UCRXOk0vmQKGfc94nOJyQjouF9H/wCc9gECEYfONoAAAAASUVORK5CYII=)](https://scala-steward.org)
 
-# We are open for comments
-
-Please [open an issue](https://github.com/zio/zio-streams-compress/issues/new) or contact us
-on [Discord](https://discord.com/channels/629491597070827530/630498701860929559) if you have suggestions. The API will
-stabilize in Jan 2025, followed by a 1.0.0 release.
-
 ## Installation
 
 In order to use this library, we need to add one of the following line in our `build.sbt` file:
