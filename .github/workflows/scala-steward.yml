@@ -3,7 +3,7 @@ name: Scala Steward
 on:
   schedule:
     - cron: '0 0 * * 6,2'
-  workflow_run: {}
+  workflow_dispatch:
 
 permissions:
   contents: write
