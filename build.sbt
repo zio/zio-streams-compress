@@ -10,7 +10,7 @@ val V = new {
 }
 
 val _scala212 = "2.12.20"
-val _scala213 = "2.13.15"
+val _scala213 = "2.13.16"
 val _scala3 = "3.3.4"
 val scalaVersions = List(_scala3, _scala213, _scala212)
 
