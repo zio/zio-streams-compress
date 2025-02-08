@@ -4,7 +4,7 @@ val V = new {
   val commonsCompress = "1.27.1"
   val logbackClassic = "1.5.16"
   val lz4 = "1.8.0"
-  val zio = "2.1.14"
+  val zio = "2.1.15"
   val zip4j = "2.11.5"
   val zstdJni = "1.5.6-9"
 }
