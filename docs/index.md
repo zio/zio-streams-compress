@@ -19,6 +19,7 @@ libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli4j" % "@VERSION@
 libraryDependencies += "dev.zio" %% "zio-streams-compress-bzip2" % "@VERSION@"
 libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "@VERSION@"
 libraryDependencies += "dev.zio" %% "zio-streams-compress-lz4" % "@VERSION@"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-snappy" % "@VERSION@"
 libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "@VERSION@"
 libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "@VERSION@"
 libraryDependencies += "dev.zio" %% "zio-streams-compress-zip4j" % "@VERSION@"
