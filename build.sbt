@@ -4,6 +4,7 @@ val V = new {
   val commonsCompress = "1.27.1"
   val logbackClassic = "1.5.17"
   val lz4 = "1.8.0"
+  val snappy = "1.1.10.7"
   val zio = "2.1.16"
   val zip4j = "2.11.5"
   val zstdJni = "1.5.7-1"
@@ -77,6 +78,7 @@ lazy val root =
     .aggregate(bzip2.projectRefs: _*)
     .aggregate(gzip.projectRefs: _*)
     .aggregate(lz4.projectRefs: _*)
+    .aggregate(snappy.projectRefs: _*)
     .aggregate(tar.projectRefs: _*)
     .aggregate(zip.projectRefs: _*)
     .aggregate(zip4j.projectRefs: _*)
@@ -143,6 +145,18 @@ lazy val lz4 = projectMatrix
     name := "zio-streams-compress-lz4",
     libraryDependencies ++= Seq(
       "org.lz4" % "lz4-java" % V.lz4
+    ),
+  )
+  .jvmPlatform(scalaVersions)
+
+lazy val snappy = projectMatrix
+  .in(file("snappy"))
+  .dependsOn(core % "compile->compile;test->test")
+  .settings(commonSettings("snappy"))
+  .settings(
+    name := "zio-streams-compress-snappy",
+    libraryDependencies ++= Seq(
+      "org.xerial.snappy" % "snappy-java" % V.snappy
     ),
   )
   .jvmPlatform(scalaVersions)
