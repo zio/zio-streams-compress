@@ -1,6 +1,6 @@
 val V = new {
   val brotli = "0.1.2"
-  val brotli4j = "1.18.0"
+  val brotli4j = "1.19.0"
   val commonsCompress = "1.28.0"
   val logbackClassic = "1.5.18"
   val lz4 = "1.8.0"
