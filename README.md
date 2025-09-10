@@ -14,16 +14,16 @@ archive formats with [ZIO Streams](https://zio.dev).
 In order to use this library, we need to add one of the following line in our `build.sbt` file:
 
 ```sbt
-libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli" % "1.1.1"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli4j" % "1.1.1"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-bzip2" % "1.1.1"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "1.1.1"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-lz4" % "1.1.1"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-snappy" % "1.1.1"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "1.1.1"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "1.1.1"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-zip4j" % "1.1.1"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-zstd" % "1.1.1"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli" % "1.1.2"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli4j" % "1.1.2"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-bzip2" % "1.1.2"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "1.1.2"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-lz4" % "1.1.2"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-snappy" % "1.1.2"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "1.1.2"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "1.1.2"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-zip4j" % "1.1.2"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-zstd" % "1.1.2"
 ```
 
 For Brotli you can choose between the 'brotli' and the 'brotli4j' version. The first is based on the official Java
@@ -40,9 +40,9 @@ Currently only jvm is supported. PRs for scala-js and scala-native are welcome.
 ```scala
 // Example.sc
 // Run with: scala-cli Example.sc
-//> using dep dev.zio:zio-streams-compress-gzip:1.1.1
-//> using dep dev.zio:zio-streams-compress-tar:1.1.1
-//> using dep dev.zio:zio-streams-compress-zip4j:1.1.1
+//> using dep dev.zio:zio-streams-compress-gzip:1.1.2
+//> using dep dev.zio:zio-streams-compress-tar:1.1.2
+//> using dep dev.zio:zio-streams-compress-zip4j:1.1.2
 
 import zio._
 import zio.compress.{ArchiveEntry, GzipCompressor, GzipDecompressor, TarUnarchiver, Zip4JArchiver}
