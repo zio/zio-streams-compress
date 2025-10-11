@@ -13,7 +13,7 @@ val V = new {
 }
 
 val _scala212 = "2.12.20"
-val _scala213 = "2.13.16"
+val _scala213 = "2.13.17"
 val _scala3 = "3.3.6"
 val scalaVersions = List(_scala3, _scala213, _scala212)
 
@@ -29,7 +29,9 @@ inThisBuild(
     crossScalaVersions := List(scala3.value, scala213.value, scala212.value),
     run / fork := true,
     // Update the readme on every push to master:
-    ciUpdateReadmeCondition  := Some(Condition.Expression("github.ref == format('refs/heads/{0}', github.event.repository.default_branch)")),
+    ciUpdateReadmeCondition := Some(
+      Condition.Expression("github.ref == format('refs/heads/{0}', github.event.repository.default_branch)")
+    ),
     ciEnabledBranches := Seq("main"),
     ciJvmOptions ++= Seq("-Xmx4G", "-Xss2M", "-XX:+UseG1GC"),
     versionScheme := Some("early-semver"),
