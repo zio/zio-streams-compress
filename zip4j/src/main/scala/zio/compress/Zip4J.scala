@@ -91,7 +91,7 @@ final class Zip4JUnarchiver private (password: Option[String], chunkSize: Int)
           for {
             entry <- ZIO.attemptBlocking(Option(zipInputStream.getNextEntry)).some
           } yield {
-            val archiveEntry = ArchiveEntry.fromUnderlying(entry)
+            val archiveEntry = ArchiveEntry.fromUnderlying[Option, LocalFileHeader](entry)
             // ZipInputStream.read seems to do its best to read the requested number of bytes. No buffering is needed.
             (archiveEntry, ZStream.fromInputStream(zipInputStream, chunkSize))
           }

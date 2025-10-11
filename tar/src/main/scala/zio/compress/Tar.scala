@@ -78,7 +78,7 @@ final class TarUnarchiver private (chunkSize: Int) extends Unarchiver[Option, Ta
           for {
             entry <- ZIO.attemptBlocking(Option(tarInputStream.getNextEntry)).some
           } yield {
-            val archiveEntry = ArchiveEntry.fromUnderlying(entry)
+            val archiveEntry = ArchiveEntry.fromUnderlying[Option, TarArchiveEntry](entry)
             // TarArchiveInputStream.read does not try to read the requested number of bytes, but it does have a good
             // `available()` implementation, so with buffering we can still get full chunks.
             (archiveEntry, ZStream.fromInputStream(new BufferedInputStream(tarInputStream, chunkSize), chunkSize))
