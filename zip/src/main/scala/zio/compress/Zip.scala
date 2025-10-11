@@ -94,7 +94,7 @@ final class ZipUnarchiver private (chunkSize: Int) extends Unarchiver[Option, Zi
           for {
             entry <- ZIO.attemptBlocking(Option(zipInputStream.getNextEntry)).some
           } yield {
-            val archiveEntry = ArchiveEntry.fromUnderlying(entry)
+            val archiveEntry = ArchiveEntry.fromUnderlying[Option, ZipEntry](entry)
             // ZipInputStream.read seems to do its best to read to request the requested number of bytes. No buffering
             // is needed.
             (archiveEntry, ZStream.fromInputStream(zipInputStream, chunkSize))
