@@ -120,4 +120,4 @@ This library is heavily inspired by [fs2-compress](https://github.com/lhns/fs2-c
 
 [License](LICENSE)
 
-Copyright 2024-2025 Erik van Oosten and the zio-streams-compress contributors.
+Copyright 2024-2026 Erik van Oosten and the zio-streams-compress contributors.
