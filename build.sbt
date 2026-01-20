@@ -75,7 +75,8 @@ lazy val root =
     .settings(
       name := "zio-streams-compress",
       publish / skip := true,
-      crossScalaVersions := Nil, // https://www.scala-sbt.org/1.x/docs/Cross-Build.html#Cross+building+a+project+statefully,
+      crossScalaVersions :=
+        Nil, // https://www.scala-sbt.org/1.x/docs/Cross-Build.html#Cross+building+a+project+statefully,
       publishArtifact := false,
     )
     .aggregate(core.projectRefs: _*)
@@ -235,5 +236,6 @@ lazy val docs = project
     ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(core.jvm(_scala213)),
     readmeCredits :=
       "This library is heavily inspired by [fs2-compress](https://github.com/lhns/fs2-compress).",
-    readmeLicense += s"\n\nCopyright 2024-${java.time.Year.now()} Erik van Oosten and the zio-streams-compress contributors.",
+    readmeLicense +=
+      s"\n\nCopyright 2024-${java.time.Year.now()} Erik van Oosten and the zio-streams-compress contributors.",
   )
