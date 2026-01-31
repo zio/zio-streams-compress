@@ -1,7 +1,10 @@
 package zio.compress
 
 import org.xerial.snappy.{
-  SnappyFramedInputStream, SnappyFramedOutputStream, SnappyHadoopCompatibleOutputStream, SnappyInputStream,
+  SnappyFramedInputStream,
+  SnappyFramedOutputStream,
+  SnappyHadoopCompatibleOutputStream,
+  SnappyInputStream,
   SnappyOutputStream,
 }
 import zio.Trace
