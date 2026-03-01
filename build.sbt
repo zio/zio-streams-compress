@@ -33,6 +33,7 @@ inThisBuild(
       Condition.Expression("github.ref == format('refs/heads/{0}', github.event.repository.default_branch)")
     ),
     ciEnabledBranches := Seq("main"),
+    ciTargetJavaVersions := List("17", "21", "25"),
     ciJvmOptions ++= Seq("-Xmx4G", "-Xss2M", "-XX:+UseG1GC"),
     versionScheme := Some("early-semver"),
     developers := List(
