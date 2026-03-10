@@ -42,9 +42,11 @@ final class Zip4JArchiver private (password: => Option[String]) extends Archiver
         .via(checkUncompressedSize)
         .mapZIO { case (archiveEntry, contentStream) =>
           def entry = archiveEntry.underlying[ZipParameters]
-          ZIO.attemptBlocking(zipOutputStream.putNextEntry(entry)) *>
-            contentStream.runForeachChunk(chunk => ZIO.attemptBlocking(zipOutputStream.write(chunk.toArray))) *>
-            ZIO.attemptBlocking(zipOutputStream.closeEntry())
+          ZIO.attemptBlockingInterrupt(zipOutputStream.putNextEntry(entry)) *>
+            contentStream.runForeachChunk { chunk =>
+              ZIO.attemptBlockingInterrupt(zipOutputStream.write(chunk.toArray))
+            } *>
+            ZIO.attemptBlockingInterrupt(zipOutputStream.closeEntry())
         }
         .runDrain
     }
@@ -81,15 +83,16 @@ final class Zip4JUnarchiver private (password: Option[String], chunkSize: Int)
   ): ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, LocalFileHeader], ZStream[Any, IOException, Byte])] =
     viaInputStream[(ArchiveEntry[Option, LocalFileHeader], ZStream[Any, IOException, Byte])]() { inputStream =>
       for {
-        zipInputStream <- ZIO.acquireRelease(
-                            ZIO.attemptBlocking(new ZipInputStream(inputStream, password.map(_.toCharArray).orNull))
-                          ) { zipInputStream =>
-                            ZIO.attemptBlocking(zipInputStream.close()).orDie
-                          }
+        zipInputStream <-
+          ZIO.acquireRelease(
+            ZIO.attemptBlockingInterrupt(new ZipInputStream(inputStream, password.map(_.toCharArray).orNull))
+          ) { zipInputStream =>
+            ZIO.attemptBlockingInterrupt(zipInputStream.close()).orDie
+          }
       } yield
         ZStream.repeatZIOOption {
           for {
-            entry <- ZIO.attemptBlocking(Option(zipInputStream.getNextEntry)).some
+            entry <- ZIO.attemptBlockingInterrupt(Option(zipInputStream.getNextEntry)).some
           } yield {
             val archiveEntry = ArchiveEntry.fromUnderlying[Option, LocalFileHeader](entry)
             // ZipInputStream.read seems to do its best to read the requested number of bytes. No buffering is needed.
