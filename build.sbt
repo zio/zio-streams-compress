@@ -58,8 +58,8 @@ inThisBuild(
 def commonSettings(projectName: String) = Seq(
   name := s"zio-streams-compress-$projectName",
   libraryDependencies ++= Seq(
-    "dev.zio" %%% "zio-test" % V.zio % Test,
-    "dev.zio" %%% "zio-test-sbt" % V.zio % Test,
+    "dev.zio" %% "zio-test" % V.zio % Test,
+    "dev.zio" %% "zio-test-sbt" % V.zio % Test,
     "ch.qos.logback" % "logback-classic" % V.logbackClassic % Test,
   ),
   libraryDependencies ++= {
@@ -80,32 +80,32 @@ lazy val root =
         Nil, // https://www.scala-sbt.org/1.x/docs/Cross-Build.html#Cross+building+a+project+statefully,
       publishArtifact := false,
     )
-    .aggregate(core.projectRefs: _*)
-    .aggregate(brotli.projectRefs: _*)
-    .aggregate(brotli4j.projectRefs: _*)
-    .aggregate(bzip2.projectRefs: _*)
-    .aggregate(gzip.projectRefs: _*)
-    .aggregate(lz4.projectRefs: _*)
-    .aggregate(snappy.projectRefs: _*)
-    .aggregate(tar.projectRefs: _*)
-    .aggregate(zip.projectRefs: _*)
-    .aggregate(zip4j.projectRefs: _*)
-    .aggregate(zstd.projectRefs: _*)
-    .aggregate(example.projectRefs: _*)
-    .aggregate(docs)
+    .aggregate(
+      core,
+      brotli,
+      brotli4j,
+      bzip2,
+      gzip,
+      lz4,
+      snappy,
+      tar,
+      zip,
+      zip4j,
+      zstd,
+      example,
+      docs
+    )
 
-lazy val core = projectMatrix
+lazy val core = project
   .in(file("core"))
   .settings(commonSettings("core"))
   .settings(
     libraryDependencies ++= Seq(
-      "dev.zio" %%% "zio-streams" % V.zio
+      "dev.zio" %% "zio-streams" % V.zio
     )
   )
-  .jvmPlatform(scalaVersions)
-  .jsPlatform(scalaVersions)
 
-lazy val brotli = projectMatrix
+lazy val brotli = project
   .in(file("brotli"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings("brotli"))
@@ -114,9 +114,8 @@ lazy val brotli = projectMatrix
       "org.brotli" % "dec" % V.brotli
     )
   )
-  .jvmPlatform(scalaVersions)
 
-lazy val brotli4j = projectMatrix
+lazy val brotli4j = project
   .in(file("brotli4j"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings("brotli4j"))
@@ -125,9 +124,8 @@ lazy val brotli4j = projectMatrix
       "com.aayushatharva.brotli4j" % "brotli4j" % V.brotli4j
     )
   )
-  .jvmPlatform(scalaVersions)
 
-lazy val bzip2 = projectMatrix
+lazy val bzip2 = project
   .in(file("bzip2"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings("bzip2"))
@@ -136,16 +134,13 @@ lazy val bzip2 = projectMatrix
       "org.apache.commons" % "commons-compress" % V.commonsCompress
     )
   )
-  .jvmPlatform(scalaVersions)
 
-lazy val gzip = projectMatrix
+lazy val gzip = project
   .in(file("gzip"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings("gzip"))
-  .jvmPlatform(scalaVersions)
-//.jsPlatform(scalaVersions)
 
-lazy val lz4 = projectMatrix
+lazy val lz4 = project
   .in(file("lz4"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings("lz4"))
@@ -155,9 +150,8 @@ lazy val lz4 = projectMatrix
       "org.lz4" % "lz4-java" % V.lz4
     ),
   )
-  .jvmPlatform(scalaVersions)
 
-lazy val snappy = projectMatrix
+lazy val snappy = project
   .in(file("snappy"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings("snappy"))
@@ -167,9 +161,8 @@ lazy val snappy = projectMatrix
       "org.xerial.snappy" % "snappy-java" % V.snappy
     ),
   )
-  .jvmPlatform(scalaVersions)
 
-lazy val tar = projectMatrix
+lazy val tar = project
   .in(file("tar"))
   .dependsOn(core % "compile->compile;test->test")
   .dependsOn(gzip % "test")
@@ -179,15 +172,13 @@ lazy val tar = projectMatrix
       "org.apache.commons" % "commons-compress" % V.commonsCompress
     )
   )
-  .jvmPlatform(scalaVersions)
 
-lazy val zip = projectMatrix
+lazy val zip = project
   .in(file("zip"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings("zip"))
-  .jvmPlatform(scalaVersions)
 
-lazy val zip4j = projectMatrix
+lazy val zip4j = project
   .in(file("zip4j"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings("zip4j"))
@@ -196,9 +187,8 @@ lazy val zip4j = projectMatrix
       "net.lingala.zip4j" % "zip4j" % V.zip4j
     )
   )
-  .jvmPlatform(scalaVersions)
 
-lazy val zstd = projectMatrix
+lazy val zstd = project
   .in(file("zstd"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings("zstd"))
@@ -207,9 +197,8 @@ lazy val zstd = projectMatrix
       "com.github.luben" % "zstd-jni" % V.zstdJni
     )
   )
-  .jvmPlatform(scalaVersions)
 
-lazy val example = projectMatrix
+lazy val example = project
   .in(file("example"))
   .dependsOn(gzip, tar, zip4j)
   .settings(commonSettings("example"))
@@ -220,11 +209,10 @@ lazy val example = projectMatrix
   .settings(
     name := "zio-streams-compress-example"
   )
-  .jvmPlatform(scalaVersions)
 
 lazy val docs = project
   .in(file("docs-project"))
-  .dependsOn(core.jvm(_scala213))
+  .dependsOn(core)
   .enablePlugins(WebsitePlugin)
   .settings(commonSettings("docs"))
   .settings(
@@ -234,7 +222,7 @@ lazy val docs = project
     projectName := "ZIO Streams Compress docs",
     mainModuleName := "zio-streams-compress-docs",
     projectStage := ProjectStage.ProductionReady,
-    ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(core.jvm(_scala213)),
+    ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(core),
     readmeCredits :=
       "This library is heavily inspired by [fs2-compress](https://github.com/lhns/fs2-compress).",
     readmeLicense +=
