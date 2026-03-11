@@ -93,7 +93,7 @@ lazy val root =
       zip4j,
       zstd,
       example,
-      docs
+      docs,
     )
 
 lazy val core = project

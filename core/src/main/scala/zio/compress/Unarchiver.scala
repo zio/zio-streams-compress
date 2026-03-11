@@ -13,7 +13,20 @@ import zio.stream._
   */
 trait Unarchiver[Size[A] <: Option[A], Underlying] extends Serializable {
 
-  /** Make a pipelines that accepts the byte stream of an archive, and produces a stream of archive entries. */
+  /** Make a pipeline that accepts the byte stream of an archive, and produces a stream of archive entries with accurate
+    * uncompressed size.
+    */
+  def list(implicit
+    trace: Trace
+  ): ZPipeline[Any, Throwable, Byte, ArchiveEntry[Some, Underlying]] =
+    unarchive.mapZIO { case (entry, content) => content.runCount.map(c => entry.withKnownUncompressedSize(c)) }
+
+  /** Make a pipeline that accepts the byte stream of an archive, and produces a stream of archive entries and their
+    * content.
+    *
+    * ⚠️Note: the entry's content must be fully read before the next archive entry is emitted. See the project's README
+    * for the consequences, tips and workarounds.
+    */
   def unarchive(implicit
     trace: Trace
   ): ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Size, Underlying], ZStream[Any, Throwable, Byte])]

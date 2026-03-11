@@ -58,10 +58,19 @@ object TarUnarchiver {
   def apply(chunkSize: Int = Defaults.DefaultChunkSize): TarUnarchiver =
     new TarUnarchiver(chunkSize)
 
-  /** See [[apply]] and [[Unarchiver.unarchive]]. */
+  /** See [[apply]] and [[Unarchiver.list]]. */
+  def list: ZPipeline[Any, Throwable, Byte, ArchiveEntry[Option, TarArchiveEntry]] =
+    apply().list
+
+  /** See [[apply]] and [[Unarchiver.unarchive]].
+    *
+    * ⚠️Note: the entry's content must be fully read before the next archive entry is emitted. See the project's README
+    * for the consequences, tips and workarounds.
+    */
   def unarchive
     : ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, TarArchiveEntry], ZStream[Any, IOException, Byte])] =
     apply().unarchive
+
 }
 
 final class TarUnarchiver private (chunkSize: Int) extends Unarchiver[Option, TarArchiveEntry] {
@@ -76,15 +85,22 @@ final class TarUnarchiver private (chunkSize: Int) extends Unarchiver[Option, Ta
             ZIO.attemptBlockingInterrupt(tarInputStream.close()).orDie
           }
       } yield
-        ZStream.repeatZIOOption {
+        ZStream.unfoldZIO(Option.empty[Promise[Nothing, Unit]]) { previousEntryFullyRead =>
           for {
-            entry <- ZIO.attemptBlockingInterrupt(Option(tarInputStream.getNextEntry)).some
-          } yield {
-            val archiveEntry = ArchiveEntry.fromUnderlying[Option, TarArchiveEntry](entry)
-            // TarArchiveInputStream.read does not try to read the requested number of bytes, but it does have a good
-            // `available()` implementation, so with buffering we can still get full chunks.
-            (archiveEntry, ZStream.fromInputStream(new BufferedInputStream(tarInputStream, chunkSize), chunkSize))
-          }
+            // Wait with reading the next entry until the contents of the previous entry were fully read
+            _ <- previousEntryFullyRead.fold(ZIO.unit)(_.await)
+            entryFullyRead <- Promise.make[Nothing, Unit]
+            optionalEntry <- ZIO.attemptBlockingInterrupt(Option(tarInputStream.getNextEntry))
+          } yield
+            optionalEntry.map { entry =>
+              val archiveEntry = ArchiveEntry.fromUnderlying[Option, TarArchiveEntry](entry)
+              // TarArchiveInputStream.read does not try to read the requested number of bytes, but it does have a good
+              // `available()` implementation, so with buffering we can still get full chunks.
+              val entryContentStream =
+                ZStream.fromInputStream(new BufferedInputStream(tarInputStream, chunkSize), chunkSize) ++
+                  ZStream.execute(entryFullyRead.succeed(()))
+              ((archiveEntry, entryContentStream), Some(entryFullyRead))
+            }
         }
     }
 }

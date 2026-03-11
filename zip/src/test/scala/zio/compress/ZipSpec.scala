@@ -74,6 +74,8 @@ object ZipSpec extends ZIOSpecDefault {
             ZStream(archiveEntry("readme.txt", "Hello world!"))
               .via(ZipArchiver.archive)
               .via(ZipUnarchiver.unarchive)
+              // The unarchiver doesn't end nor produce more entries unless the entry's content is fully read
+              .tap { case (_, stream) => stream.runDrain }
               .runCollect
         } yield assertTrue(obtained.head._1.name == "readme.txt")
       },
