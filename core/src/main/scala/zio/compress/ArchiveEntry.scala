@@ -6,7 +6,7 @@ import java.time.Instant
 
 final case class ArchiveEntry[+Size[A] <: Option[A], +Underlying](
   name: String,
-  uncompressedSize: Size[Long] = None: Option[Long],
+  uncompressedSize: Size[Long] = Option.empty[Long],
   isDirectory: Boolean = false,
   lastModified: Option[Instant] = None,
   lastAccess: Option[Instant] = None,
@@ -17,6 +17,9 @@ final case class ArchiveEntry[+Size[A] <: Option[A], +Underlying](
 
   def withUncompressedSize[S[A] <: Option[A]](uncompressedSize: S[Long]): ArchiveEntry[S, Underlying] =
     copy(uncompressedSize = uncompressedSize)
+
+  def withKnownUncompressedSize(uncompressedSize: Long): ArchiveEntry[Some, Underlying] =
+    copy(uncompressedSize = Some(uncompressedSize))
 
   def withIsDirectory(isDirectory: Boolean): ArchiveEntry[Size, Underlying] = copy(isDirectory = isDirectory)
 

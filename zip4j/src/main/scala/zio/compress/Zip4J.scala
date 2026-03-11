@@ -69,10 +69,19 @@ object Zip4JUnarchiver {
   ): Zip4JUnarchiver =
     new Zip4JUnarchiver(password, chunkSize)
 
-  /** See [[apply]] and [[Unarchiver.unarchive]]. */
+  /** See [[apply]] and [[Unarchiver.list]]. */
+  def list: ZPipeline[Any, Throwable, Byte, ArchiveEntry[Option, LocalFileHeader]] =
+    apply().list
+
+  /** See [[apply]] and [[Unarchiver.unarchive]].
+    *
+    * ⚠️Note: the entry's content must be fully read before the next archive entry is emitted. See the project's README
+    * for the consequences, tips and workarounds.
+    */
   def unarchive
     : ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, LocalFileHeader], ZStream[Any, IOException, Byte])] =
     apply().unarchive
+
 }
 
 final class Zip4JUnarchiver private (password: Option[String], chunkSize: Int)
@@ -90,16 +99,24 @@ final class Zip4JUnarchiver private (password: Option[String], chunkSize: Int)
             ZIO.attemptBlockingInterrupt(zipInputStream.close()).orDie
           }
       } yield
-        ZStream.repeatZIOOption {
+        ZStream.unfoldZIO(Option.empty[Promise[Nothing, Unit]]) { previousEntryFullyRead =>
           for {
-            entry <- ZIO.attemptBlockingInterrupt(Option(zipInputStream.getNextEntry)).some
-          } yield {
-            val archiveEntry = ArchiveEntry.fromUnderlying[Option, LocalFileHeader](entry)
-            // ZipInputStream.read seems to do its best to read the requested number of bytes. No buffering is needed.
-            (archiveEntry, ZStream.fromInputStream(zipInputStream, chunkSize))
-          }
+            // Wait with reading the next entry until the contents of the previous entry were fully read
+            _ <- previousEntryFullyRead.fold(ZIO.unit)(_.await)
+            entryFullyRead <- Promise.make[Nothing, Unit]
+            optionalEntry <- ZIO.attemptBlockingInterrupt(Option(zipInputStream.getNextEntry))
+          } yield
+            optionalEntry.map { entry =>
+              val archiveEntry = ArchiveEntry.fromUnderlying[Option, LocalFileHeader](entry)
+              // ZipInputStream.read seems to do its best to read the requested number of bytes. No buffering
+              // is needed.
+              val entryContentStream = ZStream.fromInputStream(zipInputStream, chunkSize) ++
+                ZStream.execute(entryFullyRead.succeed(()))
+              ((archiveEntry, entryContentStream), Some(entryFullyRead))
+            }
         }
     }
+
 }
 
 object Zip4J {
