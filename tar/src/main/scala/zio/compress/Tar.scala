@@ -36,9 +36,11 @@ final class TarArchiver private extends Archiver[Some] {
         .via(checkUncompressedSize)
         .mapZIO { case (archiveEntry, contentStream) =>
           def entry = archiveEntry.underlying[TarArchiveEntry]
-          ZIO.attemptBlocking(tarOutputStream.putArchiveEntry(entry)) *>
-            contentStream.runForeachChunk(chunk => ZIO.attemptBlocking(tarOutputStream.write(chunk.toArray))) *>
-            ZIO.attemptBlocking(tarOutputStream.closeArchiveEntry())
+          ZIO.attemptBlockingInterrupt(tarOutputStream.putArchiveEntry(entry)) *>
+            contentStream.runForeachChunk { chunk =>
+              ZIO.attemptBlockingInterrupt(tarOutputStream.write(chunk.toArray))
+            } *>
+            ZIO.attemptBlockingInterrupt(tarOutputStream.closeArchiveEntry())
         }
         .runDrain
     }
@@ -70,13 +72,13 @@ final class TarUnarchiver private (chunkSize: Int) extends Unarchiver[Option, Ta
     viaInputStream[(ArchiveEntry[Option, TarArchiveEntry], ZStream[Any, IOException, Byte])]() { inputStream =>
       for {
         tarInputStream <-
-          ZIO.acquireRelease(ZIO.attemptBlocking(new TarArchiveInputStream(inputStream))) { tarInputStream =>
-            ZIO.attemptBlocking(tarInputStream.close()).orDie
+          ZIO.acquireRelease(ZIO.attemptBlockingInterrupt(new TarArchiveInputStream(inputStream))) { tarInputStream =>
+            ZIO.attemptBlockingInterrupt(tarInputStream.close()).orDie
           }
       } yield
         ZStream.repeatZIOOption {
           for {
-            entry <- ZIO.attemptBlocking(Option(tarInputStream.getNextEntry)).some
+            entry <- ZIO.attemptBlockingInterrupt(Option(tarInputStream.getNextEntry)).some
           } yield {
             val archiveEntry = ArchiveEntry.fromUnderlying[Option, TarArchiveEntry](entry)
             // TarArchiveInputStream.read does not try to read the requested number of bytes, but it does have a good

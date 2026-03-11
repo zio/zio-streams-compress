@@ -38,7 +38,7 @@ private[compress] object JavaIoInterop {
     queueSize: Int = Defaults.DefaultChunkedQueueSize,
   )(makeInputStream: InputStream => InputStream): ZPipeline[Any, Throwable, Byte, Byte] =
     viaInputStream[Byte](queueSize) { inputStream =>
-      ZIO.attemptBlocking(ZStream.fromInputStream(makeInputStream(inputStream), chunkSize))
+      ZIO.attemptBlockingInterrupt(ZStream.fromInputStream(makeInputStream(inputStream), chunkSize))
     }
 
   /** Makes a pipeline that makes the incoming ZStream available for reading via an InputStream. This is then used by
@@ -57,7 +57,9 @@ private[compress] object JavaIoInterop {
     *   Defaults to 2.
     * @param streamReader
     *   A ZIO that reads from the given incoming InputStream to produce the outgoing ZStream. The outgoing ZStream must
-    *   end when the InputStream closes.
+    *   end when the InputStream closes. To prevent stalls during early clean up, the streamReader should be
+    *   interruptable, even when it is blocked reading from the inputStream. This is typically achieved by wrapping all
+    *   read operations with [[ZIO.attemptBlockingInterrupt()]].
     * @return
     *   The created pipeline.
     */
@@ -75,7 +77,11 @@ private[compress] object JavaIoInterop {
                  .map(Take.chunk)
                  .run(ZSink.fromQueue(queue))
                  .onDoneCause(
-                   (cause: Cause[Throwable]) => queue.offer(Take.failCause(cause)),
+                   (cause: Cause[Throwable]) =>
+                     // Some unarchivers don't read until the end. For example, Java's ZipInputStream
+                     // doesn't read the directory at the end of the file. The consequence is that
+                     // this fiber is interrupted before it's done. We should not fail on the interrupt.
+                     ZIO.unless(cause.isInterruptedOnly)(queue.offer(Take.failCause(cause))),
                    _ => queue.offer(Take.end),
                  )
                  .forkScoped
@@ -120,7 +126,7 @@ private[compress] object JavaIoInterop {
     queueSize: Int = Defaults.DefaultChunkedQueueSize,
   ): ZPipeline[Any, Throwable, Byte, Byte] =
     viaOutputStream[Byte, OutputStream](makeOutputStream, chunkSize, queueSize) { case (stream, outputStream) =>
-      stream.runForeachChunk(chunk => ZIO.attemptBlocking(outputStream.write(chunk.toArray)))
+      stream.runForeachChunk(chunk => ZIO.attemptBlockingInterrupt(outputStream.write(chunk.toArray)))
     }
 
   /** Makes a pipeline that captures the output of an OutputStream and makes it available as the outgoing ZStream. The
@@ -129,7 +135,10 @@ private[compress] object JavaIoInterop {
     *
     * This illustrates how data flows in the pipeline implementation:
     * {{{
-    * Incoming ZStream --streamWriter--> wrapping OutputStream --> buffered OutputStream --> queue --> outgoing ZStream
+    * Incoming ZStream --streamWriter--> wrapping OutputStream --> buffered OutputStream --> queue <-- outgoing ZStream
+    *
+    * --> push
+    * <-- pull
     * }}}
     *
     * Often, the wrapping OutputStreams needs to write to its underlying outputStream immediately (from the
@@ -148,7 +157,9 @@ private[compress] object JavaIoInterop {
     *   The internal queue size. Defaults to 2.
     * @param streamWriter
     *   Function that writes items from the incoming ZStream to the wrapped OutputStream. The wrapped OutputStream
-    *   should _not_ be closed when the incoming ZStream ends.
+    *   should _not_ be closed when the incoming ZStream ends. To prevent stalls when not all data is read from the
+    *   created pipeline, the writer should be interruptable, even when it is writing to the outputStream. This is
+    *   typically achieved by wrapping all write operations with [[ZIO.attemptBlockingInterrupt()]].
     * @tparam In
     *   Type of incoming items.
     * @tparam OS
@@ -178,8 +189,8 @@ private[compress] object JavaIoInterop {
                  .flatMap { outputStream =>
                    streamWriter(stream, outputStream)
                      .onDoneCause(
-                       cause => queue.offer(Take.failCause(cause)),
-                       _ => ZIO.attemptBlocking(outputStream.close()).orDie,
+                       cause => ZIO.unless(cause.isInterruptedOnly)(queue.offer(Take.failCause(cause))),
+                       _ => ZIO.attemptBlockingInterrupt(outputStream.close()).orDie,
                      )
                  }
                  .forkScoped
