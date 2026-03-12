@@ -89,8 +89,8 @@ object ExampleApp extends ZIOAppDefault {
 
 ## Unarchiving
 
-As of zio-streams-compress 2.0.0, all unarchivers require the consumer to fully read the entry's contents before the
-next archive entry is emitted.
+As of zio-streams-compress 2.0, all unarchivers require the consumer to fully read the entry's contents before the next
+archive entry is emitted.
 
 ⚠️ Not reading the entry's content, causes the unarchive pipeline to lock up and halt your program.
 
