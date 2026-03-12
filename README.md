@@ -14,16 +14,16 @@ archive formats with [ZIO Streams](https://zio.dev).
 In order to use this library, we need to add one of the following line in our `build.sbt` file:
 
 ```sbt
-libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli" % "1.1.4"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli4j" % "1.1.4"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-bzip2" % "1.1.4"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "1.1.4"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-lz4" % "1.1.4"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-snappy" % "1.1.4"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "1.1.4"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "1.1.4"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-zip4j" % "1.1.4"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-zstd" % "1.1.4"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli" % "2.0.0"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli4j" % "2.0.0"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-bzip2" % "2.0.0"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "2.0.0"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-lz4" % "2.0.0"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-snappy" % "2.0.0"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "2.0.0"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "2.0.0"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-zip4j" % "2.0.0"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-zstd" % "2.0.0"
 ```
 
 For Brotli you can choose between the 'brotli' and the 'brotli4j' version. The first is based on the official Java
@@ -40,9 +40,9 @@ Currently only jvm is supported. PRs for scala-js and scala-native are welcome.
 ```scala
 // Example.sc
 // Run with: scala-cli Example.sc
-//> using dep dev.zio:zio-streams-compress-gzip:1.1.4
-//> using dep dev.zio:zio-streams-compress-tar:1.1.4
-//> using dep dev.zio:zio-streams-compress-zip4j:1.1.4
+//> using dep dev.zio:zio-streams-compress-gzip:2.0.0
+//> using dep dev.zio:zio-streams-compress-tar:2.0.0
+//> using dep dev.zio:zio-streams-compress-zip4j:2.0.0
 
 import zio._
 import zio.compress.{ArchiveEntry, GzipCompressor, GzipDecompressor, TarUnarchiver, Zip4JArchiver}
@@ -89,8 +89,8 @@ object ExampleApp extends ZIOAppDefault {
 
 ## Unarchiving
 
-As of zio-streams-compress 2.0, all unarchivers require the consumer to fully read the entry's contents before the next
-archive entry is emitted.
+As of zio-streams-compress 2.0.0, all unarchivers require the consumer to fully read the entry's contents before the
+next archive entry is emitted.
 
 ⚠️ Not reading the entry's content, causes the unarchive pipeline to lock up and halt your program.
 
