@@ -2,7 +2,7 @@ import zio.sbt.githubactions.Condition
 
 val V = new {
   val brotli = "0.1.2"
-  val brotli4j = "1.21.0"
+  val brotli4j = "1.22.0"
   val commonsCompress = "1.28.0"
   val logbackClassic = "1.5.32"
   val lz4 = "1.8.1"
