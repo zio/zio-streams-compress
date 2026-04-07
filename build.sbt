@@ -7,7 +7,7 @@ val V = new {
   val logbackClassic = "1.5.32"
   val lz4 = "1.10.4"
   val snappy = "1.1.10.8"
-  val zio = "2.1.24"
+  val zio = "2.1.25"
   val zip4j = "2.11.6"
   val zstdJni = "1.5.7-7"
 }
