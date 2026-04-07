@@ -5,7 +5,7 @@ val V = new {
   val brotli4j = "1.22.0"
   val commonsCompress = "1.28.0"
   val logbackClassic = "1.5.32"
-  val lz4 = "1.8.1"
+  val lz4 = "1.10.4"
   val snappy = "1.1.10.8"
   val zio = "2.1.24"
   val zip4j = "2.11.6"
@@ -147,7 +147,7 @@ lazy val lz4 = project
   .settings(
     name := "zio-streams-compress-lz4",
     libraryDependencies ++= Seq(
-      "org.lz4" % "lz4-java" % V.lz4
+      "at.yawk.lz4" % "lz4-java" % V.lz4
     ),
   )
 
