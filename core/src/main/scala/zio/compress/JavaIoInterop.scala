@@ -38,7 +38,7 @@ private[compress] object JavaIoInterop {
     queueSize: Int = Defaults.DefaultChunkedQueueSize,
   )(makeInputStream: InputStream => InputStream): ZPipeline[Any, Throwable, Byte, Byte] =
     viaInputStream[Byte](queueSize) { inputStream =>
-      ZIO.attemptBlockingInterrupt(ZStream.fromInputStream(makeInputStream(inputStream), chunkSize))
+      ZIO.attempt(ZStream.fromInputStream(makeInputStream(inputStream), chunkSize))
     }
 
   /** Makes a pipeline that makes the incoming ZStream available for reading via an InputStream. This is then used by

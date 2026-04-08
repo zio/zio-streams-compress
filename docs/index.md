@@ -26,6 +26,8 @@ libraryDependencies += "dev.zio" %% "zio-streams-compress-zip4j" % "@VERSION@"
 libraryDependencies += "dev.zio" %% "zio-streams-compress-zstd" % "@VERSION@"
 ```
 
+_As of 2.2.0, zio-streams-compress requires zio 2.1.25 or later._
+
 For Brotli you can choose between the 'brotli' and the 'brotli4j' version. The first is based on the official Java
 library but only does decompression. The second is based on [Brotli4J](https://github.com/hyperxpro/Brotli4j) which does
 compression and decompression.
