@@ -28,10 +28,6 @@ inThisBuild(
     scala3 := _scala3,
     crossScalaVersions := List(scala3.value, scala213.value, scala212.value),
     run / fork := true,
-    // Update the readme on every push to master:
-    ciUpdateReadmeCondition := Some(
-      Condition.Expression("github.ref == format('refs/heads/{0}', github.event.repository.default_branch)")
-    ),
     ciEnabledBranches := Seq("main"),
     ciTargetJavaVersions := List("17", "21", "25"),
     ciJvmOptions ++= Seq("-Xmx4G", "-Xss2M", "-XX:+UseG1GC"),
