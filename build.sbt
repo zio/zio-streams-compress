@@ -14,7 +14,7 @@ val V = new {
 
 val _scala212 = "2.12.21"
 val _scala213 = "2.13.18"
-val _scala3 = "3.3.7"
+val _scala3 = "3.3.8"
 val scalaVersions = List(_scala3, _scala213, _scala212)
 
 enablePlugins(ZioSbtEcosystemPlugin, ZioSbtCiPlugin)
