@@ -4,12 +4,12 @@ val V = new {
   val brotli = "0.1.2"
   val brotli4j = "1.23.0"
   val commonsCompress = "1.28.0"
-  val logbackClassic = "1.5.38"
+  val logbackClassic = "1.6.1"
   val lz4 = "1.11.1"
   val snappy = "1.1.10.8"
   val zio = "2.1.26"
   val zip4j = "2.11.6"
-  val zstdJni = "1.5.7-11"
+  val zstdJni = "1.5.7-12"
 }
 
 val _scala212 = "2.12.21"
