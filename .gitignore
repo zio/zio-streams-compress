@@ -208,3 +208,7 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Docusaurus / Node website directory
+/website/
+
