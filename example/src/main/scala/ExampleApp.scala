@@ -1,41 +1,41 @@
 import zio._
-import zio.compress.{ArchiveEntry, GzipCompressor, GzipDecompressor, TarUnarchiver, Zip4JArchiver}
+import zio.compress._
 import zio.stream._
 
-import java.nio.charset.StandardCharsets.UTF_8
+import java.nio.file.{Files, Path}
+import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
 
 object ExampleApp extends ZIOAppDefault {
-  override def run: ZIO[Any, Any, Any] =
+
+  def extractFromFile(sourceZip: Path, destinationDir: Path): ZIO[Any, Throwable, Unit] =
     for {
-      // Compress a file with GZIP
-      _ <- ZStream
-             .fromFileName("file")
-             .via(GzipCompressor.compress)
-             .run(ZSink.fromFileName("file.gz"))
+      _ <- ZIO.logInfo(s"[streaming] extract start $sourceZip from $sourceZip")
+      entryCount = new AtomicInteger(0)
+      _ <- ZStream.fromPath(sourceZip)
+        .via(ZipUnarchiver.unarchive)
+        .mapZIO { case (entry, contentStream) =>
+          val i = entryCount.incrementAndGet()
+          val targetPath = destinationDir.resolve(entry.name)
+          val bytesRead = new AtomicLong(0)
+          val tappedStream = contentStream.tapChunks { chunk =>
+            ZIO.succeed(bytesRead.addAndGet(chunk.size.toLong)).unit
+          }
 
-      // List all items in a gzip tar archive:
-      _ <- ZStream
-             .fromFileName("file.tgz")
-             .via(GzipDecompressor.decompress)
-             .via(TarUnarchiver.unarchive)
-             .mapZIO { case (archiveEntry, contentStream) =>
-               for {
-                 content <- contentStream.runCollect
-                 _ <- Console.printLine(s"${archiveEntry.name} ${content.length}")
-               } yield ()
-             }
-             .runDrain
-
-      // Create an encrypted ZIP archive
-      _ <- ZStream(archiveEntry("file1.txt", "Hello world!".getBytes(UTF_8)))
-             .via(Zip4JArchiver(password = Some("it is a secret")).archive)
-             .run(ZSink.fromFileName("file.zip"))
+          ZIO.logInfo(s"[streaming] entry #$i START name=${entry.name} isDir=${entry.isDirectory} size=${entry.uncompressedSize} ($sourceZip)") *>
+            (if (entry.isDirectory) {
+              tappedStream.runDrain *>
+                ZIO.attemptBlockingIO(Files.createDirectories(targetPath))
+            } else {
+              ZIO.attemptBlockingIO(Files.createDirectories(targetPath.getParent)) *>
+                tappedStream.run(ZSink.fromPath(targetPath)).unit
+            }) *>
+            ZIO.logInfo(s"[streaming] entry #$i DONE name=${entry.name} bytesRead=${bytesRead.get()} ($sourceZip)")
+        }
+        .runDrain
+      _ <- ZIO.logInfo(s"[streaming] extracted $sourceZip to $destinationDir entries=${entryCount.get()}")
     } yield ()
 
-  private def archiveEntry(
-    name: String,
-    content: Array[Byte],
-  ): (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]) =
-    (ArchiveEntry(name, Some(content.length.toLong)), ZStream.fromIterable(content))
+  override def run: ZIO[Any, Any, Any] =
+    extractFromFile(Path.of("/Users/erik/Downloads/large.zip"), Path.of("/Users/erik/Downloads/out"))
 
 }

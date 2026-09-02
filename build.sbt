@@ -196,7 +196,7 @@ lazy val zstd = project
 
 lazy val example = project
   .in(file("example"))
-  .dependsOn(gzip, tar, zip4j)
+  .dependsOn(gzip, tar, zip4j, zip)
   .settings(commonSettings("example"))
   .settings(
     publishArtifact := false,
