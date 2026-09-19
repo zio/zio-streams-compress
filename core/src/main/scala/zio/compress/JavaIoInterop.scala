@@ -72,6 +72,8 @@ private[compress] object JavaIoInterop {
       ZStream.unwrapScoped {
         for {
           queue <- ZIO.acquireRelease(Queue.bounded[Take[Throwable, Byte]](queueSize))(_.shutdown)
+          runtime <- ZIO.runtime[Any]
+          readerClosed <- Promise.make[Nothing, Unit]
           _ <- stream
                  .chunks
                  .map(Take.chunk)
@@ -85,8 +87,9 @@ private[compress] object JavaIoInterop {
                    _ => queue.offer(Take.end),
                  )
                  .forkScoped
-          queueInputStream <- ZStream.fromQueue(queue).flattenTake.toInputStream
-          result <- streamReader(queueInputStream)
+          // When `streamReader` closes, we must stop reading from the queue to prevent deadlock.
+          queueInputStream <- ZStream.fromQueue(queue).interruptWhen(readerClosed.await).flattenTake.toInputStream
+          result <- streamReader(new CloseDetectingInputStream(queueInputStream, runtime, readerClosed))
         } yield result
       }
     }
@@ -199,7 +202,7 @@ private[compress] object JavaIoInterop {
     }
 }
 
-private[compress] final class QueueOutputStream[E](runtime: Runtime[Any], queue: Queue[Take[E, Byte]])
+private final class QueueOutputStream[E](runtime: Runtime[Any], queue: Queue[Take[E, Byte]])
     extends OutputStream {
   override def write(b: Int): Unit =
     offer(Take.single(b.toByte))
@@ -220,4 +223,49 @@ private[compress] final class QueueOutputStream[E](runtime: Runtime[Any], queue:
       }
     }
   }
+}
+
+/** An `InputStream` that signals a promise upon close. */
+private final class CloseDetectingInputStream(
+  wrapped: InputStream,
+  runtime: Runtime[Any],
+  closed: Promise[Nothing, Unit],
+) extends InputStream {
+
+  override def close(): Unit = {
+    val _ = Unsafe.unsafe { implicit unsafe =>
+      runtime.unsafe.run {
+        closed.succeed(())
+      }
+    }
+    wrapped.close()
+  }
+
+  // All other methods directly delegated
+
+  override def read(): Int = wrapped.read()
+
+  override def read(b: Array[Byte]): Int = wrapped.read(b)
+
+  override def read(b: Array[Byte], off: RuntimeFlags, len: RuntimeFlags): Int = wrapped.read(b, off, len)
+
+  override def readAllBytes(): Array[Byte] = wrapped.readAllBytes()
+
+  override def readNBytes(len: RuntimeFlags): Array[Byte] = wrapped.readNBytes(len)
+
+  override def readNBytes(b: Array[Byte], off: RuntimeFlags, len: RuntimeFlags): Int = wrapped.readNBytes(b, off, len)
+
+  override def skip(n: Long): Long = wrapped.skip(n)
+
+  override def skipNBytes(n: Long): Unit = wrapped.skipNBytes(n)
+
+  override def available(): Int = wrapped.available()
+
+  override def mark(readlimit: RuntimeFlags): Unit = wrapped.mark(readlimit)
+
+  override def reset(): Unit = wrapped.reset()
+
+  override def markSupported(): Boolean = wrapped.markSupported()
+
+  override def transferTo(out: OutputStream): Long = wrapped.transferTo(out)
 }
