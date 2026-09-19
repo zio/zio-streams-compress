@@ -103,13 +103,13 @@ operate in a streaming fashion without corrupting content.
 Most of the time the new requirement should not be an issue. For example, you can concatenate 'unarchive' and 'archive'
 pipelines without problems.
 
-Here are two cases where the requirement can be issue:
+Here are two use cases where the requirement can be an issue:
 
 1. You are only interested in the metadata of the archive entries. In this case you can use the unarchiver's `list`
    method which drains the entry's contents behind the scenes.
 
-2. Buffering, aggregation or rechunking is needed to improve throughput.
-   In this case you can first slurp the content in memory, and then do the buffering/aggregation/rechunking.
+2. Buffering, aggregation, rechunking or parallel processing is needed to improve throughput.
+   In this case you can first slurp the content in memory, and then do the buffering/aggregation/etc.
    As the whole entry will be pulled into memory, checking the size is prudent. Be aware that the reported size might
    not be available, or may even be maliciously incorrect! Here is an example that loads at most `maxEntrySize` bytes
    per entry:
@@ -125,5 +125,5 @@ ZStream
       else ZIO.succss((archiveEntry, content))
     }
   }
-  .rechunk(10) // here it is safe to rechunk
+  .rechunk(10) // here it is safe to rechunk, process in parallel, etc.
 ```
