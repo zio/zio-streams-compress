@@ -86,7 +86,7 @@ private[compress] object JavaIoInterop {
                  )
                  .forkScoped
           queueInputStream <- ZStream.fromQueue(queue).flattenTake.toInputStream
-          result <- streamReader(queueInputStream)
+          result <- streamReader(new EmptyingInputStream(queueInputStream))
         } yield result
       }
     }
@@ -199,7 +199,18 @@ private[compress] object JavaIoInterop {
     }
 }
 
-private[compress] final class QueueOutputStream[E](runtime: Runtime[Any], queue: Queue[Take[E, Byte]])
+private final class EmptyingInputStream(in: InputStream) extends InputStream {
+  override def read(): Int = in.read()
+
+  override def close(): Unit = {
+    // Before closing, read all remaining bytes from the input stream
+    val buffer = Array.ofDim[Byte](1024)
+    while (in.read(buffer) > 0) {}
+    super.close()
+  }
+}
+
+private final class QueueOutputStream[E](runtime: Runtime[Any], queue: Queue[Take[E, Byte]])
     extends OutputStream {
   override def write(b: Int): Unit =
     offer(Take.single(b.toByte))
