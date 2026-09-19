@@ -38,10 +38,10 @@ object ExampleApp extends ZIOAppDefault {
     } yield ()
 
   override def run: ZIO[Any, Any, Any] = {
-    // download problematic file from
+    // download problematic file to your home dir from
     // https://repo1.maven.org/maven2/io/ktor/ktor-serialization-jvm/3.2.3/ktor-serialization-jvm-3.2.3-javadoc.jar
     extractFromFile(
-      Path.of("ktor-serialization-jvm-3.2.3-javadoc.jar"),
+      Path.of(sys.props("user.home"), "ktor-serialization-jvm-3.2.3-javadoc.jar"),
       Files.createTempDirectory("zio-streams-compress-test")
     )
   }
