@@ -9,7 +9,7 @@ val V = new {
   val snappy = "1.1.10.11"
   val zio = "2.1.26"
   val zip4j = "2.11.6"
-  val zstdJni = "1.5.7-21"
+  val zstdJni = "1.5.7-22"
 }
 
 val _scala212 = "2.12.21"
