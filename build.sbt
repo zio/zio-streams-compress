@@ -208,7 +208,7 @@ lazy val example = project
 
 lazy val docs = project
   .in(file("docs-project"))
-  .dependsOn(core)
+  .dependsOn(core, brotli, brotli4j, bzip2, gzip, lz4, snappy, tar, zip, zip4j, zstd)
   .enablePlugins(WebsitePlugin)
   .settings(commonSettings("docs"))
   .settings(
