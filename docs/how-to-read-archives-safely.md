@@ -8,7 +8,7 @@ Reading an archive means reading entries that someone else may have written. Thi
 
 ## Read Each Entry Before the Next One
 
-Every unarchiver in this library emits entries in a streaming fashion. The content of an entry is a stream that reads from the archive directly. When you move on to the next entry without reading the current content, the pipeline waits for you and the program stalls.
+Every unarchiver in this library emits entries in a streaming fashion. The content of an entry is a stream that reads from the archive directly. When you move on to the next entry without reading the current content, the pipeline waits for that content to be read. Nothing reads it, so the pipeline never continues. The program locks up and halts without an error.
 
 For that reason, read each entry's content completely before the next entry is emitted. The simplest way is to run the content stream inside the `mapZIO` that handles the entry:
 
@@ -32,6 +32,36 @@ val printSizes =
 `ZStream#runCount` reads the whole entry and counts its bytes. The next entry waits until this one is finished.
 
 If you only need the metadata of each entry, use `list` instead. `list` reads the content for you, and it fills in the uncompressed size. The same rule applies to all unarchivers.
+
+The rule replaces the behavior of zio-streams-compress 1.x. In 1.x, consuming the next entry, even by accident, corrupted the content of every entry. For example, buffering or rechunking the entries before reading them did that. Since 2.0 the unarchiver reads each entry on demand, so it can keep streaming without corrupting content. The price is that each entry must be read before the next one starts.
+
+## Rechunk, Buffer and Parallel Processing
+
+Some operators need the next entry before they emit anything. Examples are `rechunk` with a size above one, `grouped`, and `zip`. If such an operator runs directly after `unarchive`, it asks for the second entry while the first one is still unread, so the pipeline locks up:
+
+```scala
+// Locks up: rechunk asks for the second entry before the first entry's content is read
+ZStream.fromFileName("archive.zip").via(ZipUnarchiver().unarchive).rechunk(10)
+```
+
+Put these operators after the step that reads each entry's content. `buffer` and `mapZIOPar` follow the same rule: each step reads its entry's content before it returns. Once that holds, the entries can be processed in parallel and in batches:
+
+```scala mdoc:compile-only
+import zio.compress._
+import zio.stream._
+
+val countBytes =
+  ZStream
+    .fromFileName("archive.zip")
+    .via(ZipUnarchiver().unarchive)
+    .mapZIOPar(4) { case (archiveEntry, contentStream) =>
+      contentStream.runCount.map(count => (archiveEntry.name, count))
+    }
+    .rechunk(10) // safe: each entry's content was read before its result is emitted
+    .runDrain
+```
+
+Reading only part of an entry counts as not reading it. If you stop an entry's content early, for example with `take`, the next entry waits forever. The size-limit example below avoids this, because it fails the stream when an entry is too large instead of stopping early.
 
 ## Stop Entries That Are Too Large
 
