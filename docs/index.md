@@ -4,14 +4,13 @@ title: "Compression and archives with zio-streams"
 sidebar_label: "ZIO Streams Compress"
 ---
 
-[ZIO Streams Compress](https://github.com/zio/zio-streams-compress) integrates several compression algorithms and
-archive formats with [ZIO Streams](https://zio.dev).
+[ZIO Streams Compress](https://github.com/zio/zio-streams-compress) integrates several compression algorithms and archive formats with [ZIO Streams](https://zio.dev). Every codec and archive format is a pipeline, so it fits into a stream with `via` like any other operator.
 
 @PROJECT_BADGES@ [![Scala Steward badge](https://img.shields.io/badge/Scala_Steward-helping-blue.svg?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAMAAAARSr4IAAAAVFBMVEUAAACHjojlOy5NWlrKzcYRKjGFjIbp293YycuLa3pYY2LSqql4f3pCUFTgSjNodYRmcXUsPD/NTTbjRS+2jomhgnzNc223cGvZS0HaSD0XLjbaSjElhIr+AAAAAXRSTlMAQObYZgAAAHlJREFUCNdNyosOwyAIhWHAQS1Vt7a77/3fcxxdmv0xwmckutAR1nkm4ggbyEcg/wWmlGLDAA3oL50xi6fk5ffZ3E2E3QfZDCcCN2YtbEWZt+Drc6u6rlqv7Uk0LdKqqr5rk2UCRXOk0vmQKGfc94nOJyQjouF9H/wCc9gECEYfONoAAAAASUVORK5CYII=)](https://scala-steward.org)
 
 ## Installation
 
-In order to use this library, we need to add one of the following line in our `build.sbt` file:
+To use the library, add one or more of the following lines to your `build.sbt` file:
 
 ```sbt
 libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli" % "@VERSION@"
@@ -26,104 +25,89 @@ libraryDependencies += "dev.zio" %% "zio-streams-compress-zip4j" % "@VERSION@"
 libraryDependencies += "dev.zio" %% "zio-streams-compress-zstd" % "@VERSION@"
 ```
 
+Each module depends on `core`, which is pulled in automatically. Add only the modules you use.
+
 _As of 2.1.3, zio-streams-compress requires zio 2.1.25 or later._
 
-For Brotli you can choose between the 'brotli' and the 'brotli4j' version. The first is based on the official Java
-library but only does decompression. The second is based on [Brotli4J](https://github.com/hyperxpro/Brotli4j) which does
-compression and decompression.
+The library is published for Scala 3, 2.13, and 2.12, and runs on the JVM. Scala.js and Scala Native are not supported. PRs for them are welcome.
 
-For ZIP files you can choose between the 'zip' and the 'zip4j' version. The first allows you to tweak the compression
-level, while the second allows you work with password-protected ZIP files.
+## Choosing a Codec
 
-Currently only jvm is supported. PRs for scala-js and scala-native are welcome.
+The table lists each codec with its module. Compression and decompression are both available unless the table says otherwise.
 
-### Example
+| Format      | Module       | Compress | Decompress | Notes                                             |
+|-------------|--------------|----------|------------|---------------------------------------------------|
+| Gzip        | `gzip`       | Yes      | Yes        | Widely supported. Built on the JDK.               |
+| Zstd        | `zstd`       | Yes      | Yes        | Good ratio at high speed. Dictionary on write only. |
+| Brotli      | `brotli`     | No       | Yes        | Decompression only, pure Java.                    |
+| Brotli      | `brotli4j`   | Yes      | Yes        | Compresses text well. Loads a native library.     |
+| Bzip2       | `bzip2`      | Yes      | Yes        | Good ratio. Uses a lot of memory.                 |
+| LZ4         | `lz4`        | Yes      | Yes        | Very fast. Favors speed over ratio.               |
+| Snappy      | `snappy`     | Yes      | Yes        | Fast. Three write formats.                        |
+| ZIP         | `zip`        | Yes      | Yes        | Archive format. Entries may have unknown size.    |
+| ZIP         | `zip4j`      | Yes      | Yes        | Archive format. Reads password-protected archives. |
+| Tar         | `tar`        | Yes      | Yes        | Archive format. No compression of its own.        |
 
-```scala
-// Example.sc
-// Run with: scala-cli Example.sc
-//> using dep dev.zio:zio-streams-compress-gzip:@VERSION@
-//> using dep dev.zio:zio-streams-compress-tar:@VERSION@
-//> using dep dev.zio:zio-streams-compress-zip4j:@VERSION@
+For a bundle of files, pick an archive format (ZIP or Tar). For a single stream of bytes, pick a codec. A `.tar.gz` file is a Tar archive wrapped in Gzip.
 
+## Core Concepts
+
+The library has two families of pipeline. A compressor turns bytes into compressed bytes, and a decompressor does the reverse. An archiver turns a stream of named entries into the bytes of an archive, and an unarchiver does the reverse. Every codec in the table is a compressor, a decompressor, or both. Every archive format is an archiver, an unarchiver, or both.
+
+The [Core Interfaces](./reference-core.md) reference describes these types in full. The [Tutorial](./tutorial-compress-and-archive.md) builds a small program that uses them.
+
+## Example
+
+The example below compresses a file with Gzip, lists the entries of a Tar archive compressed with Gzip, and creates a ZIP archive:
+
+```scala mdoc:compile-only
 import zio._
-import zio.compress.{ArchiveEntry, GzipCompressor, GzipDecompressor, TarUnarchiver, Zip4JArchiver}
+import zio.compress._
 import zio.stream._
-
-import java.nio.charset.StandardCharsets.UTF_8
 
 object ExampleApp extends ZIOAppDefault {
   override def run: ZIO[Any, Any, Any] =
     for {
-      // Compress a file with GZIP
+      // Compress a file with Gzip
       _ <- ZStream
              .fromFileName("file")
              .via(GzipCompressor.compress)
              .run(ZSink.fromFileName("file.gz"))
 
-      // List all items in a gzip tar archive:
+      // List all items in a gzipped tar archive
       _ <- ZStream
              .fromFileName("file.tgz")
              .via(GzipDecompressor.decompress)
-             .via(TarUnarchiver.unarchive)
-             .mapZIO { case (archiveEntry, contentStream) =>
-               for {
-                 content <- contentStream.runCollect
-                 _ <- Console.printLine(s"${archiveEntry.name} ${content.length}")
-               } yield ()
+             .via(TarUnarchiver().list)
+             .mapZIO { entry =>
+               Console.printLine(s"${entry.name} ${entry.uncompressedSize.getOrElse(-1L)}")
              }
              .runDrain
 
-      // Create an encrypted ZIP archive
-      _ <- ZStream(archiveEntry("file1.txt", "Hello world!".getBytes(UTF_8)))
-             .via(Zip4JArchiver(password = Some("it is a secret")).archive)
+      // Create a ZIP archive with one entry
+      _ <- ZStream(entry("file1.txt", "Hello world!".getBytes("UTF-8")))
+             .via(ZipArchiver().archive)
              .run(ZSink.fromFileName("file.zip"))
     } yield ()
 
-  private def archiveEntry(
+  private def entry(
     name: String,
     content: Array[Byte],
-  ): (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]) =
-    (ArchiveEntry(name, Some(content.length.toLong)), ZStream.fromIterable(content))
-
+  ): (ArchiveEntry[Option, Any], ZStream[Any, Throwable, Byte]) =
+    (ArchiveEntry[Option, Any](name), ZStream.fromIterable(content))
 }
 ```
 
+The ZIP archive in the example is not encrypted. Passing a password to `Zip4JArchiver` does not encrypt yet, so the example does not use it. See the [Zip4J](./reference-zip4j.md) reference for the current state.
+
 ## Unarchiving
 
-As of zio-streams-compress 2.0, all unarchivers require the consumer to fully read the entry's contents before the next
-archive entry is emitted.
+Reading an archive requires consuming each entry's content before the next entry is emitted. Otherwise the pipeline waits and the program stalls. Use `list` when you only need the entry metadata. The [Read Archives Safely](./how-to-read-archives-safely.md) guide explains the rule and shows how to limit the size of each entry.
 
-⚠️ Not reading the entry's content, causes the unarchive pipeline to lock up and halt your program.
+## Where to Go Next
 
-In zio-streams-compress 1.x, consuming the next archive entry, even by accident for example by using buffering or
-rechunking, corrupts the content stream of all archive entries. With the new requirement the unarchiver can continue to
-operate in a streaming fashion without corrupting content.
-
-Most of the time the new requirement should not be an issue. For example, you can concatenate 'unarchive' and 'archive'
-pipelines without problems.
-
-Here are two use cases where the requirement can be an issue:
-
-1. You are only interested in the metadata of the archive entries. In this case you can use the unarchiver's `list`
-   method which drains the entry's contents behind the scenes.
-
-2. Buffering, aggregation, rechunking or parallel processing is needed to improve throughput.
-   In this case you can first slurp the content in memory, and then do the buffering/aggregation/etc.
-   As the whole entry will be pulled into memory, checking the size is prudent. Be aware that the reported size might
-   not be available, or may even be maliciously incorrect! Here is an example that loads at most `maxEntrySize` bytes
-   per entry:
-
-```scala
-ZStream
-  .fromFileName("file.zip")
-  .via(ZipUnarchiver.unarchive)
-  .mapZIO { case (archiveEntry, contentStream) =>
-    if (entry.uncompressedSize.exists(_ > maxEntrySize)) ZIO.fail("archive entry too large")
-    else contentStream.take(maxEntrySize + 1).runCollect.flatMap { content =>
-      if (content.size > maxEntrySize) ZIO.fail("archive entry too large")
-      else ZIO.succss((archiveEntry, content))
-    }
-  }
-  .rechunk(10) // here it is safe to rechunk, process in parallel, etc.
-```
+- [Tutorial: Compress and Archive Files](./tutorial-compress-and-archive.md) walks through the basics in order.
+- [How to Compress and Decompress a Stream](./how-to-compress-and-decompress.md) shows how to switch codecs.
+- [How to Create and Read Archives](./how-to-create-and-read-archives.md) covers ZIP and Tar.
+- [How to Read a Password-Protected ZIP](./how-to-read-password-protected-zip.md) reads Zip4J archives.
+- The reference pages describe every option and default of each module, from [Core Interfaces](./reference-core.md) to [Tar](./reference-tar.md).
