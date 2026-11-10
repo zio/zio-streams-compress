@@ -27,7 +27,7 @@ val entry = ArchiveEntry[Option, Any]("notes/readme.txt").withKnownUncompressedS
 val tar = ZStream((entry, ZStream.fromIterable(content))).via(TarArchiver().archive)
 ```
 
-If the number of bytes written does not match the declared size, the stream fails.
+If the number of bytes written does not match the declared size, the stream dies with an `IllegalStateException`.
 
 To write a compressed tarball, pipe the archive through a compressor. The example uses Gzip:
 
@@ -77,6 +77,6 @@ When an entry's `underlying` value is a `TarArchiveEntry` with the same director
 
 ## Notes
 
-- The writer checks the size of each entry against the bytes it receives, and fails the stream on a mismatch.
+- The writer checks the size of each entry against the bytes it receives, and dies with an `IllegalStateException` on a mismatch.
 - The reader's error type is `IOException` for the entry content, and `Throwable` for the archive structure.
 - Tar has no compression of its own. Use [Gzip](./reference-gzip.md) for `.tar.gz` files.

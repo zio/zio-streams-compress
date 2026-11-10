@@ -77,7 +77,7 @@ val writeTarGz: ZIO[Any, Throwable, Long] =
     .run(ZSink.fromFileName("docs.tar.gz"))
 ```
 
-The `withKnownUncompressedSize` call is required here, because the tar writer only accepts `ArchiveEntry[Some, _]`. If the size does not match the bytes written, the stream fails.
+The `withKnownUncompressedSize` call is required here, because the tar writer only accepts `ArchiveEntry[Some, _]`. If the size does not match the bytes written, the stream dies with an `IllegalStateException`.
 
 ## Read a ZIP Archive
 

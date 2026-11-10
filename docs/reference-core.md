@@ -122,7 +122,7 @@ Some archive formats must know the size of each entry before its content is writ
 - `Zip4JArchiver` and `TarArchiver` require `ArchiveEntry[Some, _]`. Use `withKnownUncompressedSize` or `ArchiveEntry[Some, Any](name, Some(size))`.
 - `ZipArchiver` accepts `ArchiveEntry[Option, _]`, so the size may be omitted.
 
-The writers that check sizes compare the number of bytes actually written with the declared size. A mismatch fails the stream with an `IllegalStateException`. The check is a pipeline you can also apply yourself: `Archiver.checkUncompressedSize`.
+The writers that check sizes compare the number of bytes actually written with the declared size. A mismatch kills the stream with an `IllegalStateException`, which ZIO reports as a defect rather than a typed error. The check is a pipeline you can also apply yourself: `Archiver.checkUncompressedSize`.
 
 ## ArchiveSingleFileCompressor and ArchiveSingleFileDecompressor
 

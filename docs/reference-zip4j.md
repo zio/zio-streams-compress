@@ -53,7 +53,7 @@ val entry = ArchiveEntry[Option, Any]("notes/readme.txt").withKnownUncompressedS
 val archive = ZStream((entry, ZStream.fromIterable(content))).via(Zip4JArchiver().archive)
 ```
 
-If the number of bytes written does not match the declared size, the stream fails.
+If the number of bytes written does not match the declared size, the stream dies with an `IllegalStateException`.
 
 :::warning[Writing a password does not encrypt yet]
 `Zip4JArchiver(password = Some(...))` does not encrypt the entries. The archive it writes is identical to the archive written without a password. Do not rely on this option to protect data. Reading password-protected archives works. This is a known issue in the library.
