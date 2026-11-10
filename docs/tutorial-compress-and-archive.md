@@ -4,11 +4,9 @@ title: "Tutorial: Compress and Archive Files"
 sidebar_label: "Compress and Archive Files"
 ---
 
-Welcome! In this tutorial you will compress a text file with Gzip, then bundle several files into a ZIP archive and read the
-archive back. Each step builds on the one before. By the end, you will have a small program that does all of it.
+Welcome! In this tutorial you will compress a text file with Gzip, then bundle several files into a ZIP archive and read the archive back. Each step builds on the one before. By the end, you will have a small program that does all of it.
 
-You need Scala and sbt, and a project with ZIO Streams. The steps use the `gzip` and `zip` modules, which need only ZIO Streams
-and the JDK.
+You need Scala and sbt, and a project with ZIO Streams. The steps use the `gzip` and `zip` modules, which need only ZIO Streams and the JDK.
 
 ## Step 1: Add the Dependencies
 
@@ -21,13 +19,11 @@ libraryDependencies ++= Seq(
 )
 ```
 
-The `gzip` module provides `GzipCompressor` and `GzipDecompressor`. The `zip` module provides `ZipArchiver` and `ZipUnarchiver`.
-Both modules depend on `core`, which is pulled in automatically.
+The `gzip` module provides `GzipCompressor` and `GzipDecompressor`. The `zip` module provides `ZipArchiver` and `ZipUnarchiver`. Both modules depend on `core`, which is pulled in automatically.
 
 ## Step 2: Compress a File with Gzip
 
-We start with one file. Create a file called `notes.txt` in your project directory, with any text in it. Then compress it into
-`notes.txt.gz`:
+We begin with one file. Create a file named `notes.txt` in your project directory, with any text in it. Then compress it into `notes.txt.gz` with this program:
 
 ```scala mdoc:compile-only
 import zio._
@@ -41,8 +37,7 @@ val compressNotes: ZIO[Any, Throwable, Long] =
     .run(ZSink.fromFileName("notes.txt.gz"))
 ```
 
-`ZStream.fromFileName` reads the file in chunks. `GzipCompressor.compress` turns those chunks into compressed chunks, and
-`ZSink.fromFileName` writes them to the new file. Nothing is read until the program runs the pipeline with `run`.
+`ZStream.fromFileName` reads the file in chunks. `GzipCompressor.compress` turns those chunks into compressed chunks, and `ZSink.fromFileName` writes them to the new file. Nothing is read until the program runs the pipeline with `run`.
 
 ## Step 3: Decompress the File
 
@@ -60,13 +55,11 @@ val decompressNotes: ZIO[Any, Throwable, Long] =
     .run(ZSink.fromFileName("notes-copy.txt"))
 ```
 
-The copy `notes-copy.txt` is identical to `notes.txt`. Gzip is a single-file format, so it does not record the file name. That is
-why the output name is chosen here.
+The copy `notes-copy.txt` is identical to `notes.txt`. Gzip is a single-file format, so it does not record the file name. That is why the output name is chosen here.
 
 ## Step 4: Archive Several Files into a ZIP
 
-A ZIP archive holds many entries, and each entry has a name and content. An entry is a pair of an `ArchiveEntry` and a stream of
-bytes. Build one entry per file, and let `ZipArchiver` write them:
+A ZIP archive holds many entries, and each entry has a name and content. An entry is a pair of an `ArchiveEntry` and a stream of bytes. Build one entry per file, and let `ZipArchiver` write them:
 
 ```scala mdoc:compile-only
 import zio._
@@ -103,8 +96,7 @@ val listBundle: ZIO[Any, Throwable, Chunk[String]] =
     .runCollect
 ```
 
-When you need the content of each entry, use `unarchive` instead. Then read each entry's content before the next entry is emitted.
-The [Read Archives Safely](./how-to-read-archives-safely.md) guide explains why.
+When you need the content of each entry, use `unarchive` instead. Then read each entry's content before the next entry is emitted. The [Read Archives Safely](./how-to-read-archives-safely.md) guide explains why.
 
 ## Step 6: Put It All Together
 
@@ -145,6 +137,4 @@ Run the program with `sbt run`. It prints one line per entry in `bundle.zip`.
 
 ## Where to Go Next
 
-You now know how to compress a stream, decompress it, and archive several entries. The [Create and Read Archives](./how-to-create-and-read-archives.md)
-guide covers Tar archives, and the [Compress and Decompress](./how-to-compress-and-decompress.md) guide shows how to swap codecs
-without changing the rest of the program. For every option of every module, see the reference pages in the sidebar.
+You now know how to compress a stream, decompress it, and archive several entries. The [Create and Read Archives](./how-to-create-and-read-archives.md) guide covers Tar archives, and the [Compress and Decompress](./how-to-compress-and-decompress.md) guide shows how to swap codecs without changing the rest of the program. For every option of every module, see the reference pages in the sidebar.

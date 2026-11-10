@@ -14,8 +14,7 @@ libraryDependencies += "dev.zio" %% "zio-streams-compress-lz4" % "@VERSION@"
 
 ## Lz4Compressor
 
-`Lz4Compressor` is a `Compressor` that writes the LZ4 frame format. Use `Lz4Compressor.apply` to choose the block size, or
-`Lz4Compressor.compress` for the default block size:
+`Lz4Compressor` is a `Compressor` that writes the LZ4 frame format. Use `Lz4Compressor.apply` to choose the block size, or `Lz4Compressor.compress` for the default block size:
 
 ```scala mdoc:compile-only
 import zio.compress._
@@ -52,9 +51,7 @@ val decompressed: ZStream[Any, Throwable, Byte] =
 | `blockSize` | `Lz4CompressorBlockSize`      | 256 KiB                             |
 | `chunkSize` | `Int` (decompressor only)     | 4 KiB (`ZStream.DefaultChunkSize`)  |
 
-`Lz4CompressorBlockSize` has four values: `BlockSize64KiB`, `BlockSize256KiB`, `BlockSize1MiB`, and `BlockSize4MiB`. A
-larger block size compresses better and uses more memory. To convert the numeric indicator used by the LZ4 format
-(4 to 7), use `Lz4CompressorBlockSize.fromLz4BlockSizeIndicator`. It returns an `Option`, because other values are not valid.
+`Lz4CompressorBlockSize` has four values: `BlockSize64KiB`, `BlockSize256KiB`, `BlockSize1MiB`, and `BlockSize4MiB`. A larger block size compresses better and uses more memory. To convert the numeric indicator of the LZ4 format (4 to 7), use `Lz4CompressorBlockSize.fromLz4BlockSizeIndicator`. It returns an `Option`, because other values are not valid.
 
 ## Notes
 

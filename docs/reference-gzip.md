@@ -4,8 +4,7 @@ title: "Gzip"
 sidebar_label: "Gzip"
 ---
 
-The `gzip` module compresses and decompresses the Gzip format. It is built on the ZIO Streams compression support,
-which uses the JVM standard library.
+The `gzip` module compresses and decompresses the Gzip format. It is built on the ZIO Streams compression support, which uses the JVM standard library.
 
 Add the module to your `build.sbt`:
 
@@ -15,8 +14,7 @@ libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "@VERSION@"
 
 ## GzipCompressor
 
-`GzipCompressor` is a `Compressor` that writes the Gzip format. Create one with `GzipCompressor.apply` to set its options,
-or use `GzipCompressor.compress` for the defaults:
+`GzipCompressor` is a `Compressor` that writes the Gzip format. Create one with `GzipCompressor.apply` to set its options, or use `GzipCompressor.compress` for the defaults:
 
 ```scala mdoc:compile-only
 import zio.compress._
@@ -37,8 +35,7 @@ val fastest = GzipCompressor(
 )
 ```
 
-`DeflateCompressionLevel(1)` returns an `Option`, so the level is passed directly as `Option[DeflateCompressionLevel]`.
-When the value is invalid, pass `None` instead of a level.
+`DeflateCompressionLevel(1)` returns an `Option`, which matches the parameter type directly. When the value is invalid, pass `None` instead of a level.
 
 ## GzipDecompressor
 
@@ -52,8 +49,7 @@ val unzipped: ZStream[Any, Throwable, Byte] =
   ZStream.fromFileName("file.gz").via(GzipDecompressor.decompress)
 ```
 
-The decompressor accepts several concatenated Gzip members in one input and emits their content in order. This is the
-form produced by appending the output of several compressions to one file.
+The decompressor accepts several concatenated Gzip members in one input and emits their content in order. This is the form that results from appending the output of several compressions to one file.
 
 ## Options
 
@@ -63,13 +59,11 @@ form produced by appending the output of several compressions to one file.
 | `deflateStrategy`| `Option[DeflateStrategy]`               | `None` (default strategy)       |
 | `bufferSize`     | `Int` (compressor and decompressor)     | 64 KiB                          |
 
-`DeflateCompressionLevel` ranges from 0 (no compression) to 9 (best compression). See
-[Core Interfaces](./reference-core.md#compression-levels) for the named constants.
+`DeflateCompressionLevel` ranges from 0 (no compression) to 9 (best compression). See [Core Interfaces](./reference-core.md#compression-levels) for the named constants.
 
 `DeflateStrategy` has two values:
 
-- `DeflateStrategy.Filtered` suits data that a predictor filter has already transformed into many small values. It
-  matches the zlib `Z_FILTERED` strategy.
+- `DeflateStrategy.Filtered` suits data that a predictor filter has already transformed into many small values. It matches the zlib `Z_FILTERED` strategy.
 - `DeflateStrategy.HuffmanOnly` skips string matching and only applies Huffman coding. It is fast, but compresses less.
 
 The `bufferSize` is the largest chunk emitted by the output stream.
@@ -78,5 +72,4 @@ The `bufferSize` is the largest chunk emitted by the output stream.
 
 - The compressor's error type is `Nothing`, so it cannot fail. Errors come from the upstream stream, not from compression.
 - The decompressor fails with a `Throwable` when the input is not valid Gzip.
-- The Gzip format is a single-file format. To compress several files into one archive, use a tar archive with Gzip
-  around it. See [Tar](./reference-tar.md).
+- The Gzip format is a single-file format. To compress several files into one archive, use a tar archive with Gzip around it. See [Tar](./reference-tar.md).

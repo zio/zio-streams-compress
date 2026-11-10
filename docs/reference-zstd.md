@@ -4,8 +4,7 @@ title: "Zstd"
 sidebar_label: "Zstd"
 ---
 
-The `zstd` module compresses and decompresses the Zstandard format. It wraps the `com.github.luben:zstd-jni` library,
-which binds the native Zstandard library.
+The `zstd` module compresses and decompresses the Zstandard format. It wraps the `com.github.luben:zstd-jni` library, which binds the native Zstandard library.
 
 Add the module to your `build.sbt`:
 
@@ -15,8 +14,7 @@ libraryDependencies += "dev.zio" %% "zio-streams-compress-zstd" % "@VERSION@"
 
 ## ZstdCompressor
 
-`ZstdCompressor` is a `Compressor` that writes the Zstandard format. Use `ZstdCompressor.apply` to set its options, or
-`ZstdCompressor.compress` for the library defaults:
+`ZstdCompressor` is a `Compressor` that writes the Zstandard format. Use `ZstdCompressor.apply` to set its options, or `ZstdCompressor.compress` for the library defaults:
 
 ```scala mdoc:compile-only
 import zio.compress._
@@ -37,8 +35,7 @@ val tuned = ZstdCompressor(
 )
 ```
 
-`ZstdCompressionLevel(19)` returns an `Option`, which matches the type of the `level` option. A level that is out of range
-gives `None`, and the library default is used.
+`ZstdCompressionLevel(19)` returns an `Option`, which matches the type of the `level` option. A level that is out of range gives `None`, and the library default applies.
 
 ## ZstdDecompressor
 
@@ -61,8 +58,7 @@ val decompressed: ZStream[Any, Throwable, Byte] =
 | `customDictionary` | `Option[Array[Byte]]`            | `None` (no dictionary)                     |
 | `chunkSize`        | `Int` (decompressor only)        | 4 KiB (`ZStream.DefaultChunkSize`)         |
 
-`ZstdCompressionLevel` ranges from -131072 to 22. Negative levels trade compression ratio for speed. Named constants
-cover the common cases:
+`ZstdCompressionLevel` ranges from -131072 to 22. Negative levels trade compression ratio for speed. Named constants cover the common cases:
 
 - `ZstdCompressionLevel.FastCompressionLevel` is -4.
 - `ZstdCompressionLevel.DefaultCompressionLevel` is 3.
@@ -70,8 +66,7 @@ cover the common cases:
 - `ZstdCompressionLevel.VeryHighCompressionLevel` is 19.
 - `ZstdCompressionLevel.UltraCompressionLevel` is 22. Levels 20 to 22 need a lot of memory.
 
-`workers` sets the number of threads used for compression. Use `Some(0)` to detect the number of CPU cores. The library caps
-the number of workers it actually starts.
+`workers` is the number of threads for compression. Use `Some(0)` to detect the number of CPU cores. The library limits the number of workers it runs.
 
 ## Notes
 

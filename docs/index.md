@@ -4,9 +4,7 @@ title: "Compression and archives with zio-streams"
 sidebar_label: "ZIO Streams Compress"
 ---
 
-[ZIO Streams Compress](https://github.com/zio/zio-streams-compress) integrates several compression algorithms and
-archive formats with [ZIO Streams](https://zio.dev). Every codec and archive format is a pipeline, so it fits into a
-stream with `via` like any other operator.
+[ZIO Streams Compress](https://github.com/zio/zio-streams-compress) integrates several compression algorithms and archive formats with [ZIO Streams](https://zio.dev). Every codec and archive format is a pipeline, so it fits into a stream with `via` like any other operator.
 
 @PROJECT_BADGES@ [![Scala Steward badge](https://img.shields.io/badge/Scala_Steward-helping-blue.svg?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAMAAAARSr4IAAAAVFBMVEUAAACHjojlOy5NWlrKzcYRKjGFjIbp293YycuLa3pYY2LSqql4f3pCUFTgSjNodYRmcXUsPD/NTTbjRS+2jomhgnzNc223cGvZS0HaSD0XLjbaSjElhIr+AAAAAXRSTlMAQObYZgAAAHlJREFUCNdNyosOwyAIhWHAQS1Vt7a77/3fcxxdmv0xwmckutAR1nkm4ggbyEcg/wWmlGLDAA3oL50xi6fk5ffZ3E2E3QfZDCcCN2YtbEWZt+Drc6u6rlqv7Uk0LdKqqr5rk2UCRXOk0vmQKGfc94nOJyQjouF9H/wCc9gECEYfONoAAAAASUVORK5CYII=)](https://scala-steward.org)
 
@@ -31,8 +29,7 @@ Each module depends on `core`, which is pulled in automatically. Add only the mo
 
 _As of 2.1.3, zio-streams-compress requires zio 2.1.25 or later._
 
-The library is published for Scala 3, 2.13, and 2.12, and runs on the JVM. Scala.js and Scala Native are not supported. PRs
-for them are welcome.
+The library is published for Scala 3, 2.13, and 2.12, and runs on the JVM. Scala.js and Scala Native are not supported. PRs for them are welcome.
 
 ## Choosing a Codec
 
@@ -51,22 +48,17 @@ The table lists each codec with its module. Compression and decompression are bo
 | ZIP         | `zip4j`      | Yes      | Yes        | Archive format. Reads password-protected archives. |
 | Tar         | `tar`        | Yes      | Yes        | Archive format. No compression of its own.        |
 
-For a bundle of files, pick an archive format (ZIP or Tar). For a single stream of bytes, pick a codec. A `.tar.gz` file is a
-Tar archive wrapped in Gzip.
+For a bundle of files, pick an archive format (ZIP or Tar). For a single stream of bytes, pick a codec. A `.tar.gz` file is a Tar archive wrapped in Gzip.
 
 ## Core Concepts
 
-The library has two families of pipeline. A compressor turns bytes into compressed bytes, and a decompressor does the reverse.
-An archiver turns a stream of named entries into the bytes of an archive, and an unarchiver does the reverse. Every codec in
-the table is a compressor, a decompressor, or both. Every archive format is an archiver, an unarchiver, or both.
+The library has two families of pipeline. A compressor turns bytes into compressed bytes, and a decompressor does the reverse. An archiver turns a stream of named entries into the bytes of an archive, and an unarchiver does the reverse. Every codec in the table is a compressor, a decompressor, or both. Every archive format is an archiver, an unarchiver, or both.
 
-The [Core Interfaces](./reference-core.md) reference describes these types in full. The [Tutorial](./tutorial-compress-and-archive.md)
-builds a small program that uses them.
+The [Core Interfaces](./reference-core.md) reference describes these types in full. The [Tutorial](./tutorial-compress-and-archive.md) builds a small program that uses them.
 
 ## Example
 
-The example below compresses a file with Gzip, lists the entries of a Tar archive compressed with Gzip, and creates a ZIP
-archive:
+The example below compresses a file with Gzip, lists the entries of a Tar archive compressed with Gzip, and creates a ZIP archive:
 
 ```scala mdoc:compile-only
 import zio._
@@ -106,14 +98,11 @@ object ExampleApp extends ZIOAppDefault {
 }
 ```
 
-The ZIP archive in the example is not encrypted. Passing a password to `Zip4JArchiver` does not encrypt yet, so the example
-does not use it. See the [Zip4J](./reference-zip4j.md) reference for the current state.
+The ZIP archive in the example is not encrypted. Passing a password to `Zip4JArchiver` does not encrypt yet, so the example does not use it. See the [Zip4J](./reference-zip4j.md) reference for the current state.
 
 ## Unarchiving
 
-Reading an archive requires consuming each entry's content before the next entry is emitted. Otherwise the pipeline waits and the
-program stalls. Use `list` when you only need the entry metadata. The [Read Archives Safely](./how-to-read-archives-safely.md)
-guide explains the rule and shows how to limit the size of each entry.
+Reading an archive requires consuming each entry's content before the next entry is emitted. Otherwise the pipeline waits and the program stalls. Use `list` when you only need the entry metadata. The [Read Archives Safely](./how-to-read-archives-safely.md) guide explains the rule and shows how to limit the size of each entry.
 
 ## Where to Go Next
 

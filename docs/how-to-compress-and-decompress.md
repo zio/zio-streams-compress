@@ -4,13 +4,11 @@ title: "How to Compress and Decompress a Stream"
 sidebar_label: "Compress and Decompress"
 ---
 
-Every codec in this library is a `Compressor` or a `Decompressor`, so a stream can be compressed or decompressed by changing one
-value. This guide shows how to compress a file with any codec, decompress it again, and keep the codec choice in one place.
+Every codec in this library is a `Compressor` or a `Decompressor`, so a stream can be compressed or decompressed by changing one value. This guide shows how to compress a file with any codec, decompress it again, and keep the codec choice in one place.
 
 ## Compress a File
 
-A compressor is a pipeline. Read the file with `ZStream.fromFileName`, pipe it through the compressor, and write the result with
-`ZSink.fromFileName`. The function below takes any `Compressor`:
+A compressor is a pipeline. Read the file with `ZStream.fromFileName`, pipe it through the compressor, and write the result with `ZSink.fromFileName`. The function below takes any `Compressor`:
 
 ```scala mdoc:compile-only
 import zio._
@@ -59,9 +57,7 @@ val decompressorChoice: Decompressor = GzipDecompressor()
 To switch to Zstd, replace the two values with `ZstdCompressor` and `ZstdDecompressor`. The functions above stay unchanged.
 
 :::tip[Pick a codec by its trade-off]
-Gzip is the most widely supported format. Zstd gives good compression at high speed. Brotli4J compresses text well at a high
-quality setting. LZ4 and Snappy favor speed over ratio. Bzip2 compresses well but uses a lot of memory. See the reference page
-of each codec for its options.
+Gzip is the most widely supported format. Zstd gives good compression at high speed. Brotli4J compresses text well at a high quality setting. LZ4 and Snappy favor speed over ratio. Bzip2 compresses well but uses a lot of memory. See the reference page of each codec for its options.
 :::
 
 ## Round Trip a File

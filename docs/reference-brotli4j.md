@@ -4,9 +4,7 @@ title: "Brotli4J"
 sidebar_label: "Brotli4J"
 ---
 
-The `brotli4j` module compresses and decompresses the Brotli format. It is built on the
-[Brotli4J](https://github.com/hyperxpro/Brotli4j) library, which loads a native Brotli library at runtime. The module
-loads that library the first time a pipeline runs.
+The `brotli4j` module compresses and decompresses the Brotli format. It is built on the [Brotli4J](https://github.com/hyperxpro/Brotli4j) library, which loads a native Brotli library at runtime. The module loads that library the first time a pipeline runs.
 
 Add the module to your `build.sbt`:
 
@@ -16,8 +14,7 @@ libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli4j" % "@VERSION@
 
 ## Brotli4JCompressor
 
-`Brotli4JCompressor` is a `Compressor` that writes the Brotli format. Use `Brotli4JCompressor.apply` to set its options, or
-`Brotli4JCompressor.compress` for the library defaults:
+`Brotli4JCompressor` is a `Compressor` that writes the Brotli format. Use `Brotli4JCompressor.apply` to set its options, or `Brotli4JCompressor.compress` for the library defaults:
 
 ```scala mdoc:compile-only
 import zio.compress._
@@ -62,11 +59,9 @@ val decompressed: ZStream[Any, Throwable, Byte] =
 | `mode`    | `Option[BrotliMode]`              | `None` (the library default)        |
 | `chunkSize` | `Int` (decompressor only)       | 4 KiB (`ZStream.DefaultChunkSize`)  |
 
-`BrotliQuality` ranges from 0 to 11. Higher values compress more and run slower. Named constants `Quality0` to `Quality11`
-exist for each value.
+`BrotliQuality` ranges from 0 to 11. Higher values compress more and run slower. Named constants `Quality0` to `Quality11` exist for each value.
 
-`BrotliLogWindow` is the base-2 logarithm of the LZ window size. It ranges from 10 to 24. Larger windows find more
-matches in large inputs.
+`BrotliLogWindow` is the base-2 logarithm of the LZ window size. It ranges from 10 to 24. Larger windows find more matches in large inputs.
 
 `BrotliMode` gives the encoder a hint about the input:
 
@@ -76,6 +71,5 @@ matches in large inputs.
 
 ## Notes
 
-- Both the compressor and the decompressor fail with a `Throwable` when the native library cannot be loaded, or when the
-  input is not valid Brotli.
+- Both the compressor and the decompressor fail with a `Throwable` when the native library cannot be loaded, or when the input is not valid Brotli.
 - Use this module instead of [Brotli](./reference-brotli.md) when you need to compress.

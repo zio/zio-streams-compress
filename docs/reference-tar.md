@@ -4,8 +4,7 @@ title: "Tar"
 sidebar_label: "Tar"
 ---
 
-The `tar` module creates and reads Tar archives. It is built on the Apache Commons Compress library. A tar archive
-bundles files but does not compress them, so a compressed tarball is a tar archive wrapped in a codec such as Gzip.
+The `tar` module creates and reads Tar archives. It is built on the Apache Commons Compress library. A tar archive bundles files but does not compress them, so a compressed tarball is a tar archive wrapped in a codec such as Gzip.
 
 Add the module to your `build.sbt`:
 
@@ -15,8 +14,7 @@ libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "@VERSION@"
 
 ## TarArchiver
 
-`TarArchiver` is an `Archiver` that writes Tar archives. Every entry must have a known uncompressed size, so the entry type is
-`ArchiveEntry[Some, _]`:
+`TarArchiver` is an `Archiver` that writes Tar archives. Every entry must have a known uncompressed size, so the entry type is `ArchiveEntry[Some, _]`:
 
 ```scala mdoc:compile-only
 import zio.compress._
@@ -48,8 +46,7 @@ val tarGz = ZStream((entry, ZStream.fromIterable(content)))
 
 ## TarUnarchiver
 
-`TarUnarchiver` is an `Unarchiver` that reads Tar archives. Each entry comes with its content as a stream. To read a
-compressed tarball, decompress first:
+`TarUnarchiver` is an `Unarchiver` that reads Tar archives. Each entry comes with its content as a stream. To read a compressed tarball, decompress first:
 
 ```scala mdoc:compile-only
 import zio.compress._
@@ -62,9 +59,7 @@ val names = ZStream
   .map(_.name)
 ```
 
-`TarUnarchiver#list` reads each entry's content to fill in the uncompressed size. `TarUnarchiver#unarchive` gives the content
-as a stream, and it must be fully read before the next entry is emitted. See
-[Read Archives Safely](./how-to-read-archives-safely.md).
+`TarUnarchiver#list` reads each entry's content to fill in the uncompressed size. `TarUnarchiver#unarchive` gives the content as a stream, and it must be fully read before the next entry is emitted. See [Read Archives Safely](./how-to-read-archives-safely.md).
 
 ## Options
 
@@ -76,12 +71,9 @@ as a stream, and it must be fully read before the next entry is emitted. See
 
 ## Entry Metadata
 
-Tar entries carry a name, a size, and optional timestamps. `TarArchiver` writes the `lastModified`, `lastAccess`, and `creation`
-fields of an `ArchiveEntry` when they are set. Set `isDirectory` to `true` to write a directory entry, and the name gets a trailing
-`/`.
+Tar entries carry a name, a size, and optional timestamps. `TarArchiver` writes the `lastModified`, `lastAccess`, and `creation` fields of an `ArchiveEntry` when they are set. Set `isDirectory` to `true` to write a directory entry, and the name gets a trailing `/`.
 
-When an entry's `underlying` value is a `TarArchiveEntry` with the same directory flag, the writer copies that entry's header and
-then applies the name and the fields set on the `ArchiveEntry`.
+When an entry's `underlying` value is a `TarArchiveEntry` with the same directory flag, the writer copies that entry's header and then applies the name and the fields set on the `ArchiveEntry`.
 
 ## Notes
 

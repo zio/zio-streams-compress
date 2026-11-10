@@ -4,11 +4,9 @@ title: "Snappy"
 sidebar_label: "Snappy"
 ---
 
-The `snappy` module compresses and decompresses the Snappy format. It is built on the
-[snappy-java](https://github.com/xerial/snappy-java) library.
+The `snappy` module compresses and decompresses the Snappy format. It is built on the [snappy-java](https://github.com/xerial/snappy-java) library.
 
-Snappy has several incompatible variants. Before you choose a format, read the
-[snappy-java compatibility notes](https://github.com/xerial/snappy-java/blob/master/README.md#compatibility-notes).
+Snappy has several incompatible variants. Before you choose a format, read the [snappy-java compatibility notes](https://github.com/xerial/snappy-java/blob/master/README.md#compatibility-notes).
 
 Add the module to your `build.sbt`:
 
@@ -18,8 +16,7 @@ libraryDependencies += "dev.zio" %% "zio-streams-compress-snappy" % "@VERSION@"
 
 ## SnappyCompressor
 
-`SnappyCompressor` is a `Compressor` that writes Snappy. It takes a write format. The default is the framed format, and
-`SnappyCompressor.compress` uses that default:
+`SnappyCompressor` is a `Compressor` that writes Snappy. It takes a write format. The default is the framed format, and `SnappyCompressor.compress` uses that default:
 
 ```scala mdoc:compile-only
 import zio.compress._
@@ -59,14 +56,11 @@ val decompressed: ZStream[Any, Throwable, Byte] =
 | `SnappyWriteFormat.Basic`       | `blockSize` 32 KiB, must be 1 KiB to 512 MiB.                                         |
 | `SnappyWriteFormat.HadoopCompatible` | `blockSize` 32 KiB, must be 1 KiB to 512 MiB. Writes no file header.             |
 
-`Framed` follows the [Snappy framing format](https://github.com/google/snappy/blob/master/framing_format.txt). The
-`minCompressionRatio` is the smallest ratio of compressed to raw size that must be reached before a block is written
-compressed. Blocks that do not reach it are stored uncompressed.
+`Framed` follows the [Snappy framing format](https://github.com/google/snappy/blob/master/framing_format.txt). The `minCompressionRatio` is the smallest ratio of compressed to raw size that must be reached before a block is written compressed. Blocks that do not reach it are stored uncompressed.
 
-`Basic` writes the raw Snappy format, with no framing. `HadoopCompatible` writes the format used by Hadoop and Spark,
-which puts the block size before each block.
+`Basic` writes the raw Snappy format, with no framing. `HadoopCompatible` writes the format of Hadoop and Spark, which puts the block size before each block.
 
-An invalid option, such as a block size out of range, throws an `IllegalArgumentException` when the format is created.
+An invalid option, such as a block size out of range, throws an `IllegalArgumentException` when you create the format.
 
 ## Read Formats
 

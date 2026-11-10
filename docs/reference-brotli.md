@@ -4,9 +4,7 @@ title: "Brotli"
 sidebar_label: "Brotli"
 ---
 
-The `brotli` module decompresses the Brotli format. It is built on the official Brotli Java decoder, which is pure Java.
-This module does not compress. To compress Brotli, use the [Brotli4J](./reference-brotli4j.md) module, which compresses and
-decompresses.
+The `brotli` module decompresses the Brotli format. It is built on the official Brotli Java decoder, which is pure Java. This module does not compress. To compress Brotli, use the [Brotli4J](./reference-brotli4j.md) module, which compresses and decompresses.
 
 Add the module to your `build.sbt`:
 
