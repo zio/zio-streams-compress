@@ -3,18 +3,24 @@ package zio.compress
 import zio._
 import zio.compress.ArchiveEntry.{ArchiveEntryFromUnderlying, ArchiveEntryToUnderlying}
 import zio.compress.JavaIoInterop._
+import zio.compress.zip._
 import zio.compress.Zip._
 import zio.stream._
 
 import java.io.IOException
 import java.nio.file.attribute.FileTime
-import java.util.zip.{ZipEntry, ZipInputStream, ZipOutputStream}
+import java.util.zip.{CRC32, ZipEntry, ZipInputStream, ZipOutputStream}
 
 object ZipArchiver {
 
   /** An [[Archiver]] for ZIP, based on the JVM standard library.
     *
     * The archive entries do not require an uncompressed size.
+    *
+    * ⚠️WARNING: High memory usage for zip-method Stored!
+    *
+    * This archiver needs to slurp each content in memory to calculate a checksum (CRC-32) as the wrapped
+    * ZipOutputStream requires it up front. Use the Zip4JArchiver when this is an issue.
     *
     * @param level
     *   compression level (only applicable for method 'deflated'). Currently defaults to level 6.
@@ -23,7 +29,7 @@ object ZipArchiver {
     */
   def apply(
     level: Option[DeflateCompressionLevel] = None,
-    zipMethod: Option[ZipMethod] = None,
+    zipMethod: ZipMethod = ZipMethod.Deflated,
   ): ZipArchiver =
     new ZipArchiver(level, zipMethod)
 
@@ -34,7 +40,7 @@ object ZipArchiver {
 
 final class ZipArchiver private (
   level: Option[DeflateCompressionLevel],
-  zipMethod: Option[ZipMethod],
+  zipMethod: ZipMethod,
 ) extends Archiver[Option] {
 
   override def archive(implicit
@@ -43,22 +49,43 @@ final class ZipArchiver private (
     viaOutputStream { outputStream =>
       val zipOutputStream = new ZipOutputStream(outputStream)
       level.foreach(l => zipOutputStream.setLevel(l.level))
-      zipMethod
-        .map {
-          case ZipMethod.Deflated => ZipEntry.DEFLATED
-          case ZipMethod.Stored   => ZipEntry.STORED
-        }
-        .foreach(zipOutputStream.setMethod)
+      zipOutputStream.setMethod(if (zipMethod == ZipMethod.Deflated) ZipEntry.DEFLATED else ZipEntry.STORED)
       zipOutputStream
     } { case (entryStream, zipOutputStream) =>
       entryStream
         .mapZIO { case (archiveEntry, contentStream) =>
-          def entry = archiveEntry.underlying[ZipEntry]
-          ZIO.attemptBlockingInterrupt(zipOutputStream.putNextEntry(entry)) *>
-            contentStream.runForeachChunk { chunk =>
-              ZIO.attemptBlockingInterrupt(zipOutputStream.write(chunk.toArray))
-            } *>
-            ZIO.attemptBlockingInterrupt(zipOutputStream.closeEntry())
+          val entry = archiveEntry.underlying[ZipEntry]
+          if (archiveEntry.isDirectory) {
+            ZIO.attemptBlockingInterrupt(zipOutputStream.putNextEntry(entry)) *>
+              ZIO.attemptBlockingInterrupt(zipOutputStream.closeEntry())
+          } else if (zipMethod == ZipMethod.Stored) {
+            entry.setMethod(ZipEntry.STORED)
+            // Slurp all content in memory to calculate size and CRC32.
+            for {
+              contentChunks <- contentStream.chunks.map(_.toArray).runCollect
+              _ = {
+                val crc = new CRC32()
+                contentChunks.foreach(chunk => crc.update(chunk))
+                entry.setCrc(crc.getValue)
+                val uncompressedSize = contentChunks.map(_.length.toLong).sum
+                entry.setSize(uncompressedSize)
+                entry.setCompressedSize(uncompressedSize)
+              }
+              _ <- ZIO.attemptBlockingInterrupt {
+                     zipOutputStream.putNextEntry(entry)
+                     contentChunks.foreach(zipOutputStream.write)
+                     zipOutputStream.closeEntry()
+                   }
+            } yield ()
+          } else {
+            // Deflated non-directory entry
+            entry.setMethod(ZipEntry.DEFLATED)
+            ZIO.attemptBlockingInterrupt(zipOutputStream.putNextEntry(entry)) *>
+              contentStream.runForeachChunk { chunk =>
+                ZIO.attemptBlockingInterrupt(zipOutputStream.write(chunk.toArray))
+              } *>
+              ZIO.attemptBlockingInterrupt(zipOutputStream.closeEntry())
+          }
         }
         .runDrain
     }
@@ -123,7 +150,6 @@ final class ZipUnarchiver private (chunkSize: Int) extends Unarchiver[Option, Zi
 }
 
 object Zip {
-  // The underlying information is lost if the name or isDirectory attribute of an ArchiveEntry is changed
   implicit val zipArchiveEntryToUnderlying: ArchiveEntryToUnderlying[ZipEntry] =
     new ArchiveEntryToUnderlying[ZipEntry] {
       override def underlying[S[A] <: Option[A]](entry: ArchiveEntry[S, Any], underlying: Any): ZipEntry = {
@@ -131,16 +157,26 @@ object Zip {
           case zipEntry: ZipEntry if zipEntry.getName == entry.name && zipEntry.isDirectory == entry.isDirectory =>
             new ZipEntry(zipEntry)
 
-          case _ =>
+          // The underlying information is lost if the name or isDirectory attribute of an ArchiveEntry is changed
+          case _: ZipEntry | () =>
             val fileOrDirName = entry.name match {
               case name if entry.isDirectory && !name.endsWith("/") => name + "/"
               case name if !entry.isDirectory && name.endsWith("/") => name.dropRight(1)
               case name                                             => name
             }
             new ZipEntry(fileOrDirName)
+
+          case u => throw IllegalUnderlyingEntry(u)
         }
 
-        entry.uncompressedSize.foreach(zipEntry.setSize)
+        if (entry.isDirectory) {
+          zipEntry.setMethod(ZipEntry.STORED)
+          zipEntry.setSize(0)
+          zipEntry.setCrc(0)
+        } else {
+          entry.uncompressedSize.foreach(zipEntry.setSize)
+        }
+
         entry.lastModified.map(FileTime.from).foreach(zipEntry.setLastModifiedTime)
         entry.lastAccess.map(FileTime.from).foreach(zipEntry.setLastAccessTime)
         entry.creation.map(FileTime.from).foreach(zipEntry.setCreationTime)

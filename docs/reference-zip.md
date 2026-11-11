@@ -4,7 +4,7 @@ title: "Zip"
 sidebar_label: "Zip"
 ---
 
-The `zip` module creates and reads ZIP archives. It is built on the JVM standard library's ZIP support. For password-protected archives, use the [Zip4J](./reference-zip4j.md) module instead.
+The `zip` module creates and reads ZIP archives. It is built on the JVM standard library's ZIP support. For password-protected archives, use the [Zip4J](./reference-zip4j.md) module instead. Also use the Zip4J module when you need to use the 'Stored' zip-method and the archive entries are large, as this module needs to pull the full content of each entry in memory to calculate a checksum.
 
 Add the module to your `build.sbt`:
 
@@ -51,20 +51,22 @@ val entries: ZStream[Any, Throwable, (String, Long)] =
 
 ## Options
 
-| Option       | Type                             | Default                                  |
-|--------------|----------------------------------|------------------------------------------|
-| `level`      | `Option[DeflateCompressionLevel]` (writer) | `None` (zlib's default, level 6)  |
-| `zipMethod`  | `Option[ZipMethod]` (writer)     | `None` (deflated)                        |
-| `chunkSize`  | `Int` (reader)                   | 64 KiB                                   |
+| Option      | Type                                         | Default                          |
+|-------------|----------------------------------------------|----------------------------------|
+| `level`     | `Option[DeflateCompressionLevel]` (archiver) | `None` (zlib's default, level 6) |
+| `zipMethod` | `ZipMethod` (archiver)                       | `Deflated`                       |
+| `chunkSize` | `Int` (unarchiver)                           | 64 KiB                           |
 
 `level` applies only to deflated entries. `ZipMethod` has two values: `ZipMethod.Deflated` compresses each entry, and `ZipMethod.Stored` writes each entry without compression.
 
-## Known Issue: Stored Entries
+## Stored Entries
 
-`ZipMethod.Stored` does not work yet. The writer fails with `STORED entry missing size, compressed size, or crc-32` for every entry, because the writer never computes the CRC-32 of the content. Use the default `ZipMethod.Deflated`, or set `level` to `DeflateCompressionLevel.NoCompressionLevel` if you want deflated entries without compression.
+`ZipMethod.Stored` only works in v3.0.0 and later, earlier versions produced broken zip files.
+
+Zip support from the JVM requires a CRC32 to be calculated up front. To do this, the full content of each entry is pulled into memory. The Zip4J module does not do this, and will have lower memory usage.
 
 ## Notes
 
 - The archive format has no encryption in this module. Use [Zip4J](./reference-zip4j.md) to read password-protected archives.
-- The writer does not check the size of each entry, because the size is optional for this format.
-- The reader's error type is `IOException` for the entry content, and `Throwable` for the archive structure.
+- The archiver does not check the size of each entry, because the size is optional for this format.
+- The unarchiver's error type is `IOException` for the entry content, and `Throwable` for the archive structure.

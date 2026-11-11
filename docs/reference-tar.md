@@ -63,9 +63,9 @@ val names = ZStream
 
 ## Options
 
-| Option      | Type            | Default |
-|-------------|-----------------|---------|
-| `chunkSize` | `Int` (reader)  | 64 KiB  |
+| Option      | Type               | Default |
+|-------------|--------------------|---------|
+| `chunkSize` | `Int` (unarchiver) | 64 KiB  |
 
 `TarArchiver` takes no options.
 
@@ -77,6 +77,6 @@ When an entry's `underlying` value is a `TarArchiveEntry` with the same director
 
 ## Notes
 
-- The writer checks the size of each entry against the bytes it receives, and dies with an `IllegalStateException` on a mismatch.
-- The reader's error type is `IOException` for the entry content, and `Throwable` for the archive structure.
+- The archiver checks the size of each entry against the bytes it receives, and dies with an `IllegalStateException` on a mismatch.
+- The unarchiver's error type is `IOException` for the entry content, and `Throwable` for the archive structure.
 - Tar has no compression of its own. Use [Gzip](./reference-gzip.md) for `.tar.gz` files.

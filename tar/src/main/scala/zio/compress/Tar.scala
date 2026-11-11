@@ -35,7 +35,7 @@ final class TarArchiver private extends Archiver[Some] {
       entryStream
         .via(checkUncompressedSize)
         .mapZIO { case (archiveEntry, contentStream) =>
-          def entry = archiveEntry.underlying[TarArchiveEntry]
+          val entry = archiveEntry.underlying[TarArchiveEntry]
           ZIO.attemptBlockingInterrupt(tarOutputStream.putArchiveEntry(entry)) *>
             contentStream.runForeachChunk { chunk =>
               ZIO.attemptBlockingInterrupt(tarOutputStream.write(chunk.toArray))
@@ -106,7 +106,6 @@ final class TarUnarchiver private (chunkSize: Int) extends Unarchiver[Option, Ta
 }
 
 object Tar {
-  // The underlying information is lost if the isDirectory attribute of an ArchiveEntry is changed
   implicit val tarArchiveEntryToUnderlying: ArchiveEntryToUnderlying[TarArchiveEntry] =
     new ArchiveEntryToUnderlying[TarArchiveEntry] {
       override def underlying[S[A] <: Option[A]](entry: ArchiveEntry[S, Any], underlying: Any): TarArchiveEntry = {
@@ -125,8 +124,11 @@ object Tar {
             newTarEntry.setName(fileOrDirName)
             newTarEntry
 
-          case _ =>
+          // The underlying information is lost if the isDirectory attribute of an ArchiveEntry is changed
+          case _: TarArchiveEntry | () =>
             new TarArchiveEntry(fileOrDirName)
+
+          case u => throw IllegalUnderlyingEntry(u)
         }
 
         entry.uncompressedSize.foreach(tarEntry.setSize)

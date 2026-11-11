@@ -1,10 +1,17 @@
 package zio.compress
 
+import net.lingala.zip4j.model.LocalFileHeader
+import net.lingala.zip4j.model.enums.{CompressionMethod, EncryptionMethod => Zip4JEncryptionMethod}
 import zio._
+import zio.compress.zip4j.EncryptionMethod
+import zio.compress.Zip4J.zip4jUnarchiveEntryToUnderlying
+import zio.compress.zip4j.ZipMethod
+import zio.process._
 import zio.stream._
 import zio.test._
 
 import java.nio.charset.StandardCharsets.UTF_8
+import java.nio.file.Path
 import java.util.Base64
 
 object Zip4JSpec extends ZIOSpecDefault {
@@ -33,6 +40,12 @@ object Zip4JSpec extends ZIOSpecDefault {
           "ZTIudHh0VVQFAAN2ywdndXgLAAEE6AMAAAToAwAAUEsFBgAAAAACAAIApQAAAM8AAAAAAA=="
       )
   )
+
+  private val file1Name = "file1.txt"
+  private val file1Content = "Hello world!"
+  private val file2Name = "subdir/file2.txt"
+  private val file2Content = "Hello from subdir!"
+  private val password = "secret"
 
   /* Created as above, with password "secret" (using the `-e` option)  */
   private final val encryptedZipArchive = Chunk.fromArray(
@@ -87,14 +100,23 @@ object Zip4JSpec extends ZIOSpecDefault {
           )
       },
       test("zip4j round trip") {
-        checkN(10)(Gen.int(40, 5000), Gen.chunkOfBounded(0, 20000)(Gen.byte)) { (chunkSize, genBytes) =>
+        checkN(400)(
+          Gen.int(40, 5000),
+          Gen.chunkOfBounded(0, 20000)(Gen.byte),
+          Gen.option(Gen.fromIterable(zip4j.EncryptionMethod.Values)),
+          Gen.fromIterable(zip4j.ZipMethod.Values),
+        ) { (chunkSize, genBytes, encryptionMethod, zipMethod) =>
+          val archiver = encryptionMethod match {
+            case None     => Zip4JArchiver(zipMethod = zipMethod)
+            case Some(em) => Zip4JArchiver.encrypted(password = "secret", zipMethod = zipMethod, encryptionMethod = em)
+          }
           for {
             obtained <-
               ZStream
                 .fromChunk(genBytes)
                 .rechunk(chunkSize)
-                .via(ArchiveSingleFileCompressor.forName(Zip4JArchiver(), "test", genBytes.length.toLong).compress)
-                .via(ArchiveSingleFileDecompressor(Zip4JUnarchiver()).decompress)
+                .via(ArchiveSingleFileCompressor.forName(archiver, "test", genBytes.length.toLong).compress)
+                .via(ArchiveSingleFileDecompressor(Zip4JUnarchiver(password = Some("secret"))).decompress)
                 .runCollect
           } yield assertTrue(obtained == genBytes)
         }
@@ -114,7 +136,110 @@ object Zip4JSpec extends ZIOSpecDefault {
               "Entry size of 18 bytes does not match size of 999999 bytes specified in entry"
           )
       },
+      test("deflated Zip4J file contains deflated entries") {
+        for {
+          entries <- ZStream(
+                       archiveEntry(file1Name, file1Content.getBytes(UTF_8).length.toLong, file1Content),
+                       archiveEntry(file2Name, file2Content.getBytes(UTF_8).length.toLong, file2Content),
+                     )
+                       .via(Zip4JArchiver(zipMethod = ZipMethod.Deflated).archive)
+                       .via(Zip4JUnarchiver.list)
+                       .runCollect
+        } yield {
+          val zipMethods = entries.map(_.underlying[LocalFileHeader].getCompressionMethod)
+          assertTrue(
+            entries.size == 2,
+            zipMethods.forall(_ == CompressionMethod.DEFLATE),
+          )
+        }
+      },
+      test("stored Zip4J file contains stored entries") {
+        for {
+          entries <- ZStream(
+                       archiveEntry(file1Name, file1Content.getBytes(UTF_8).length.toLong, file1Content),
+                       archiveEntry(file2Name, file2Content.getBytes(UTF_8).length.toLong, file2Content),
+                     )
+                       .via(Zip4JArchiver(zipMethod = ZipMethod.Stored).archive)
+                       .via(Zip4JUnarchiver.list)
+                       .runCollect
+        } yield {
+          val zipMethods = entries.map(_.underlying[LocalFileHeader].getCompressionMethod)
+          assertTrue(
+            entries.size == 2,
+            zipMethods.forall(_ == CompressionMethod.STORE),
+          )
+        }
+      },
+      test("encrypted Zip4J file contains encrypted entries") {
+        for {
+          entries <- ZStream(
+                       archiveEntry(file1Name, file1Content.getBytes(UTF_8).length.toLong, file1Content),
+                       archiveEntry(file2Name, file2Content.getBytes(UTF_8).length.toLong, file2Content),
+                     )
+                       .via(Zip4JArchiver.encrypted(password, EncryptionMethod.ZipStandard).archive)
+                       .via(Zip4JUnarchiver(password = Some(password)).list)
+                       .runCollect
+        } yield {
+          val encryptionMethods = entries.map(_.underlying[LocalFileHeader].getEncryptionMethod)
+          assertTrue(
+            entries.size == 2,
+            encryptionMethods.forall(_ == Zip4JEncryptionMethod.ZIP_STANDARD),
+          )
+        }
+      },
+      test("system unzip can process Zip4J file") {
+        systemZipTest(
+          Zip4JArchiver(),
+          (zipFile: Path, extractDir: Path) =>
+            Command("unzip", "-q", zipFile.toString, "-d", extractDir.toString),
+        )
+      },
+      test("system unzip can process encrypted Zip4J file") {
+        systemZipTest(
+          Zip4JArchiver.encrypted(password, EncryptionMethod.ZipStandard),
+          (zipFile: Path, extractDir: Path) =>
+            Command("unzip", "-P", password, "-q", zipFile.toString, "-d", extractDir.toString),
+        )
+      },
+      test("system unzip can process stored Zip4J file") {
+        systemZipTest(
+          Zip4JArchiver(zipMethod = ZipMethod.Stored),
+          (zipFile: Path, extractDir: Path) =>
+            Command("unzip", "-q", zipFile.toString, "-d", extractDir.toString),
+        )
+      },
+      test("system unzip can process stored and encrypted Zip4J file") {
+        systemZipTest(
+          Zip4JArchiver.encrypted(password, EncryptionMethod.ZipStandard, ZipMethod.Stored),
+          (zipFile: Path, extractDir: Path) =>
+            Command("unzip", "-P", password, "-q", zipFile.toString, "-d", extractDir.toString),
+        )
+      },
     )
+
+  private def systemZipTest(
+    archiver: Zip4JArchiver,
+    systemUnzipCommand: (Path, Path) => Command.Standard,
+  ): ZIO[Scope, Throwable, TestResult] =
+    for {
+      tmpDir <- TempDir.temporaryDirectory
+      zipFile = tmpDir.resolve("test.zip")
+      _ <- ZStream(
+             archiveEntry(file1Name, file1Content.getBytes(UTF_8).length.toLong, file1Content),
+             archiveEntry(file2Name, file2Content.getBytes(UTF_8).length.toLong, file2Content),
+           )
+             .via(archiver.archive)
+             .run(ZSink.fromPath(zipFile))
+      extractDir <- TempDir.temporaryDirectory
+      exitCode <- systemUnzipCommand(zipFile, extractDir).exitCode
+      extracted1 <- ZStream.fromPath(extractDir.resolve(file1Name)).via(ZPipeline.utf8Decode).runHead
+      extracted2 <- ZStream.fromPath(extractDir.resolve(file2Name)).via(ZPipeline.utf8Decode).runHead
+    } yield
+      assertTrue(
+        exitCode.code == 0,
+        extracted1.contains(file1Content),
+        extracted2.contains(file2Content),
+      )
 
   private def archiveEntry(
     name: String,
