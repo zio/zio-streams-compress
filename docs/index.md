@@ -102,7 +102,18 @@ The ZIP archive in the example is not encrypted. Passing a password to `Zip4JArc
 
 ## Unarchiving
 
-Reading an archive requires consuming each entry's content before the next entry is emitted. Otherwise the pipeline waits and the program stalls. Use `list` when you only need the entry metadata. The [Read Archives Safely](./how-to-read-archives-safely.md) guide explains the rule and shows how to limit the size of each entry.
+As of zio-streams-compress 2.0, all unarchivers require the consumer to fully read the entry's contents before the next archive entry is emitted.
+
+⚠️ Not reading the entry's content causes the unarchive pipeline to lock up and halt your program.
+
+In zio-streams-compress 1.x, consuming the next archive entry, even by accident for example by using buffering or rechunking, corrupts the content stream of all archive entries. With the new requirement the unarchiver can continue to operate in a streaming fashion without corrupting content.
+
+Most of the time the new requirement should not be an issue. For example, you can concatenate `unarchive` and `archive` pipelines without problems.
+
+Two cases need care:
+
+- You only need the metadata of the entries. Use the unarchiver's `list` method, which reads each entry's content behind the scenes.
+- You need buffering, aggregation, rechunking or parallel processing to improve throughput. Read each entry's content in the step that handles the entry, then do the buffering, aggregation or parallel work. The [Read Archives Safely](./how-to-read-archives-safely.md) guide shows how, and how to limit the size of each entry.
 
 ## Where to Go Next
 
