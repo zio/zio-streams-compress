@@ -3,6 +3,7 @@ package zio.compress
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import zio._
 import zio.compress.Tar.tarArchiveEntryToUnderlying
+import zio.process.Command
 import zio.test._
 import zio.stream._
 
@@ -88,20 +89,32 @@ object TarSpec extends ZIOSpecDefault {
         val tarArchiveEntry = tarEntry2.underlying[TarArchiveEntry] // underlying TarArchiveEntry entry is copied
         assertTrue(tarArchiveEntry.getName == "test2")
       },
-      //      test("tar archive") {
-      //        for {
-      //          obtained <- ZStream(
-      //            archiveEntry("file1.txt", 12, "Hello world!"),
-      //            archiveEntry("subdir/file2.txt", 18, "Hello from subdir!")
-      //          )
-      //            .via(TarArchiver.archive)
-      //            .via(GzipCompressor.compress)
-      //            .runCollect
-      //        } yield {
-      //          println(Base64.getEncoder.encodeToString(obtained.toArray))
-      //          assertCompletes
-      //        }
-      //      },
+      test("system tar can untar Tar file") {
+        val file1Name = "file1.txt"
+        val file1Content = "Hello world!"
+        val file2Name = "subdir/file2.txt"
+        val file2Content = "Hello from subdir!"
+
+        for {
+          tmpDir <- TempDir.temporaryDirectory
+          tarFile = tmpDir.resolve("test.tar")
+          _ <- ZStream(
+                 archiveEntry(file1Name, file1Content.getBytes(UTF_8).length.toLong, file1Content),
+                 archiveEntry(file2Name, file2Content.getBytes(UTF_8).length.toLong, file2Content),
+               )
+                 .via(TarArchiver.archive)
+                 .run(ZSink.fromPath(tarFile))
+          extractDir <- TempDir.temporaryDirectory
+          exitCode <- Command("tar", "-x", "-f", tarFile.toString, "-C", extractDir.toString).exitCode
+          extracted1 <- ZStream.fromPath(extractDir.resolve(file1Name)).via(ZPipeline.utf8Decode).runHead
+          extracted2 <- ZStream.fromPath(extractDir.resolve(file2Name)).via(ZPipeline.utf8Decode).runHead
+        } yield
+          assertTrue(
+            exitCode.code == 0,
+            extracted1.contains(file1Content),
+            extracted2.contains(file2Content),
+          )
+      },
     )
 
   private def archiveEntry(

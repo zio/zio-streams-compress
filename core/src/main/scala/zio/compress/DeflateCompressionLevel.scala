@@ -1,5 +1,7 @@
 package zio.compress
 
+import zio.Chunk
+
 /** Deflate compression level, used for ZIP and GZIP.
   *
   * @param level
@@ -34,4 +36,19 @@ object DeflateCompressionLevel {
   final val FastestCompressionLevel: DeflateCompressionLevel = CompressionLevel1
   final val DefaultCompressionLevel: DeflateCompressionLevel = CompressionLevel5
   final val BestCompressionLevel: DeflateCompressionLevel = CompressionLevel9
+
+  final val Values: Chunk[DeflateCompressionLevel] =
+    Chunk(
+      CompressionLevel0,
+      CompressionLevel1,
+      CompressionLevel2,
+      CompressionLevel3,
+      CompressionLevel4,
+      CompressionLevel5,
+      CompressionLevel6,
+      CompressionLevel7,
+      CompressionLevel8,
+      CompressionLevel9,
+    )
+
 }

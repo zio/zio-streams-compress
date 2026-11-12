@@ -1,5 +1,3 @@
-import zio.sbt.githubactions.Condition
-
 val V = new {
   val brotli = "0.1.2"
   val brotli4j = "1.24.0"
@@ -8,6 +6,7 @@ val V = new {
   val lz4 = "1.14.0"
   val snappy = "1.1.10.12"
   val zio = "2.1.27"
+  val zioProcess = "0.8.1"
   val zip4j = "2.11.6"
   val zstdJni = "1.5.7-26"
 }
@@ -160,7 +159,7 @@ lazy val snappy = project
 
 lazy val tar = project
   .in(file("tar"))
-  .dependsOn(core % "compile->compile;test->test")
+  .dependsOn(core % "compile->compile;test->test", `test-utils` % "test")
   .dependsOn(gzip % "test")
   .settings(commonSettings("tar"))
   .settings(
@@ -171,12 +170,12 @@ lazy val tar = project
 
 lazy val zip = project
   .in(file("zip"))
-  .dependsOn(core % "compile->compile;test->test")
+  .dependsOn(core % "compile->compile;test->test", `test-utils` % "test")
   .settings(commonSettings("zip"))
 
 lazy val zip4j = project
   .in(file("zip4j"))
-  .dependsOn(core % "compile->compile;test->test")
+  .dependsOn(core % "compile->compile;test->test", `test-utils` % "test")
   .settings(commonSettings("zip4j"))
   .settings(
     libraryDependencies ++= Seq(
@@ -201,9 +200,7 @@ lazy val example = project
   .settings(
     publishArtifact := false,
     publish / skip := true,
-  )
-  .settings(
-    name := "zio-streams-compress-example"
+    name := "zio-streams-compress-example",
   )
 
 lazy val docs = project
@@ -223,4 +220,16 @@ lazy val docs = project
       "This library is heavily inspired by [fs2-compress](https://github.com/lhns/fs2-compress).",
     readmeLicense +=
       s"\n\nCopyright 2024-${java.time.Year.now()} Erik van Oosten and the zio-streams-compress contributors.",
+  )
+
+lazy val `test-utils` = project
+  .in(file("test-utils"))
+  .settings(commonSettings("test-utils"))
+  .settings(
+    publishArtifact := false,
+    publish / skip := true,
+    name := "zio-streams-compress-test-utils",
+    libraryDependencies ++= Seq(
+      "dev.zio" %% "zio-process" % V.zioProcess
+    ),
   )

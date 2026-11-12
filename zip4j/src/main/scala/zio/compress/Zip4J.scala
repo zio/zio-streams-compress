@@ -2,11 +2,13 @@ package zio.compress
 
 import net.lingala.zip4j.io.inputstream.ZipInputStream
 import net.lingala.zip4j.io.outputstream.ZipOutputStream
+import net.lingala.zip4j.model.enums.CompressionMethod
 import net.lingala.zip4j.model.{LocalFileHeader, ZipParameters}
 import zio._
 import zio.compress.ArchiveEntry.{ArchiveEntryFromUnderlying, ArchiveEntryToUnderlying}
 import zio.compress.Archiver.checkUncompressedSize
 import zio.compress.JavaIoInterop._
+import zio.compress.zip4j._
 import zio.compress.Zip4J._
 import zio.stream._
 
@@ -20,28 +22,86 @@ object Zip4JArchiver {
     * The archive entries require the uncompressed size.
     *
     * @param password
-    *   password of the ZIP archive, or `None` if the archive is not password protected
+    *   password of the ZIP archive, or `None` if the archive is not password protected.
+    * @param zipMethod
+    *   zip method, either Deflated (the default) or Stored
+    *
+    * NOTE: when password is `Some`, the extremely weak standard ZIP encryption is used. Use
+    * `Zip4JArchiver.encrypted(...)` to set another encryption method.
     */
-  def apply(password: => Option[String] = None): Zip4JArchiver =
-    new Zip4JArchiver(password)
+  def apply(password: Option[String] = None, zipMethod: ZipMethod = ZipMethod.Deflated): Zip4JArchiver =
+    password.fold(new Zip4JArchiver(None, zipMethod))(pw => encrypted(pw, EncryptionMethod.ZipStandard, zipMethod))
+
+  /** An [[Archiver]] for encrypted ZIP, based on the Zip4J library.
+    *
+    * The archive entries require the uncompressed size.
+    *
+    * @param password
+    *   password of the ZIP archive
+    * @param encryptionMethod
+    *   the encryption method
+    * @param zipMethod
+    *   zip method, either Deflated (the default) or Stored
+    */
+  def encrypted(
+    password: String,
+    encryptionMethod: EncryptionMethod,
+    zipMethod: ZipMethod = ZipMethod.Deflated,
+  ): Zip4JArchiver =
+    new Zip4JArchiver(Some((password, encryptionMethod)), zipMethod)
 
   /** See [[apply]] and [[Archiver.archive]]. */
   def archive: ZPipeline[Any, Throwable, (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]), Byte] =
     apply().archive
 }
 
-final class Zip4JArchiver private (password: => Option[String]) extends Archiver[Some] {
+final class Zip4JArchiver private (encryption: Option[(String, EncryptionMethod)], zipMethod: ZipMethod)
+    extends Archiver[Some] {
+
+  private[this] val compressionMethod = zipMethod match {
+    case ZipMethod.Deflated => CompressionMethod.DEFLATE
+    case ZipMethod.Stored   => CompressionMethod.STORE
+  }
+
+  /** Password as char array or null. */
+  private[this] val passwordOrNull: Array[Char] = encryption.map(_._1.toCharArray).orNull
+
+  /** An optional tuple with zip4j's encryption method and key strength. */
+  private[this] val encryptionInfo = encryption
+    .map { case (_, encryptionMethod) =>
+      import EncryptionMethod._
+      import net.lingala.zip4j.model.enums.AesKeyStrength._
+      import net.lingala.zip4j.model.enums.EncryptionMethod._
+      encryptionMethod match {
+        case ZipStandard => (ZIP_STANDARD, None)
+        case AES_128     => (AES, Some(KEY_STRENGTH_128))
+        case AES_256     => (AES, Some(KEY_STRENGTH_256))
+      }
+    }
 
   override def archive(implicit
     trace: Trace
   ): ZPipeline[Any, Throwable, (ArchiveEntry[Some, Any], ZStream[Any, Throwable, Byte]), Byte] =
     viaOutputStream { outputStream =>
-      new ZipOutputStream(outputStream, password.map(_.toCharArray).orNull)
+      new ZipOutputStream(outputStream, passwordOrNull)
     } { case (entryStream, zipOutputStream) =>
       entryStream
         .via(checkUncompressedSize)
         .mapZIO { case (archiveEntry, contentStream) =>
-          def entry = archiveEntry.underlying[ZipParameters]
+          val entry = {
+            val zp = archiveEntry.underlying[ZipParameters]
+            if (archiveEntry.isDirectory) {
+              zp.setCompressionMethod(CompressionMethod.STORE)
+            } else {
+              zp.setCompressionMethod(compressionMethod)
+              encryptionInfo.foreach { case (em, ks) =>
+                zp.setEncryptFiles(true)
+                zp.setEncryptionMethod(em)
+                ks.foreach(zp.setAesKeyStrength)
+              }
+            }
+            zp
+          }
           ZIO.attemptBlockingInterrupt(zipOutputStream.putNextEntry(entry)) *>
             contentStream.runForeachChunk { chunk =>
               ZIO.attemptBlockingInterrupt(zipOutputStream.write(chunk.toArray))
@@ -120,14 +180,15 @@ final class Zip4JUnarchiver private (password: Option[String], chunkSize: Int)
 }
 
 object Zip4J {
+
+  /** Implicit underlying extractor for archiving. */
   implicit val zip4jArchiveEntryToUnderlying: ArchiveEntryToUnderlying[ZipParameters] =
     new ArchiveEntryToUnderlying[ZipParameters] {
       override def underlying[S[A] <: Option[A]](entry: ArchiveEntry[S, Any], underlying: Any): ZipParameters = {
         val zipEntry = underlying match {
-          case zipParameters: ZipParameters =>
-            new ZipParameters(zipParameters)
-          case _ =>
-            new ZipParameters()
+          case zipParameters: ZipParameters => new ZipParameters(zipParameters)
+          case ()                           => new ZipParameters()
+          case u                            => throw IllegalUnderlyingEntry(u)
         }
 
         val fileOrDirName = entry.name match {
@@ -141,6 +202,17 @@ object Zip4J {
         entry.lastModified.map(_.toEpochMilli).foreach(zipEntry.setLastModifiedFileTime)
         zipEntry
       }
+    }
+
+  /** Implicit underlying extractor for unarchiving. */
+  implicit val zip4jUnarchiveEntryToUnderlying: ArchiveEntryToUnderlying[LocalFileHeader] =
+    new ArchiveEntryToUnderlying[LocalFileHeader] {
+      override def underlying[S[A] <: Option[A]](entry: ArchiveEntry[S, Any], underlying: Any): LocalFileHeader =
+        underlying match {
+          case localFileHeader: LocalFileHeader => localFileHeader
+          case ()                               => new LocalFileHeader()
+          case u                                => throw IllegalUnderlyingEntry(u)
+        }
     }
 
   // noinspection ConvertExpressionToSAM
