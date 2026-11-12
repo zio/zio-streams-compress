@@ -98,7 +98,7 @@ object ExampleApp extends ZIOAppDefault {
 }
 ```
 
-The ZIP archive in the example is not encrypted. Passing a password to `Zip4JArchiver` does not encrypt yet, so the example does not use it. See the [Zip4J](docs/./reference-zip4j.md) reference for the current state.
+The Zip4J module also supports encryption and decryption of zip files. See the [Zip4J](docs/./reference-zip4j.md) reference.
 
 ## Unarchiving
 
