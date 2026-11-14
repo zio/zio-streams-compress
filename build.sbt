@@ -8,7 +8,7 @@ val V = new {
   val zio = "2.1.27"
   val zioProcess = "0.8.1"
   val zip4j = "2.11.6"
-  val zstdJni = "1.5.7-26"
+  val zstdJni = "1.5.7-28"
 }
 
 val _scala212 = "2.12.21"
