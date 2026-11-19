@@ -61,6 +61,8 @@ val names = ZStream
 
 `TarUnarchiver#list` reads each entry's content to fill in the uncompressed size. `TarUnarchiver#unarchive` gives the content as a stream, and it must be fully read before the next entry is emitted. See [Read Archives Safely](./how-to-read-archives-safely.md).
 
+The companion objects offer shortcuts with the default options: `TarArchiver.archive`, `TarUnarchiver.list` and `TarUnarchiver.unarchive` are the same pipelines as `TarArchiver().archive`, `TarUnarchiver().list` and `TarUnarchiver().unarchive`.
+
 ## Options
 
 | Option      | Type               | Default |

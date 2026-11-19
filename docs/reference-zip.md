@@ -49,6 +49,8 @@ val entries: ZStream[Any, Throwable, (String, Long)] =
 
 `ZipUnarchiver#list` reads each entry's content to fill in the uncompressed size. To process the content itself, use `ZipUnarchiver#unarchive` instead, and read each entry's content before the next entry is emitted. See [Read Archives Safely](./how-to-read-archives-safely.md) for the rules.
 
+The companion objects offer shortcuts with the default options: `ZipArchiver.archive`, `ZipUnarchiver.list` and `ZipUnarchiver.unarchive` are the same pipelines as `ZipArchiver().archive`, `ZipUnarchiver().list` and `ZipUnarchiver().unarchive`.
+
 ## Options
 
 | Option      | Type                                         | Default                          |

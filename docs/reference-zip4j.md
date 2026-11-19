@@ -38,6 +38,8 @@ val unprotected = ZStream.fromFileName("archive.zip").via(Zip4JUnarchiver().unar
 
 `Zip4JUnarchiver#list` reads each entry's content to fill in the uncompressed size. `Zip4JUnarchiver#unarchive` gives the content as a stream, and it must be fully read before the next entry is emitted. See [Read Archives Safely](./how-to-read-archives-safely.md).
 
+The companion objects offer shortcuts with the default options, so without a password: `Zip4JArchiver.archive`, `Zip4JUnarchiver.list` and `Zip4JUnarchiver.unarchive` are the same pipelines as `Zip4JArchiver().archive`, `Zip4JUnarchiver().list` and `Zip4JUnarchiver().unarchive`.
+
 ## Writing Archives
 
 `Zip4JArchiver` is an `Archiver` that writes ZIP archives. Every entry must have a known uncompressed size, so the entry type is `ArchiveEntry[Some, _]`:

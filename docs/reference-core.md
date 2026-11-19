@@ -13,11 +13,11 @@ Most users never implement these interfaces. They are useful for understanding w
 A `Compressor` turns a raw byte stream into a compressed byte stream. A `Decompressor` does the reverse. Both expose a single pipeline:
 
 ```scala
-trait Compressor {
+trait Compressor extends Serializable {
   def compress: ZPipeline[Any, Throwable, Byte, Byte]
 }
 
-trait Decompressor {
+trait Decompressor extends Serializable {
   def decompress: ZPipeline[Any, Throwable, Byte, Byte]
 }
 ```
@@ -45,7 +45,7 @@ val compressorOrNone: Compressor = Compressor.empty
 An `Archiver` takes a stream of archive entries and produces the bytes of an archive. Each entry is a pair of an `ArchiveEntry` and the content stream for that entry:
 
 ```scala
-trait Archiver[-Size[A] <: Option[A]] {
+trait Archiver[-Size[A] <: Option[A]] extends Serializable {
   def archive: ZPipeline[
     Any,
     Throwable,
@@ -58,7 +58,7 @@ trait Archiver[-Size[A] <: Option[A]] {
 An `Unarchiver` does the reverse. It takes the bytes of an archive and produces the entries with their content:
 
 ```scala
-trait Unarchiver[Size[A] <: Option[A], Underlying] {
+trait Unarchiver[Size[A] <: Option[A], Underlying] extends Serializable {
   def unarchive: ZPipeline[
     Any,
     Throwable,
@@ -70,7 +70,7 @@ trait Unarchiver[Size[A] <: Option[A], Underlying] {
 }
 ```
 
-`Unarchiver#list` returns the entries with their uncompressed size filled in. It reads each entry's content to count the bytes, so it is slower than `unarchive` on large archives. See [Read Archives Safely](./how-to-read-archives-safely.md) for the rules that apply to `unarchive`.
+`Unarchiver#list` has a default implementation on top of `unarchive`. It returns the entries with their uncompressed size filled in. It reads each entry's content to count the bytes, so it is slower than `unarchive` on large archives. See [Read Archives Safely](./how-to-read-archives-safely.md) for the rules that apply to `unarchive`.
 
 ## ArchiveEntry
 
@@ -84,6 +84,7 @@ final case class ArchiveEntry[+Size[A] <: Option[A], +Underlying](
   lastModified: Option[Instant] = None,
   lastAccess: Option[Instant] = None,
   creation: Option[Instant] = None,
+  private val underlying: Underlying = (),
 )
 ```
 
