@@ -1,7 +1,7 @@
 ---
 id: index
-title: "Compression and archives with zio-streams"
-sidebar_label: "ZIO Streams Compress"
+title: "Introduction to ZIO Streams Compress"
+sidebar_label: "Introduction"
 ---
 
 [ZIO Streams Compress](https://github.com/zio/zio-streams-compress) integrates several compression algorithms and archive formats with [ZIO Streams](https://zio.dev). Every codec and archive format is a pipeline, so it fits into a stream with `via` like any other operator.
@@ -10,51 +10,70 @@ sidebar_label: "ZIO Streams Compress"
 
 ## Installation
 
-To use the library, add one or more of the following lines to your `build.sbt` file:
+The library is published for Scala 3, 2.13 and 2.12, and runs on the JVM only. Scala.js and Scala Native are not supported; PRs for them are welcome. As of 2.1.3, it requires ZIO 2.1.25 or later.
+
+The `core` module holds the shared interfaces. Every codec and archive module in [Modules](#modules) depends on it and pulls it in, so you rarely add it on its own:
 
 ```sbt
-libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli" % "@VERSION@"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli4j" % "@VERSION@"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-bzip2" % "@VERSION@"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "@VERSION@"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-lz4" % "@VERSION@"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-snappy" % "@VERSION@"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "@VERSION@"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "@VERSION@"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-zip4j" % "@VERSION@"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-zstd" % "@VERSION@"
+libraryDependencies ++= Seq(
+  // Compressor, Decompressor, Archiver, Unarchiver and ArchiveEntry interfaces. JVM only.
+  "dev.zio" %% "zio-streams-compress-core" % "@VERSION@"
+)
 ```
 
-Each module depends on `core`, which is pulled in automatically. Add only the modules you use.
+## Modules
 
-_As of 2.1.3, zio-streams-compress requires zio 2.1.25 or later._
+Each format lives in its own module, so a project only pulls in the third-party libraries of the formats it uses. Add the modules you need.
 
-The library is published for Scala 3, 2.13, and 2.12, and runs on the JVM. Scala.js and Scala Native are not supported. PRs for them are welcome.
+### Compression Codecs
 
-## Choosing a Codec
+A codec compresses or decompresses one stream of bytes:
 
-The table lists each codec with its module. Compression and decompression are both available unless the table says otherwise.
+```sbt
+libraryDependencies ++= Seq(
+  // Gzip compressor and decompressor, built on the JDK. JVM only.
+  "dev.zio" %% "zio-streams-compress-gzip" % "@VERSION@",
 
-| Format      | Module       | Compress | Decompress | Notes                                             |
-|-------------|--------------|----------|------------|---------------------------------------------------|
-| Gzip        | `gzip`       | Yes      | Yes        | Widely supported. Built on the JDK.               |
-| Zstd        | `zstd`       | Yes      | Yes        | Good ratio at high speed. Dictionary on write only. |
-| Brotli      | `brotli`     | No       | Yes        | Decompression only, pure Java.                    |
-| Brotli      | `brotli4j`   | Yes      | Yes        | Compresses text well. Loads a native library.     |
-| Bzip2       | `bzip2`      | Yes      | Yes        | Good ratio. Uses a lot of memory.                 |
-| LZ4         | `lz4`        | Yes      | Yes        | Very fast. Favors speed over ratio.               |
-| Snappy      | `snappy`     | Yes      | Yes        | Fast. Three write formats.                        |
-| ZIP         | `zip`        | Yes      | Yes        | Archive format. Entries may have unknown size.    |
-| ZIP         | `zip4j`      | Yes      | Yes        | Archive format. Reads password-protected archives. |
-| Tar         | `tar`        | Yes      | Yes        | Archive format. No compression of its own.        |
+  // Zstandard compressor and decompressor, built on zstd-jni (native). JVM only.
+  "dev.zio" %% "zio-streams-compress-zstd" % "@VERSION@",
 
-For a bundle of files, pick an archive format (ZIP or Tar). For a single stream of bytes, pick a codec. A `.tar.gz` file is a Tar archive wrapped in Gzip.
+  // Brotli decompressor only, built on the pure-Java Brotli decoder. JVM only.
+  "dev.zio" %% "zio-streams-compress-brotli" % "@VERSION@",
 
-## Core Concepts
+  // Brotli compressor and decompressor, built on Brotli4J (native). JVM only.
+  "dev.zio" %% "zio-streams-compress-brotli4j" % "@VERSION@",
 
-The library has two families of pipeline. A compressor turns bytes into compressed bytes, and a decompressor does the reverse. An archiver turns a stream of named entries into the bytes of an archive, and an unarchiver does the reverse. Every codec in the table is a compressor, a decompressor, or both. Every archive format is an archiver, an unarchiver, or both.
+  // Bzip2 compressor and decompressor, built on Apache Commons Compress. JVM only.
+  "dev.zio" %% "zio-streams-compress-bzip2" % "@VERSION@",
 
-The [Core Interfaces](./reference-core.md) reference describes these types in full. The [Tutorial](./tutorial-compress-and-archive.md) builds a small program that uses them.
+  // LZ4 frame compressor and decompressor, built on lz4-java. JVM only.
+  "dev.zio" %% "zio-streams-compress-lz4" % "@VERSION@",
+
+  // Snappy compressor and decompressor (framed, basic and Hadoop formats), built on snappy-java. JVM only.
+  "dev.zio" %% "zio-streams-compress-snappy" % "@VERSION@"
+)
+```
+
+Each codec has a reference page: [Gzip](./reference-gzip.md), [Zstd](./reference-zstd.md), [Brotli](./reference-brotli.md), [Brotli4J](./reference-brotli4j.md), [Bzip2](./reference-bzip2.md), [LZ4](./reference-lz4.md) and [Snappy](./reference-snappy.md). [Choosing a Codec or Archive Format](./choosing-a-codec.md) compares them.
+
+### Archive Formats
+
+An archive format bundles many named entries into one stream of bytes:
+
+```sbt
+libraryDependencies ++= Seq(
+  // ZIP archiver and unarchiver, built on the JDK; entry sizes may be unknown. JVM only.
+  "dev.zio" %% "zio-streams-compress-zip" % "@VERSION@",
+
+  // ZIP archiver and unarchiver with password protection (ZIP standard and AES), built on Zip4J. JVM only.
+  "dev.zio" %% "zio-streams-compress-zip4j" % "@VERSION@",
+
+  // Tar archiver and unarchiver, built on Apache Commons Compress. JVM only.
+  "dev.zio" %% "zio-streams-compress-tar" % "@VERSION@"
+)
+```
+
+Each archive format has a reference page: [Zip](./reference-zip.md), [Zip4J](./reference-zip4j.md) and [Tar](./reference-tar.md).
 
 ## Example
 
@@ -98,27 +117,13 @@ object ExampleApp extends ZIOAppDefault {
 }
 ```
 
-The Zip4J module also supports encryption and decryption of zip files. See the [Zip4J](./reference-zip4j.md) reference.
-
-## Unarchiving
-
-As of zio-streams-compress 2.0, all unarchivers require the consumer to fully read the entry's contents before the next archive entry is emitted.
-
-⚠️ Not reading the entry's content causes the unarchive pipeline to lock up and halt your program.
-
-In zio-streams-compress 1.x, consuming the next archive entry, even by accident for example by using buffering or rechunking, corrupts the content stream of all archive entries. With the new requirement the unarchiver can continue to operate in a streaming fashion without corrupting content.
-
-Most of the time the new requirement should not be an issue. For example, you can concatenate `unarchive` and `archive` pipelines without problems.
-
-Two cases need care:
-
-- You only need the metadata of the entries. Use the unarchiver's `list` method, which reads each entry's content behind the scenes.
-- You need buffering, aggregation, rechunking or parallel processing to improve throughput. Read each entry's content in the step that handles the entry, then do the buffering, aggregation or parallel work. The [Read Archives Safely](./how-to-read-archives-safely.md) guide shows how, and how to limit the size of each entry.
+When you read an archive with `unarchive`, read each entry's content completely before the next entry is emitted, or the pipeline locks up. [How Unarchiving Streams Entries](./streaming-unarchiving.md) explains why.
 
 ## Where to Go Next
 
+- [Getting Started](./getting-started.md) adds a module and runs a first program.
+- [Choosing a Codec or Archive Format](./choosing-a-codec.md) compares the formats.
+- [How Unarchiving Streams Entries](./streaming-unarchiving.md) explains the one rule for reading archives.
+- The reference pages describe every option and default, from [Core Interfaces](./reference-core.md) to [Tar](./reference-tar.md).
 - [Tutorial: Compress and Archive Files](./tutorial-compress-and-archive.md) walks through the basics in order.
-- [How to Compress and Decompress a Stream](./how-to-compress-and-decompress.md) shows how to switch codecs.
-- [How to Create and Read Archives](./how-to-create-and-read-archives.md) covers ZIP and Tar.
-- [How to Read a Password-Protected ZIP](./how-to-read-password-protected-zip.md) reads Zip4J archives.
-- The reference pages describe every option and default of each module, from [Core Interfaces](./reference-core.md) to [Tar](./reference-tar.md).
+- The How-to Guides solve one task each, for example [How to Write a Password-Protected ZIP](./how-to-write-encrypted-zip.md).
