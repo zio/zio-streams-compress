@@ -54,6 +54,6 @@ val password: UIO[Option[String]] = ZIO.succeed(sys.env.get("ARCHIVE_PASSWORD"))
 
 ## Notes
 
-- The module can read archives that use the traditional ZIP encryption, which the `zip -e` command produces.
+- The module reads archives that use the traditional ZIP encryption, which the `zip -e` command produces, and archives encrypted with AES-128 or AES-256.
 - An archive without a password can be read with `Zip4JUnarchiver()`, or with `ZipUnarchiver` from the `zip` module.
-- Writing a password-protected archive does not encrypt the entries yet. See the warning on the [Zip4J](./reference-zip4j.md) reference page.
+- To write a password-protected archive, see [How to Write a Password-Protected ZIP](./how-to-write-encrypted-zip.md).
