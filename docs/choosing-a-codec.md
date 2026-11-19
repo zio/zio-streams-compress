@@ -4,7 +4,7 @@ title: "Choosing a Codec or Archive Format"
 sidebar_label: "Choosing a Codec"
 ---
 
-ZIO Streams Compress ships ten modules, and most of them do the same job: turn bytes into fewer bytes and back. This page explains how they differ, so you can pick one before you read its reference page.
+ZIO Streams Compress ships ten format modules, and most of them do the same job: turn bytes into fewer bytes and back. This page explains how they differ, so you can pick one before you read its reference page.
 
 ## Codec or Archive Format
 

@@ -41,7 +41,7 @@ def scriptEntry(script: Array[Byte]): ArchiveEntry[Some, Any] =
 
 ## Attach the Tar Header
 
-To set the mode, create a `TarArchiveEntry`, set the fields that `ArchiveEntry` does not model, and attach it with `ArchiveEntry#withUnderlying`. `TarArchiver` copies its header and then applies the name, size, directory flag and timestamps of the `ArchiveEntry`, so only the extra fields matter on the `TarArchiveEntry`:
+To set the mode, create a `TarArchiveEntry`, set the fields that `ArchiveEntry` does not model, and attach it with `ArchiveEntry#withUnderlying`. `TarArchiver` copies its header and then applies the name, size and timestamps of the `ArchiveEntry`, so only the extra fields matter on the `TarArchiveEntry`:
 
 ```scala mdoc:silent
 def executable(entry: ArchiveEntry[Some, Any]): ArchiveEntry[Some, Any] = {

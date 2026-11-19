@@ -80,7 +80,7 @@ val listTarGz: ZIO[Any, Throwable, Unit] =
     .fromFileName("archive.tar.gz")
     .via(GzipDecompressor.decompress)
     .via(TarUnarchiver().list)
-    .mapZIO(entry => Console.printLine(s"${entry.name}: ${entry.uncompressedSize} bytes"))
+    .mapZIO(entry => Console.printLine(s"${entry.name}: ${entry.uncompressedSize.value} bytes"))
     .runDrain
 ```
 
