@@ -53,7 +53,7 @@ Choose by what you have and who reads the archive:
 
 - Choose `zip` when the size of each entry is not known before its content is streamed, for example content produced on the fly. It is the default choice for ZIP.
 - Choose `zip4j` when the archive must be password protected, or when it must store entries without compression and the entries are too large to hold in memory. The `zip` module buffers each stored entry in memory to compute its checksum. Zip4J does not.
-- Choose `tar` for Unix tooling, usually wrapped in Gzip or Zstd. Tar keeps more file metadata, such as the last access and creation times, and with the underlying entry, the Unix permissions.
+- Choose `tar` for Unix tooling, usually wrapped in Gzip or Zstd. Through its underlying `TarArchiveEntry`, Tar also keeps Unix metadata such as permissions and the owner.
 
 The size requirement shows up in the types. `ZipArchiver` accepts `ArchiveEntry[Option, _]`, while `Zip4JArchiver` and `TarArchiver` accept only `ArchiveEntry[Some, _]`, so a missing size is a compile error rather than a runtime failure. [Core Interfaces](./reference-core.md#size-requirements-on-write) explains the `Size` type parameter.
 
