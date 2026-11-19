@@ -157,6 +157,41 @@ object ZipSpec extends ZIOSpecDefault {
             extracted2.contains(file2Content),
           )
       },
+      test("zip archiver drains directory entry content") {
+        // ZipArchiver must drain the content stream of a directory entry even though directories have no content.
+        // Without draining, the pipeline can stall because the content streams from ZipUnarchiver are sequentially
+        // gated: the next entry is not emitted until the previous entry's content stream has been fully consumed.
+        // So if ZipArchiver skips draining the directory's content stream, the file entry after it is never emitted.
+        //
+        // A zip with a directory entry first, then a file:
+        //   mkdir subdir && zip - subdir/ file.txt
+        val zipWithDirectory = Chunk.fromArray(
+          Base64.getDecoder.decode(
+            "UEsDBAoAAAAAADijc10AAAAAAAAAAAAAAAAHABwAc3ViZGlyL1VUCQADO03/ajtN/2p1eAsAAQT1AQAA" +
+              "BAAAAABQSwMEFAAIAAgAOKNzXQAAAAAAAAAABgAAAAgAHABmaWxlLnR4dFVUCQADO03/ajtN/2p1eAsA" +
+              "AQT1AQAABAAAAADzSM3JyVcEAFBLBwhWzCqdCAAAAAYAAABQSwECHgMKAAAAAAA4o3NdAAAAAAAAAAAA" +
+              "AAAABwAYAAAAAAAAABAA7UEAAAAAc3ViZGlyL1VUBQADO03/anV4CwABBPUBAAAEAAAAAFBLAQIeAxQA" +
+              "CAAIAOKY811WzCqdCAAAAAYAAAAIABgAAAAAAAEAAACkgUEAAABmaWxlLnR4dFVUBQADO03/anV4CwAB" +
+              "BPUBAAAEAAAAAFBLBQYAAAAAAgACAJsAAACbAAAAAAA="
+          )
+        )
+        for {
+          entries <-
+            ZStream
+              .fromChunk(zipWithDirectory)
+              // Unarchive: produces sequentially-gated (directory, content), (file, content) pairs.
+              // ZipUnarchiver won't emit the second pair until the first content stream is fully consumed.
+              .via(ZipUnarchiver.unarchive)
+              // Re-archive: ZipArchiver MUST drain each content stream, including the empty directory one.
+              .via(ZipArchiver.archive)
+              .via(ZipUnarchiver.unarchive)
+              .mapZIO { case (entry, stream) => stream.runDrain.as(entry.name) }
+              .runCollect
+        } yield assertTrue(
+          entries.contains("subdir/"),
+          entries.contains("file.txt"),
+        )
+      } @@ TestAspect.withLiveClock @@ TestAspect.timeout(5.seconds),
       test("system unzip can process stored Zip file") {
         for {
           tmpDir <- TempDir.temporaryDirectory
