@@ -58,7 +58,7 @@ val decompressed: ZStream[Any, Throwable, Byte] =
 | `customDictionary` | `Option[Array[Byte]]`            | `None` (no dictionary)                     |
 | `chunkSize`        | `Int` (decompressor only)        | 4 KiB (`ZStream.DefaultChunkSize`)         |
 
-`ZstdCompressionLevel` ranges from -131072 to 22. Negative levels trade compression ratio for speed. Named constants cover the common cases:
+`ZstdCompressionLevel` ranges from -131072 to 22. Negative levels trade compression ratio for speed. The constants `CompressionLevelFast7` to `CompressionLevelFast0` name levels -7 to 0, `CompressionLevel1` to `CompressionLevel19` name levels 1 to 19, and `CompressionLevelUltra20` to `CompressionLevelUltra22` name levels 20 to 22. Five aliases cover the common cases:
 
 - `ZstdCompressionLevel.FastCompressionLevel` is -4.
 - `ZstdCompressionLevel.DefaultCompressionLevel` is 3.

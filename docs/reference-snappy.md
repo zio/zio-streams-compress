@@ -71,7 +71,7 @@ An invalid option, such as a block size out of range, throws an `IllegalArgument
 | `SnappyReadFormat.Framed`   | `verifyChecksums` `true`. When `true`, checksums in the input are verified.            |
 | `SnappyReadFormat.Basic`    | `maxChunkSize` 512 MiB, must be 1 to 512 MiB. The largest number of bytes compressed together. |
 
-Read the input with the format it was written with. The formats are not compatible with each other, so a mismatch produces errors or wrong output.
+Read the input with the format it was written with. The formats are not compatible with each other, so a mismatch produces errors or wrong output. There is no read format for `HadoopCompatible`: this module can write the Hadoop format but cannot read it back. Read such data with Hadoop's or Spark's own Snappy codec.
 
 ## Options
 
