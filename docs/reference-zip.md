@@ -57,13 +57,32 @@ val entries: ZStream[Any, Throwable, (String, Long)] =
 | `zipMethod` | `ZipMethod` (archiver)                       | `Deflated`                       |
 | `chunkSize` | `Int` (unarchiver)                           | 64 KiB                           |
 
-`level` applies only to deflated entries. `ZipMethod` has two values: `ZipMethod.Deflated` compresses each entry, and `ZipMethod.Stored` writes each entry without compression.
+`level` applies only to deflated entries. `ZipMethod` has two values: `ZipMethod.Deflated` compresses each entry, and `ZipMethod.Stored` writes each entry without compression. `ZipMethod.Values` lists both.
+
+`ZipMethod` lives in the package `zio.compress.zip`, so it needs its own import. To write a deflated archive at the best compression level, and a stored archive:
+
+```scala mdoc:compile-only
+import zio.compress._
+import zio.compress.zip._
+
+val best = ZipArchiver(level = Some(DeflateCompressionLevel.BestCompressionLevel))
+
+val stored = ZipArchiver(zipMethod = ZipMethod.Stored)
+```
+
+The Zip4J module has its own `ZipMethod` in the package `zio.compress.zip4j`. The two types are not interchangeable.
 
 ## Stored Entries
 
 `ZipMethod.Stored` only works in v3.0.0 and later, earlier versions produced broken zip files.
 
 Zip support from the JVM requires a CRC32 to be calculated up front. To do this, the full content of each entry is pulled into memory. The Zip4J module does not do this, and will have lower memory usage.
+
+## Entry Metadata
+
+`ZipArchiver` writes the `lastModified`, `lastAccess` and `creation` fields of an `ArchiveEntry` when they are set, and `ZipUnarchiver` reads them back when the archive records them. A directory entry is always written stored, with size 0.
+
+The underlying entry is a `java.util.zip.ZipEntry`. Read it with `entry.underlying[ZipEntry]` after `import zio.compress.Zip._`, for example to get the entry comment or the compressed size. To write ZIP-specific fields, attach a `ZipEntry` with `ArchiveEntry#withUnderlying`; it is kept only when its name and directory flag match the `ArchiveEntry`. [Core Interfaces](./reference-core.md#underlying-entries) describes underlying entries.
 
 ## Notes
 
