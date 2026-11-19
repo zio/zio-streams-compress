@@ -50,11 +50,11 @@ val decompressed: ZStream[Any, Throwable, Byte] =
 
 `SnappyWriteFormat` has three variants:
 
-| Variant                         | Options and defaults                                                                  |
-|---------------------------------|---------------------------------------------------------------------------------------|
-| `SnappyWriteFormat.Framed`      | `blockSize` 64 KiB, must be 1 to 64 KiB. `minCompressionRatio` 0.85, must be in (0, 1].|
-| `SnappyWriteFormat.Basic`       | `blockSize` 32 KiB, must be 1 KiB to 512 MiB.                                         |
-| `SnappyWriteFormat.HadoopCompatible` | `blockSize` 32 KiB, must be 1 KiB to 512 MiB. Writes no file header.             |
+| Variant                              | Options and defaults                                                                    |
+|--------------------------------------|-----------------------------------------------------------------------------------------|
+| `SnappyWriteFormat.Framed`           | `blockSize` 64 KiB, must be 1 to 64 KiB. `minCompressionRatio` 0.85, must be in (0, 1]. |
+| `SnappyWriteFormat.Basic`            | `blockSize` 32 KiB, must be 1 KiB to 512 MiB.                                           |
+| `SnappyWriteFormat.HadoopCompatible` | `blockSize` 32 KiB, must be 1 KiB to 512 MiB. Writes no file header.                    |
 
 `Framed` follows the [Snappy framing format](https://github.com/google/snappy/blob/master/framing_format.txt). The `minCompressionRatio` is the smallest ratio of compressed to raw size that must be reached before a block is written compressed. Blocks that do not reach it are stored uncompressed.
 
@@ -66,16 +66,16 @@ An invalid option, such as a block size out of range, throws an `IllegalArgument
 
 `SnappyReadFormat` has two variants:
 
-| Variant                     | Options and defaults                                                                   |
-|-----------------------------|----------------------------------------------------------------------------------------|
-| `SnappyReadFormat.Framed`   | `verifyChecksums` `true`. When `true`, checksums in the input are verified.            |
-| `SnappyReadFormat.Basic`    | `maxChunkSize` 512 MiB, must be 1 to 512 MiB. The largest number of bytes compressed together. |
+| Variant                   | Options and defaults                                                                           |
+|---------------------------|------------------------------------------------------------------------------------------------|
+| `SnappyReadFormat.Framed` | `verifyChecksums` `true`. When `true`, checksums in the input are verified.                    |
+| `SnappyReadFormat.Basic`  | `maxChunkSize` 512 MiB, must be 1 to 512 MiB. The largest number of bytes compressed together. |
 
-Read the input with the format it was written with. The formats are not compatible with each other, so a mismatch produces errors or wrong output.
+Read the input with the format it was written with. The formats are not compatible with each other, so a mismatch produces errors or wrong output. There is no read format for `HadoopCompatible`: this module can write the Hadoop format but cannot read it back. Read such data with Hadoop's or Spark's own Snappy codec.
 
 ## Options
 
-| Option      | Type                          | Default                             |
-|-------------|-------------------------------|-------------------------------------|
-| `format`    | `SnappyWriteFormat` (compressor) or `SnappyReadFormat` (decompressor) | `Framed()` |
-| `chunkSize` | `Int` (decompressor only)     | 4 KiB (`ZStream.DefaultChunkSize`)  |
+| Option      | Type                                                                  | Default                            |
+|-------------|-----------------------------------------------------------------------|------------------------------------|
+| `format`    | `SnappyWriteFormat` (compressor) or `SnappyReadFormat` (decompressor) | `Framed()`                         |
+| `chunkSize` | `Int` (decompressor only)                                             | 4 KiB (`ZStream.DefaultChunkSize`) |

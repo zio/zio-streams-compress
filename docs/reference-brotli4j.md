@@ -52,12 +52,12 @@ val decompressed: ZStream[Any, Throwable, Byte] =
 
 ## Options
 
-| Option    | Type                              | Default                             |
-|-----------|-----------------------------------|-------------------------------------|
-| `quality` | `Option[BrotliQuality]`           | `None` (the library default)        |
-| `lgwin`   | `Option[BrotliLogWindow]`         | `None` (the library default)        |
-| `mode`    | `Option[BrotliMode]`              | `None` (the library default)        |
-| `chunkSize` | `Int` (decompressor only)       | 4 KiB (`ZStream.DefaultChunkSize`)  |
+| Option      | Type                      | Default                            |
+|-------------|---------------------------|------------------------------------|
+| `quality`   | `Option[BrotliQuality]`   | `None` (the library default)       |
+| `lgwin`     | `Option[BrotliLogWindow]` | `None` (the library default)       |
+| `mode`      | `Option[BrotliMode]`      | `None` (the library default)       |
+| `chunkSize` | `Int` (decompressor only) | 4 KiB (`ZStream.DefaultChunkSize`) |
 
 `BrotliQuality` ranges from 0 to 11. Higher values compress more and run slower. Named constants `Quality0` to `Quality11` exist for each value.
 
@@ -69,7 +69,18 @@ val decompressed: ZStream[Any, Throwable, Byte] =
 - `BrotliMode.Text` is for UTF-8 text.
 - `BrotliMode.Font` is for the WOFF 2.0 font format.
 
+## Native Library
+
+Brotli4J runs a native Brotli library. The `brotli4j` artifact selects a platform-specific artifact, such as `native-linux-x86_64` or `native-osx-aarch64`, through Maven profiles that match the operating system and CPU of the machine that resolves the dependencies. sbt (through Coursier) honours those profiles, so a project that builds and runs on the same platform needs nothing extra.
+
+When you build on one platform and run on another, for example when you package a fat jar on macOS and run it in a Linux container, the jar holds the native library of the build machine only. Add the native artifact of the target platform yourself, with the same version as the `brotli4j` artifact this module depends on. `sbt dependencyTree` shows that version:
+
+```sbt
+libraryDependencies += "com.aayushatharva.brotli4j" % "native-linux-x86_64" % "<brotli4j version>"
+```
+
+The module calls `Brotli4jLoader.ensureAvailability` before each pipeline runs, so a missing native library fails the stream before any data is processed.
+
 ## Notes
 
-- Both the compressor and the decompressor fail with a `Throwable` when the native library cannot be loaded, or when the input is not valid Brotli.
-- Use this module instead of [Brotli](./reference-brotli.md) when you need to compress.
+Both the compressor and the decompressor fail with a `Throwable` when the native library cannot be loaded, or when the input is not valid Brotli. Use this module instead of [Brotli](./reference-brotli.md) when you need to compress.
