@@ -35,14 +35,13 @@ def dictionaryDecompressor(dictionary: Array[Byte]): BrotliDecompressor =
 
 ## Options
 
-| Option             | Type                       | Default                             |
-|--------------------|----------------------------|-------------------------------------|
-| `customDictionary` | `Option[Array[Byte]]`      | `None` (no dictionary)              |
-| `chunkSize`        | `Int`                      | 4 KiB (`ZStream.DefaultChunkSize`)  |
+| Option             | Type                  | Default                            |
+|--------------------|-----------------------|------------------------------------|
+| `customDictionary` | `Option[Array[Byte]]` | `None` (no dictionary)             |
+| `chunkSize`        | `Int`                 | 4 KiB (`ZStream.DefaultChunkSize`) |
 
 The `chunkSize` is the largest chunk emitted by the output stream.
 
 ## Notes
 
-- The decompressor's error type is `Throwable`. Input that is not valid Brotli fails the stream.
-- This module cannot produce Brotli data. Use `Brotli4JCompressor` for that.
+The decompressor's error type is `Throwable`, and input that is not valid Brotli fails the stream. This module cannot produce Brotli data, so use `Brotli4JCompressor` from [Brotli4J](./reference-brotli4j.md) for that.

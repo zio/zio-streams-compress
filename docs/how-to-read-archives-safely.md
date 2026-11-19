@@ -100,10 +100,10 @@ The `rechunk` after the check groups the entries into batches of ten, so later s
 
 Use `list` when you need the name and the size of each entry, and nothing else. Use `unarchive` when you need the content. The table shows the difference:
 
-| Method      | Emits                                   | Reads content | Uncompressed size       |
-|-------------|-----------------------------------------|---------------|-------------------------|
-| `list`      | `ArchiveEntry`                          | Yes, to count | Always known            |
-| `unarchive` | `ArchiveEntry` and its content stream   | No            | Only when the archive says so |
+| Method      | Emits                                 | Reads content | Uncompressed size             |
+|-------------|---------------------------------------|---------------|-------------------------------|
+| `list`      | `ArchiveEntry`                        | Yes, to count | Always known                  |
+| `unarchive` | `ArchiveEntry` and its content stream | No            | Only when the archive says so |
 
 ## Notes
 

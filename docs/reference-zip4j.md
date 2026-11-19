@@ -118,9 +118,8 @@ val storedAndEncrypted = Zip4JArchiver.encrypted("password", EncryptionMethod.AE
 
 The entries that `Zip4JUnarchiver` returns include the name, the directory flag and, when the archive records it, the uncompressed size. `Zip4JArchiver` writes the name, the size, the directory flag and the `lastModified` time of each `ArchiveEntry`. It does not write `lastAccess` or `creation`. Set `isDirectory` to `true` to write a directory entry, and the name gets a trailing `/`.
 
-The underlying entry differs by direction. On read, it is Zip4J's `LocalFileHeader`, for example to check `isEncrypted`. On write, the archiver accepts Zip4J's `ZipParameters`, for example to set a file comment, and then applies the name, size, compression and encryption settings on top. Both need `import zio.compress.Zip4J._`. [Core Interfaces](./reference-core.md#underlying-entries) describes underlying entries.
+The underlying entry differs by direction. On read, it is Zip4J's `LocalFileHeader`, for example to check `LocalFileHeader#isEncrypted`. On write, the archiver accepts Zip4J's `ZipParameters`, for example to set a file comment, and then applies the name, size, compression and encryption settings on top. Both need `import zio.compress.Zip4J._`. [Core Interfaces](./reference-core.md#underlying-entries) describes underlying entries.
 
 ## Notes
 
-- The unarchiver's error type is `IOException` for the entry content, and `Throwable` for the archive structure.
-- Use [Zip](./reference-zip.md) for archives without a password. It accepts entries whose size is not known in advance.
+The unarchiver's error type is `IOException` for the entry content, and `Throwable` for the archive structure. Use [Zip](./reference-zip.md) for archives without a password, because it accepts entries whose size is not known in advance.

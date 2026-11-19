@@ -52,12 +52,12 @@ val decompressed: ZStream[Any, Throwable, Byte] =
 
 ## Options
 
-| Option    | Type                              | Default                             |
-|-----------|-----------------------------------|-------------------------------------|
-| `quality` | `Option[BrotliQuality]`           | `None` (the library default)        |
-| `lgwin`   | `Option[BrotliLogWindow]`         | `None` (the library default)        |
-| `mode`    | `Option[BrotliMode]`              | `None` (the library default)        |
-| `chunkSize` | `Int` (decompressor only)       | 4 KiB (`ZStream.DefaultChunkSize`)  |
+| Option      | Type                      | Default                            |
+|-------------|---------------------------|------------------------------------|
+| `quality`   | `Option[BrotliQuality]`   | `None` (the library default)       |
+| `lgwin`     | `Option[BrotliLogWindow]` | `None` (the library default)       |
+| `mode`      | `Option[BrotliMode]`      | `None` (the library default)       |
+| `chunkSize` | `Int` (decompressor only) | 4 KiB (`ZStream.DefaultChunkSize`) |
 
 `BrotliQuality` ranges from 0 to 11. Higher values compress more and run slower. Named constants `Quality0` to `Quality11` exist for each value.
 
@@ -83,5 +83,4 @@ The module calls `Brotli4jLoader.ensureAvailability` before each pipeline runs, 
 
 ## Notes
 
-- Both the compressor and the decompressor fail with a `Throwable` when the native library cannot be loaded, or when the input is not valid Brotli.
-- Use this module instead of [Brotli](./reference-brotli.md) when you need to compress.
+Both the compressor and the decompressor fail with a `Throwable` when the native library cannot be loaded, or when the input is not valid Brotli. Use this module instead of [Brotli](./reference-brotli.md) when you need to compress.

@@ -50,14 +50,13 @@ val decompressed: ZStream[Any, Throwable, Byte] =
 
 ## Options
 
-| Option      | Type                          | Default                             |
-|-------------|-------------------------------|-------------------------------------|
-| `blockSize` | `Option[Bzip2BlockSize]`      | `None` (900 KB)                     |
-| `chunkSize` | `Int` (decompressor only)     | 4 KiB (`ZStream.DefaultChunkSize`)  |
+| Option      | Type                      | Default                            |
+|-------------|---------------------------|------------------------------------|
+| `blockSize` | `Option[Bzip2BlockSize]`  | `None` (900 KB)                    |
+| `chunkSize` | `Int` (decompressor only) | 4 KiB (`ZStream.DefaultChunkSize`) |
 
 `Bzip2BlockSize` ranges from 1 to 9, in units of 100 KB. Named constants `BlockSize100KB` to `BlockSize900KB` exist for each value. A larger block size gives a better compression ratio and needs more memory.
 
 ## Notes
 
-- Both pipelines fail with a `Throwable` when the input is not valid Bzip2.
-- Bzip2 compresses one stream at a time. It has no entry names or metadata. To compress several files, use a tar archive inside the Bzip2 stream.
+Both pipelines fail with a `Throwable` when the input is not valid Bzip2. Bzip2 compresses one stream at a time and has no entry names or metadata, so to compress several files, use a tar archive inside the Bzip2 stream.

@@ -89,11 +89,11 @@ final case class ArchiveEntry[+Size[A] <: Option[A], +Underlying](
 
 The type parameter `Size` says whether the uncompressed size is known:
 
-| Size    | Meaning                                  | Used by                                      |
-|---------|------------------------------------------|----------------------------------------------|
-| `Some`  | The uncompressed size is always present  | Writing with `Zip4JArchiver` and `TarArchiver` |
-| `None`  | The uncompressed size is never present   | No built-in module writes it                |
-| `Option`| The uncompressed size may or may not be present | Writing with `ZipArchiver`; reading with every unarchiver |
+| Size     | Meaning                                         | Used by                                                   |
+|----------|-------------------------------------------------|-----------------------------------------------------------|
+| `Some`   | The uncompressed size is always present         | Writing with `Zip4JArchiver` and `TarArchiver`            |
+| `None`   | The uncompressed size is never present          | No built-in module writes it                              |
+| `Option` | The uncompressed size may or may not be present | Writing with `ZipArchiver`; reading with every unarchiver |
 
 Create an entry with its name, and optionally its size and other fields. The `with*` methods copy an entry with one field changed:
 
@@ -124,7 +124,7 @@ The copy methods are:
 - `ArchiveEntry#withLastModified` replaces the last-modified time.
 - `ArchiveEntry#withUnderlying` attaches a format-specific entry object, see [Underlying Entries](#underlying-entries).
 
-There is no `with*` method for `lastAccess` and `creation`. Set them with the case class `copy` method, for example `entry.copy(lastAccess = Some(instant))`.
+There is no `with*` method for `lastAccess` and `creation`. Set them with `ArchiveEntry#copy`, for example `entry.copy(lastAccess = Some(instant))`.
 
 ## Underlying Entries
 
@@ -161,7 +161,7 @@ The conversions in both directions are the type classes `ArchiveEntry.ArchiveEnt
 
 Some archive formats must know the size of each entry before its content is written. The `Size` type parameter enforces this at compile time:
 
-- `Zip4JArchiver` and `TarArchiver` require `ArchiveEntry[Some, _]`. Use `withKnownUncompressedSize` or `ArchiveEntry[Some, Any](name, Some(size))`.
+- `Zip4JArchiver` and `TarArchiver` require `ArchiveEntry[Some, _]`. Use `ArchiveEntry#withKnownUncompressedSize` or `ArchiveEntry[Some, Any](name, Some(size))`.
 - `ZipArchiver` accepts `ArchiveEntry[Option, _]`, so the size may be omitted.
 
 The writers that check sizes compare the number of bytes actually written with the declared size. A mismatch kills the stream with an `IllegalStateException`, which ZIO reports as a defect rather than a typed error. The check is a pipeline you can also apply yourself: `Archiver.checkUncompressedSize`.
@@ -202,10 +202,7 @@ val unzipOneFile = ArchiveSingleFileDecompressor(ZipUnarchiver())
 
 ## Chunk Sizes and Defaults
 
-The `Defaults` object holds the shared values for the modules:
-
-- `Defaults.DefaultChunkSize` is 64 KiB. It is the default buffer size for the gzip compressor and decompressor, and the chunk size for `ZipUnarchiver`, `TarUnarchiver`, and `Zip4JUnarchiver`.
-- `Defaults.DefaultChunkedQueueSize` is 2. It is the size of the internal queue between a pipeline and the Java stream it wraps.
+The `Defaults` object holds the shared values for the modules. `Defaults.DefaultChunkSize` is 64 KiB. It is the default buffer size for the gzip compressor and decompressor, and the chunk size for `ZipUnarchiver`, `TarUnarchiver`, and `Zip4JUnarchiver`. `Defaults.DefaultChunkedQueueSize` is 2. It is the size of the internal queue between a pipeline and the Java stream it wraps.
 
 Some codecs use ZIO's own default of 4 KiB (`ZStream.DefaultChunkSize`) for their decompressors. Each reference page states the default for its module.
 
