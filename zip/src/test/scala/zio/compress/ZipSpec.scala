@@ -187,10 +187,11 @@ object ZipSpec extends ZIOSpecDefault {
               .via(ZipUnarchiver.unarchive)
               .mapZIO { case (entry, stream) => stream.runDrain.as(entry.name) }
               .runCollect
-        } yield assertTrue(
-          entries.contains("subdir/"),
-          entries.contains("file.txt"),
-        )
+        } yield
+          assertTrue(
+            entries.contains("subdir/"),
+            entries.contains("file.txt"),
+          )
       } @@ TestAspect.withLiveClock @@ TestAspect.timeout(5.seconds),
       test("system unzip can process stored Zip file") {
         for {
