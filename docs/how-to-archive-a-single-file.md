@@ -8,7 +8,29 @@ This guide packs one stream of bytes into a ZIP or Tar archive that holds a sing
 
 ## The Problem
 
-Some systems exchange single files inside an archive: a report download that must be a `.zip`, a data feed that arrives as a `.zip` with one CSV inside. The archive pipelines of this library work on streams of entries, `(ArchiveEntry, ZStream)` pairs, while the rest of a program usually works on plain bytes. Writing the wrapping by hand means building a one-element entry stream on the way in and picking the content of the first entry on the way out, in every place that needs it. `ArchiveSingleFileCompressor` and `ArchiveSingleFileDecompressor` do that once and expose the result as an ordinary codec.
+Some systems exchange single files inside an archive: a report download that must be a ZIP file, a data feed that arrives as a ZIP file with one CSV inside. With the JDK, the wrapping and unwrapping is written by hand, once per format, on whole byte arrays:
+
+```scala mdoc:compile-only
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.util.zip.{ZipEntry, ZipInputStream, ZipOutputStream}
+
+def zipBytes(name: String, bytes: Array[Byte]): Array[Byte] = {
+  val out = new ByteArrayOutputStream()
+  val zip = new ZipOutputStream(out)
+  zip.putNextEntry(new ZipEntry(name))
+  zip.write(bytes)
+  zip.closeEntry()
+  zip.close()
+  out.toByteArray
+}
+
+def unzipFirst(archive: Array[Byte]): Array[Byte] = {
+  val zip = new ZipInputStream(new ByteArrayInputStream(archive))
+  Option(zip.getNextEntry).map(_ => zip.readAllBytes()).getOrElse(Array.emptyByteArray)
+}
+```
+
+Neither function streams. The archive pipelines of this library do stream, but they work on entries, `(ArchiveEntry, ZStream)` pairs, while the rest of a program usually works on plain bytes. `ArchiveSingleFileCompressor` and `ArchiveSingleFileDecompressor` do the wrapping once, on streams, and expose the result as an ordinary codec.
 
 ## Add the Module
 

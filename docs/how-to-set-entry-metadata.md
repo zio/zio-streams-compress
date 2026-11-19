@@ -8,7 +8,17 @@ This guide writes a Tar archive whose entries carry Unix permissions, so that a 
 
 ## The Problem
 
-`ArchiveEntry` models the fields that every archive format shares: the name, the size, the directory flag and three timestamps. Formats have more. A Tar entry has a Unix mode, an owner and a group; a ZIP entry written by Zip4J has a file comment. A Tar archive written with only the common fields gives every file the permissions `644`, so a script packed with `TarArchiver` loses its execute bit, and a deployment that unpacks the archive cannot run it.
+`ArchiveEntry` models the fields that every archive format shares: the name, the size, the directory flag and three timestamps. Formats have more. A Tar entry has a Unix mode, an owner and a group; a ZIP entry written by Zip4J has a file comment. A Tar archive written with only the common fields gives every file the permissions `644`, so a script packed with `TarArchiver` loses its execute bit. Every consumer then has to repair the permissions after unpacking:
+
+```scala mdoc:compile-only
+import java.nio.file.{Files, Path, Paths}
+import java.nio.file.attribute.PosixFilePermissions
+
+def makeExecutable(script: String): Path =
+  Files.setPosixFilePermissions(Paths.get(script), PosixFilePermissions.fromString("rwxr-xr-x"))
+```
+
+A deployment that cannot run that extra step cannot run the script. The underlying entry of `ArchiveEntry` sets the mode while the archive is written.
 
 ## Add the Module
 
@@ -78,9 +88,6 @@ val modes: Task[Chunk[String]] =
 
 ## Other Formats
 
-The same pattern works for the other archive modules, with their own underlying types and imports:
-
-- `ZipArchiver` accepts a `java.util.zip.ZipEntry`, with `import zio.compress.Zip._` to read one back. It keeps the `ZipEntry` only when its name and directory flag match the `ArchiveEntry`.
-- `Zip4JArchiver` accepts a Zip4J `ZipParameters`, for example with a file comment, and applies its own compression and encryption settings on top. `Zip4JUnarchiver` returns a `LocalFileHeader` instead. Both need `import zio.compress.Zip4J._`.
+The same pattern works for the other archive modules, with their own underlying types and imports. `ZipArchiver` accepts a `java.util.zip.ZipEntry`, with `import zio.compress.Zip._` to read one back. It keeps the `ZipEntry` only when its name and directory flag match the `ArchiveEntry`. `Zip4JArchiver` accepts a Zip4J `ZipParameters`, for example with a file comment, and applies its own compression and encryption settings on top. `Zip4JUnarchiver` returns a `LocalFileHeader` instead. Both need `import zio.compress.Zip4J._`.
 
 [Core Interfaces](./reference-core.md#underlying-entries) describes underlying entries and the `IllegalUnderlyingEntry` error that an archiver raises for an underlying value of the wrong type.

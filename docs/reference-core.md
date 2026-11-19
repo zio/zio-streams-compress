@@ -169,7 +169,7 @@ The writers that check sizes compare the number of bytes actually written with t
 
 ## ArchiveSingleFileCompressor and ArchiveSingleFileDecompressor
 
-These two helpers turn an archiver or unarchiver into a `Compressor` or `Decompressor` for a stream that holds exactly one file. They are useful for formats such as a zipped single file where the caller wants a plain byte pipeline.
+These two helpers turn an archiver or unarchiver into a `Compressor` or `Decompressor` for a stream that holds exactly one file. They are useful for formats such as a zipped single file where the caller wants a plain byte pipeline. [How to Wrap a Single File in an Archive](./how-to-archive-a-single-file.md) walks through a complete example.
 
 `ArchiveSingleFileCompressor.forName` wraps a file name, with the size when the archiver requires it:
 

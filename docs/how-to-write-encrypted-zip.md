@@ -8,7 +8,24 @@ This guide writes a ZIP archive whose entries are encrypted with a password, str
 
 ## The Problem
 
-A ZIP archive often carries data that only its recipient may read: exported reports, backups, files for a customer. The `zip` module, built on the JDK, cannot encrypt. Zip4J can, but its own API writes to a `java.io.OutputStream` with mutable `ZipParameters` per entry, which does not fit a `ZStream` pipeline. `Zip4JArchiver` wraps that API as a `ZPipeline`, so encryption becomes one more step in the stream.
+A ZIP archive often carries data that only its recipient may read: exported reports, backups, files for a customer. The JDK's `ZipOutputStream` cannot encrypt, so code that writes a ZIP with it leaves every entry readable by anyone who finds the file:
+
+```scala mdoc:compile-only
+import java.io.FileOutputStream
+import java.nio.file.{Files, Paths}
+import java.util.zip.{ZipEntry, ZipOutputStream}
+
+def writeZip(files: Seq[String], output: String): Unit = {
+  val zip = new ZipOutputStream(new FileOutputStream(output))
+  try files.foreach { file =>
+    zip.putNextEntry(new ZipEntry(file))
+    zip.write(Files.readAllBytes(Paths.get(file)))
+    zip.closeEntry()
+  } finally zip.close()
+}
+```
+
+Zip4J can encrypt, but its own API writes to a `java.io.OutputStream` with mutable `ZipParameters` per entry, which does not fit a `ZStream` pipeline. `Zip4JArchiver` wraps that API as a `ZPipeline`, so encryption becomes one more step in the stream.
 
 ## Add the Module
 
@@ -67,8 +84,7 @@ To change the compression as well, pass a third argument: `Zip4JArchiver.encrypt
 
 The right method depends on who opens the archive:
 
-- `EncryptionMethod.AES_256` or `EncryptionMethod.AES_128` protects the data well. Some tools that read ZIP files cannot open AES-encrypted entries, so check that the recipients use one that can, such as 7-Zip.
-- `EncryptionMethod.ZipStandard` opens almost everywhere, including with `unzip`, but it is weak and easy to break. `Zip4JArchiver(password = Some(password))` is a shortcut for it. Use it only to keep casual readers out.
+`EncryptionMethod.AES_256` or `EncryptionMethod.AES_128` protects the data well. Some tools that read ZIP files cannot open AES-encrypted entries, so check that the recipients use one that can, such as 7-Zip. `EncryptionMethod.ZipStandard` opens almost everywhere, including with `unzip`, but it is weak and easy to break. `Zip4JArchiver(password = Some(password))` is a shortcut for it. Use it only to keep casual readers out.
 
 Archives written by zio-streams-compress before 3.0.0 with `Zip4JArchiver(password = Some(...))` are not encrypted at all. Upgrade before relying on the password.
 

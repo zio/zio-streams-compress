@@ -10,8 +10,7 @@ An archive bundles several files into one stream of bytes. This guide shows how 
 
 Pick the format that your consumers can open:
 
-- Use ZIP with `ZipArchiver` when the archive is for Windows users or for tools that expect a ZIP file. ZIP entries can have unknown sizes when written, so `ZipArchiver` accepts any entry.
-- Use Tar with `TarArchiver` when the archive is for Unix tooling. Tar entries must have a known size, and a tarball is usually compressed with Gzip afterwards.
+Use ZIP with `ZipArchiver` when the archive is for Windows users or for tools that expect a ZIP file. ZIP entries can have unknown sizes when written, so `ZipArchiver` accepts any entry. Use Tar with `TarArchiver` when the archive is for Unix tooling. Tar entries must have a known size, and a tarball is usually compressed with Gzip afterwards.
 
 ## Build the Entries
 
@@ -118,5 +117,4 @@ val listTarGz: ZIO[Any, Throwable, Chunk[String]] =
 
 ## Notes
 
-- `ZipArchiver` accepts entries with or without a size. `TarArchiver` and `Zip4JArchiver` require the size.
-- For password-protected ZIP archives, use the Zip4J module. See [Zip4J](./reference-zip4j.md).
+`ZipArchiver` accepts entries with or without a size, while `TarArchiver` and `Zip4JArchiver` require the size. For password-protected ZIP archives, use the Zip4J module. See [Zip4J](./reference-zip4j.md).

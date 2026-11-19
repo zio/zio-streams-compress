@@ -8,7 +8,33 @@ This guide converts a ZIP archive into a gzipped Tar archive in one streaming pa
 
 ## The Problem
 
-Archive formats are not interchangeable even though their pipelines look alike. `ZipUnarchiver#unarchive` emits `ArchiveEntry[Option, ZipEntry]`: the size of an entry may be missing, and the entry carries a JDK `ZipEntry` as its underlying value. `TarArchiver#archive` accepts only `ArchiveEntry[Some, _]`, and it expects either no underlying value or a `TarArchiveEntry`. Piping one into the other does not compile, and once the sizes are fixed, it fails at runtime on the foreign underlying value. Each entry needs two small changes on its way through.
+Converting by hand means opening both formats' streams, copying entry by entry, and holding each entry in memory to learn its size, because a Tar header needs the size before the content:
+
+```scala mdoc:compile-only
+import java.io.{FileInputStream, FileOutputStream}
+import java.util.zip.{GZIPOutputStream, ZipInputStream}
+import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveOutputStream}
+
+def convertByHand(input: String, output: String): Unit = {
+  val zip = new ZipInputStream(new FileInputStream(input))
+  val tar = new TarArchiveOutputStream(new GZIPOutputStream(new FileOutputStream(output)))
+  try {
+    Iterator.continually(zip.getNextEntry).takeWhile(_ != null).foreach { entry =>
+      val bytes = zip.readAllBytes()
+      val header = new TarArchiveEntry(entry.getName)
+      header.setSize(bytes.length.toLong)
+      tar.putArchiveEntry(header)
+      tar.write(bytes)
+      tar.closeArchiveEntry()
+    }
+  } finally {
+    tar.close()
+    zip.close()
+  }
+}
+```
+
+The library's pipelines avoid that bookkeeping and stream the content, but their entry types differ. `ZipUnarchiver#unarchive` emits `ArchiveEntry[Option, ZipEntry]`: the size of an entry may be missing, and the entry carries a JDK `ZipEntry` as its underlying value. `TarArchiver#archive` accepts only `ArchiveEntry[Some, _]`, and it expects either no underlying value or a `TarArchiveEntry`. Piping one into the other does not compile, and once the sizes are fixed, it fails at runtime on the foreign underlying value. Each entry needs two small changes on its way through.
 
 ## Add the Modules
 
@@ -24,10 +50,7 @@ libraryDependencies ++= Seq(
 
 ## Convert One Entry
 
-The function below turns an entry read from the ZIP archive into an entry the Tar archiver accepts. It does two things:
-
-- It removes the underlying `ZipEntry` with `ArchiveEntry#withUnderlying(())`. Without this, `TarArchiver` stops the stream with an `IllegalUnderlyingEntry` error (`Unsupported underlying entry of type java.util.zip.ZipEntry`), because it cannot copy a `ZipEntry` into a Tar header. The name, directory flag and timestamps stay on the `ArchiveEntry`, so they carry over.
-- It provides the size. When the ZIP entry records its size, the content streams straight through. When it does not, which is common for archives written by streaming tools, the function reads the content into memory to count it.
+The function below turns an entry read from the ZIP archive into an entry the Tar archiver accepts. First, it removes the underlying `ZipEntry` with `ArchiveEntry#withUnderlying(())`. Without this, `TarArchiver` stops the stream with an `IllegalUnderlyingEntry` error (`Unsupported underlying entry of type java.util.zip.ZipEntry`), because it cannot copy a `ZipEntry` into a Tar header. The name, directory flag and timestamps stay on the `ArchiveEntry`, so they carry over. Second, it provides the size. When the ZIP entry records its size, the content streams straight through. When it does not, which is common for archives written by streaming tools, the function reads the content into memory to count it.
 
 The function, with the imports the rest of the guide uses:
 
