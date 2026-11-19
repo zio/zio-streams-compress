@@ -122,5 +122,5 @@ val tarListing: Task[Chunk[String]] =
 
 - The in-memory fallback holds one entry at a time. For ZIP archives with large entries of unknown size, write each entry's content to a temporary file instead, and stream it from there with its file size.
 - `TarArchiver` checks each declared size against the bytes it receives. A ZIP entry whose recorded size is wrong stops the stream with an `IllegalStateException`.
-- To convert in the other direction, from Tar to ZIP, no size is needed, because `ZipArchiver` accepts entries without one. Remove the underlying value as above, and drain the content of each directory entry before it reaches `ZipArchiver`, which does not read it; otherwise the pipeline locks up at the first directory. [How Unarchiving Streams Entries](./streaming-unarchiving.md#what-it-means-in-practice) shows the code.
+- To convert in the other direction, from Tar to ZIP, no size is needed, because `ZipArchiver` accepts entries without one. Only the underlying value needs removing, as above.
 - The [Zip](./reference-zip.md) and [Tar](./reference-tar.md) reference pages list the metadata each format keeps.

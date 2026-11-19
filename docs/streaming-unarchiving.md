@@ -34,33 +34,13 @@ Version 2.0 replaced the silent corruption with the wait. The pipeline now eithe
 
 ## What It Means in Practice
 
-Most pipelines follow the rule without effort. A step that handles an entry usually reads its content anyway. `TarArchiver` and `Zip4JArchiver` also read the content stream of every entry, directories included, before they ask for the next one, so an `Unarchiver#unarchive` pipeline can feed them directly.
+Most pipelines follow the rule without effort. A step that handles an entry usually reads its content anyway, and the archivers of this library read the content stream of every entry before they ask for the next one, so an `Unarchiver#unarchive` pipeline can feed an archiver directly.
 
-`ZipArchiver` is the exception: it does not read the content stream of a directory entry. Fed directly from an unarchiver, it locks up at the first directory. Drain the content of each directory entry before it reaches `ZipArchiver`:
+The rule holds for directory entries too. A directory has no content, but its content stream still has to be read to its end, because that is what tells the unarchiver to move on. A step that skips directories must still drain their content, for example with `content.runDrain`.
 
-```scala mdoc:compile-only
-import zio._
-import zio.compress._
-import zio.stream._
-
-val tarToZip: ZStream[Any, Throwable, Byte] =
-  ZStream
-    .fromFileName("archive.tar")
-    .via(TarUnarchiver().unarchive)
-    .mapZIO { case (entry, content) =>
-      val plain: ArchiveEntry[Option, Any] = entry.withUnderlying(())
-      if (entry.isDirectory) content.runDrain.as(plain -> ZStream.empty)
-      else ZIO.succeed(plain -> content)
-    }
-    .via(ZipArchiver().archive)
-```
-
-The call to `ArchiveEntry#withUnderlying(())` removes the Tar-specific header, which `ZipArchiver` cannot use. [How to Convert a ZIP Archive to a Tar Archive](./how-to-convert-archive-formats.md) explains both steps.
-
-Three cases need care:
+Two cases need care:
 
 - When you only need the metadata of each entry, use `Unarchiver#list` instead of `Unarchiver#unarchive`. It reads every content stream for you, counts the bytes, and emits entries with a known `uncompressedSize`.
-- When the archive goes on to `ZipArchiver`, drain directory entries first, as shown above.
 - When you need buffering, aggregation, rechunking or parallel processing for throughput, read each entry's content inside the step that handles it (for example in `ZStream#mapZIO` or `ZStream#mapZIOPar`), and apply the other operators after that step.
 
-[How to Read Archives Safely](./how-to-read-archives-safely.md) shows the first and the last case, and how to cap the size of each entry while reading it.
+[How to Read Archives Safely](./how-to-read-archives-safely.md) shows both cases, and how to cap the size of each entry while reading it.
