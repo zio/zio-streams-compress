@@ -96,7 +96,7 @@ def listWith(password: String): Task[Chunk[String]] =
 
 `listWith("s3cret")` succeeds with `Chunk("report.csv: 14 bytes")`. `listWith("guess")` fails with Zip4J's `ZipException`, whose message reports a wrong password.
 
-`list` emits `ArchiveEntry[Some, _]`, so `uncompressedSize.value` is always present. [How to Read a Password-Protected ZIP](./how-to-read-password-protected-zip.md) shows how to read the content as well.
+`Unarchiver#list` emits `ArchiveEntry[Some, _]`, so `uncompressedSize.value` is always present. [How to Read a Password-Protected ZIP](./how-to-read-password-protected-zip.md) shows how to read the content as well.
 
 ## Notes
 

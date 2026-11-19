@@ -24,7 +24,7 @@ The unarchiver does not skip or buffer content on its own. When the downstream a
 
 If nothing reads the current content stream, that wait never ends. The pipeline locks up and the program halts without an error. Reading only part of the content, for example with `ZStream#take`, has the same effect, because the end of the content is never reached.
 
-Operators that pull the next element before they emit the current one trigger this by accident. `ZStream#rechunk` with a size above one, `ZStream#grouped` and `ZStream#zip` all ask for the second entry while the first content stream is still unread. Put such operators after the step that reads each entry's content, never directly after `unarchive`.
+Operators that pull the next element before they emit the current one trigger this by accident. `ZStream#rechunk` with a size above one, `ZStream#grouped` and `ZStream#zip` all ask for the second entry while the first content stream is still unread. Put such operators after the step that reads each entry's content, never directly after `Unarchiver#unarchive`.
 
 ## Why It Works This Way
 
@@ -34,7 +34,7 @@ Version 2.0 replaced the silent corruption with the wait. The pipeline now eithe
 
 ## What It Means in Practice
 
-Most pipelines follow the rule without effort. A step that handles an entry usually reads its content anyway. `TarArchiver` and `Zip4JArchiver` also read the content stream of every entry, directories included, before they ask for the next one, so an `unarchive` pipeline can feed them directly.
+Most pipelines follow the rule without effort. A step that handles an entry usually reads its content anyway. `TarArchiver` and `Zip4JArchiver` also read the content stream of every entry, directories included, before they ask for the next one, so an `Unarchiver#unarchive` pipeline can feed them directly.
 
 `ZipArchiver` is the exception: it does not read the content stream of a directory entry. Fed directly from an unarchiver, it locks up at the first directory. Drain the content of each directory entry before it reaches `ZipArchiver`:
 
@@ -59,7 +59,7 @@ The call to `ArchiveEntry#withUnderlying(())` removes the Tar-specific header, w
 
 Three cases need care:
 
-- When you only need the metadata of each entry, use `Unarchiver#list` instead of `unarchive`. It reads every content stream for you, counts the bytes, and emits entries with a known `uncompressedSize`.
+- When you only need the metadata of each entry, use `Unarchiver#list` instead of `Unarchiver#unarchive`. It reads every content stream for you, counts the bytes, and emits entries with a known `uncompressedSize`.
 - When the archive goes on to `ZipArchiver`, drain directory entries first, as shown above.
 - When you need buffering, aggregation, rechunking or parallel processing for throughput, read each entry's content inside the step that handles it (for example in `ZStream#mapZIO` or `ZStream#mapZIOPar`), and apply the other operators after that step.
 

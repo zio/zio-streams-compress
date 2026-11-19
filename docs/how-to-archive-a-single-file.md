@@ -20,7 +20,7 @@ libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "@VERSION@"
 
 ## Pack Bytes into a One-File ZIP
 
-`ArchiveSingleFileCompressor.forName` takes an archiver and the name of the file inside the archive, and returns a `Compressor`. Its `compress` pipeline turns the incoming bytes into a ZIP archive with one entry of that name:
+`ArchiveSingleFileCompressor.forName` takes an archiver and the name of the file inside the archive, and returns a `Compressor`. Its `Compressor#compress` pipeline turns the incoming bytes into a ZIP archive with one entry of that name:
 
 ```scala mdoc:compile-only
 import zio._
@@ -37,7 +37,7 @@ Because `zipReport` is a `Compressor`, it fits every function that accepts one. 
 
 ## Unpack a One-File Archive
 
-`ArchiveSingleFileDecompressor` takes an unarchiver and returns a `Decompressor`. Its `decompress` pipeline emits the content of the first file in the archive. It skips directory entries before that file, and ignores every entry after it:
+`ArchiveSingleFileDecompressor` takes an unarchiver and returns a `Decompressor`. Its `Decompressor#decompress` pipeline emits the content of the first file in the archive. It skips directory entries before that file, and ignores every entry after it:
 
 ```scala mdoc:compile-only
 import zio._
@@ -80,7 +80,7 @@ val roundTrip: Task[Boolean] =
 
 ## Use Tar or Zip4J Instead
 
-`TarArchiver` and `Zip4JArchiver` need the size of the file before its content, so `forName` takes the size as a third argument for them. The size must match the bytes that pass through, or the stream stops with an `IllegalStateException`:
+`TarArchiver` and `Zip4JArchiver` need the size of the file before its content, so `ArchiveSingleFileCompressor.forName` takes the size as a third argument for them. The size must match the bytes that pass through, or the stream stops with an `IllegalStateException`:
 
 ```scala mdoc:compile-only
 import zio.compress._

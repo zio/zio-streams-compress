@@ -19,15 +19,15 @@ The two combine. A Tar archive stores its entries uncompressed, so a `.tar.gz` f
 
 Each codec makes its own trade-off between speed, compression ratio, memory and portability:
 
-| Format | Module     | Compress | Decompress | Trade-off                                                        |
-|--------|------------|----------|------------|------------------------------------------------------------------|
-| Gzip   | `gzip`     | Yes      | Yes        | Readable everywhere. Built on the JDK, no extra library.         |
-| Zstd   | `zstd`     | Yes      | Yes        | Good ratio at high speed. Native library. Parallel workers.      |
-| Brotli | `brotli`   | No       | Yes        | Pure Java, decompression only.                                   |
-| Brotli | `brotli4j` | Yes      | Yes        | Best ratio on text at high quality. Native library.              |
-| Bzip2  | `bzip2`    | Yes      | Yes        | Good ratio, slow, and needs a lot of memory.                     |
-| LZ4    | `lz4`      | Yes      | Yes        | Very fast, lower ratio.                                          |
-| Snappy | `snappy`   | Yes      | Yes        | Very fast, lower ratio. Three incompatible formats.              |
+| Format | Module     | Compress | Decompress | Trade-off                                                   |
+|--------|------------|----------|------------|-------------------------------------------------------------|
+| Gzip   | `gzip`     | Yes      | Yes        | Readable everywhere. Built on the JDK, no extra library.    |
+| Zstd   | `zstd`     | Yes      | Yes        | Good ratio at high speed. Native library. Parallel workers. |
+| Brotli | `brotli`   | No       | Yes        | Pure Java, decompression only.                              |
+| Brotli | `brotli4j` | Yes      | Yes        | Best ratio on text at high quality. Native library.         |
+| Bzip2  | `bzip2`    | Yes      | Yes        | Good ratio, slow, and needs a lot of memory.                |
+| LZ4    | `lz4`      | Yes      | Yes        | Very fast, lower ratio.                                     |
+| Snappy | `snappy`   | Yes      | Yes        | Very fast, lower ratio. Three incompatible formats.         |
 
 Some rules of thumb follow from the table:
 
@@ -43,11 +43,11 @@ Three modules load a native library at runtime: `zstd`, `brotli4j` and `snappy`.
 
 The three archive modules differ in what they need to know about each entry before they write it:
 
-| Format | Module  | Size needed on write | Password protection          | Built on                |
-|--------|---------|----------------------|------------------------------|-------------------------|
-| ZIP    | `zip`   | No                   | No                           | JDK `java.util.zip`     |
-| ZIP    | `zip4j` | Yes                  | Read and write (ZIP standard, AES) | Zip4J             |
-| Tar    | `tar`   | Yes                  | No                           | Apache Commons Compress |
+| Format | Module  | Size needed on write | Password protection                | Built on                |
+|--------|---------|----------------------|------------------------------------|-------------------------|
+| ZIP    | `zip`   | No                   | No                                 | JDK `java.util.zip`     |
+| ZIP    | `zip4j` | Yes                  | Read and write (ZIP standard, AES) | Zip4J                   |
+| Tar    | `tar`   | Yes                  | No                                 | Apache Commons Compress |
 
 Choose by what you have and who reads the archive:
 

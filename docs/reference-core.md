@@ -151,7 +151,7 @@ val modes: ZStream[Any, Throwable, (String, Int)] =
     .map(entry => entry.name -> entry.underlying[TarArchiveEntry].getMode)
 ```
 
-Calling `underlying` on an entry you built yourself, without an underlying value, still works. For `ZipEntry`, `TarArchiveEntry` and `ZipParameters`, the format creates a fresh object from the `ArchiveEntry` fields. For `LocalFileHeader`, it returns an empty header.
+Calling `ArchiveEntry#underlying` on an entry you built yourself, without an underlying value, still works. For `ZipEntry`, `TarArchiveEntry` and `ZipParameters`, the format creates a fresh object from the `ArchiveEntry` fields. For `LocalFileHeader`, it returns an empty header.
 
 When writing, `ArchiveEntry#withUnderlying` attaches the format's entry object. The archiver starts from that object and then applies the name, size, directory flag and timestamps of the `ArchiveEntry`, so the fields of the `ArchiveEntry` win. The underlying object is dropped, and a fresh one is used, when it no longer matches the entry: `ZipArchiver` drops it when the name or the directory flag differs, and `TarArchiver` when the directory flag differs. [How to Set Format-Specific Entry Metadata](./how-to-set-entry-metadata.md) shows this for Tar permissions. If the underlying value has a type the archiver does not support, for example a `ZipEntry` passed to `TarArchiver`, the archiver fails with an `IllegalUnderlyingEntry`, an `IllegalArgumentException` that names the unsupported class.
 
@@ -211,7 +211,7 @@ Some codecs use ZIO's own default of 4 KiB (`ZStream.DefaultChunkSize`) for thei
 
 ## Compression Levels
 
-`DeflateCompressionLevel` is shared by the gzip and zip modules. Its `apply` method returns an `Option`, because only levels 0 to 9 are valid:
+`DeflateCompressionLevel` is shared by the gzip and zip modules. `DeflateCompressionLevel.apply` returns an `Option`, because only levels 0 to 9 are valid:
 
 ```scala mdoc:compile-only
 import zio.compress._

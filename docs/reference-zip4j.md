@@ -94,12 +94,12 @@ Prior to version 3.0.0, `Zip4JArchiver(password = Some(...))` does not encrypt t
 
 The archiver and the unarchiver take these options:
 
-| Option             | Type                                    | Default              |
-|--------------------|-----------------------------------------|----------------------|
-| `password`         | `Option[String]` (archiver, unarchiver) | `None` (no password) |
-| `encryptionMethod` | `EncryptionMethod` (`encrypted` only)   | none, required       |
-| `zipMethod`        | `ZipMethod` (archiver)                  | `Deflated`           |
-| `chunkSize`        | `Int` (unarchiver)                      | 64 KiB               |
+| Option             | Type                                                | Default              |
+|--------------------|-----------------------------------------------------|----------------------|
+| `password`         | `Option[String]` (archiver, unarchiver)             | `None` (no password) |
+| `encryptionMethod` | `EncryptionMethod` (`Zip4JArchiver.encrypted` only) | none, required       |
+| `zipMethod`        | `ZipMethod` (archiver)                              | `Deflated`           |
+| `chunkSize`        | `Int` (unarchiver)                                  | 64 KiB               |
 
 `Zip4JUnarchiver` uses the password to decrypt encrypted entries, both ZIP standard and AES.
 

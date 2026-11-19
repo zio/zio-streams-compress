@@ -61,7 +61,7 @@ val countBytes =
     .runDrain
 ```
 
-Reading only part of an entry counts as not reading it. If you stop an entry's content early, for example with `take`, the next entry waits forever. The size-limit example below avoids this, because it fails the stream when an entry is too large instead of stopping early.
+Reading only part of an entry counts as not reading it. If you stop an entry's content early, for example with `ZStream#take`, the next entry waits forever. The size-limit example below avoids this, because it fails the stream when an entry is too large instead of stopping early.
 
 ## Stop Entries That Are Too Large
 
