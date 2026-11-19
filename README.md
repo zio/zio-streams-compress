@@ -13,16 +13,16 @@
 To use the library, add one or more of the following lines to your `build.sbt` file:
 
 ```sbt
-libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli" % "3.0.0"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli4j" % "3.0.0"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-bzip2" % "3.0.0"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "3.0.0"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-lz4" % "3.0.0"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-snappy" % "3.0.0"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "3.0.0"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "3.0.0"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-zip4j" % "3.0.0"
-libraryDependencies += "dev.zio" %% "zio-streams-compress-zstd" % "3.0.0"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli" % "3.0.1"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli4j" % "3.0.1"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-bzip2" % "3.0.1"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "3.0.1"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-lz4" % "3.0.1"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-snappy" % "3.0.1"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "3.0.1"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "3.0.1"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-zip4j" % "3.0.1"
+libraryDependencies += "dev.zio" %% "zio-streams-compress-zstd" % "3.0.1"
 ```
 
 Each module depends on `core`, which is pulled in automatically. Add only the modules you use.
