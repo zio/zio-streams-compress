@@ -47,7 +47,7 @@ object GzipRoundTrip extends ZIOAppDefault {
 
 `GzipCompressor.compress` and `GzipDecompressor.decompress` use the default options. To set options, such as the compression level, create an instance first and call `Compressor#compress` on it, as the [Gzip](./reference-gzip.md) reference shows.
 
-The same code works with files. Replace `ZStream.fromIterable` with `ZStream.fromFileName("notes.txt")`, and `runCollect` with `run(ZSink.fromFileName("notes.txt.gz"))`.
+The same code works with files. Replace `ZStream.fromIterable` with `ZStream.fromFileName("notes.txt")`, and `ZStream#runCollect` with `ZStream#run(ZSink.fromFileName("notes.txt.gz"))`.
 
 ## Switch to Another Codec
 

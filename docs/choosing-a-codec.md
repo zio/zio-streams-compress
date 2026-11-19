@@ -10,8 +10,7 @@ ZIO Streams Compress ships ten modules, and most of them do the same job: turn b
 
 The first choice is between a codec and an archive format, because they answer different needs:
 
-- A **codec** compresses one stream of bytes. It has no file names and no entries. Gzip, Zstd, Brotli, Bzip2, LZ4 and Snappy are codecs. Each one is a `Compressor`, a `Decompressor`, or both.
-- An **archive format** bundles many named entries (files and directories) into one stream of bytes. ZIP and Tar are archive formats. Each one is an `Archiver`, an `Unarchiver`, or both.
+A **codec** compresses one stream of bytes. It has no file names and no entries. Gzip, Zstd, Brotli, Bzip2, LZ4 and Snappy are codecs, and each one is a `Compressor`, a `Decompressor`, or both. An **archive format** bundles many named entries (files and directories) into one stream of bytes. ZIP and Tar are archive formats, and each one is an `Archiver`, an `Unarchiver`, or both.
 
 The two combine. A Tar archive stores its entries uncompressed, so a `.tar.gz` file is a Tar archive piped through Gzip, and a `.tar.zst` file is the same archive piped through Zstd. A ZIP archive already compresses each entry, so it is rarely wrapped in a codec. The [Core Interfaces](./reference-core.md) page describes the four interfaces.
 
@@ -32,10 +31,10 @@ Each codec makes its own trade-off between speed, compression ratio, memory and 
 Some rules of thumb follow from the table:
 
 - Choose Gzip when other programs must read the data and you do not know which tools they have. Every platform reads Gzip.
-- Choose Zstd for a better ratio than Gzip at a similar or higher speed, when both sides use this library or another Zstandard reader. Its `workers` option compresses on several threads.
+- Choose Zstd for a better ratio than Gzip at a similar or higher speed, when both sides use this library or another Zstandard reader. Its `workers` compression option uses several threads.
 - Choose LZ4 or Snappy when speed matters more than size, for example for data that is written once and read soon after. Snappy needs care: the reader must use the same format variant as the writer, see [Snappy](./reference-snappy.md).
 - Choose Brotli for text served over HTTP, where browsers already read it. To write Brotli, add `brotli4j`. To only read it without a native library, add `brotli`.
-- Choose Bzip2 when you must read or write `.bz2` files. It is rarely the best choice for new data.
+- Choose Bzip2 when you must read or write files with the `bz2` extension. It is rarely the best choice for new data.
 
 Three modules load a native library at runtime: `zstd`, `brotli4j` and `snappy`. The zstd-jni and snappy-java jars bundle builds for the common platforms. Brotli4J instead pulls a separate native artifact for the platform that resolves the dependencies, see [Brotli4J](./reference-brotli4j.md#native-library). On an unusual platform or a locked-down container, a pure-Java codec (Gzip, or Brotli for reading) avoids native libraries altogether.
 

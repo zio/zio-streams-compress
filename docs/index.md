@@ -4,7 +4,7 @@ title: "Introduction to ZIO Streams Compress"
 sidebar_label: "Introduction"
 ---
 
-[ZIO Streams Compress](https://github.com/zio/zio-streams-compress) integrates several compression algorithms and archive formats with [ZIO Streams](https://zio.dev). Every codec and archive format is a pipeline, so it fits into a stream with `via` like any other operator.
+[ZIO Streams Compress](https://github.com/zio/zio-streams-compress) integrates several compression algorithms and archive formats with [ZIO Streams](https://zio.dev). Every codec and archive format is a pipeline, so it fits into a stream with `ZStream#via` like any other operator.
 
 @PROJECT_BADGES@ [![Scala Steward badge](https://img.shields.io/badge/Scala_Steward-helping-blue.svg?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAMAAAARSr4IAAAAVFBMVEUAAACHjojlOy5NWlrKzcYRKjGFjIbp293YycuLa3pYY2LSqql4f3pCUFTgSjNodYRmcXUsPD/NTTbjRS+2jomhgnzNc223cGvZS0HaSD0XLjbaSjElhIr+AAAAAXRSTlMAQObYZgAAAHlJREFUCNdNyosOwyAIhWHAQS1Vt7a77/3fcxxdmv0xwmckutAR1nkm4ggbyEcg/wWmlGLDAA3oL50xi6fk5ffZ3E2E3QfZDCcCN2YtbEWZt+Drc6u6rlqv7Uk0LdKqqr5rk2UCRXOk0vmQKGfc94nOJyQjouF9H/wCc9gECEYfONoAAAAASUVORK5CYII=)](https://scala-steward.org)
 
@@ -117,7 +117,7 @@ object ExampleApp extends ZIOAppDefault {
 }
 ```
 
-When you read an archive with `unarchive`, read each entry's content completely before the next entry is emitted, or the pipeline locks up. [How Unarchiving Streams Entries](./streaming-unarchiving.md) explains why.
+When you read an archive with `Unarchiver#unarchive`, read each entry's content completely before the next entry is emitted, or the pipeline locks up. [How Unarchiving Streams Entries](./streaming-unarchiving.md) explains why.
 
 ## Where to Go Next
 
