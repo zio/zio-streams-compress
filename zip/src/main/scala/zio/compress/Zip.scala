@@ -56,7 +56,8 @@ final class ZipArchiver private (
         .mapZIO { case (archiveEntry, contentStream) =>
           val entry = archiveEntry.underlying[ZipEntry]
           if (archiveEntry.isDirectory) {
-            ZIO.attemptBlockingInterrupt(zipOutputStream.putNextEntry(entry)) *>
+            contentStream.runDrain *>
+              ZIO.attemptBlockingInterrupt(zipOutputStream.putNextEntry(entry)) *>
               ZIO.attemptBlockingInterrupt(zipOutputStream.closeEntry())
           } else if (zipMethod == ZipMethod.Stored) {
             entry.setMethod(ZipEntry.STORED)
