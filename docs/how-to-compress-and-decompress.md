@@ -56,9 +56,7 @@ val decompressorChoice: Decompressor = GzipDecompressor()
 
 To switch to Zstd, replace the two values with `ZstdCompressor` and `ZstdDecompressor`. The functions above stay unchanged.
 
-:::tip[Pick a codec by its trade-off]
-Gzip is the most widely supported format. Zstd gives good compression at high speed. Brotli4J compresses text well at a high quality setting. LZ4 and Snappy favor speed over ratio. Bzip2 compresses well but uses a lot of memory. See the reference page of each codec for its options.
-:::
+To decide which codec to switch to, see [Choosing a Codec or Archive Format](./choosing-a-codec.md).
 
 ## Round Trip a File
 
