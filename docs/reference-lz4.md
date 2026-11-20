@@ -9,6 +9,7 @@ The `lz4` module compresses and decompresses the LZ4 frame format. It is built o
 Add the module to your `build.sbt`:
 
 ```sbt
+// zio-streams-compress-lz4: LZ4 compression and decompression
 libraryDependencies += "dev.zio" %% "zio-streams-compress-lz4" % "@VERSION@"
 ```
 

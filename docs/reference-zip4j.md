@@ -9,6 +9,7 @@ The `zip4j` module creates and reads ZIP archives with the [Zip4J](https://githu
 Add the module to your `build.sbt`:
 
 ```sbt
+// zio-streams-compress-zip4j: Zip archiving through the Zip4j library
 libraryDependencies += "dev.zio" %% "zio-streams-compress-zip4j" % "@VERSION@"
 ```
 

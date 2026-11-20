@@ -9,6 +9,7 @@ The `brotli4j` module compresses and decompresses the Brotli format. It is built
 Add the module to your `build.sbt`:
 
 ```sbt
+// zio-streams-compress-brotli4j: Brotli compression through the Brotli4J library (loads a native library at runtime)
 libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli4j" % "@VERSION@"
 ```
 

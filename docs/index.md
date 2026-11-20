@@ -13,15 +13,37 @@ sidebar_label: "ZIO Streams Compress"
 To use the library, add one or more of the following lines to your `build.sbt` file:
 
 ```sbt
+// zio-streams-compress-core: Core types shared by every compression module
+libraryDependencies += "dev.zio" %% "zio-streams-compress-core" % "@VERSION@"
+
+// zio-streams-compress-brotli: Brotli compression and decompression
 libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli" % "@VERSION@"
+
+// zio-streams-compress-brotli4j: Brotli compression through the Brotli4J library (loads a native library at runtime)
 libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli4j" % "@VERSION@"
+
+// zio-streams-compress-bzip2: Bzip2 compression and decompression
 libraryDependencies += "dev.zio" %% "zio-streams-compress-bzip2" % "@VERSION@"
+
+// zio-streams-compress-gzip: Gzip compression and decompression
 libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "@VERSION@"
+
+// zio-streams-compress-lz4: LZ4 compression and decompression
 libraryDependencies += "dev.zio" %% "zio-streams-compress-lz4" % "@VERSION@"
+
+// zio-streams-compress-snappy: Snappy compression and decompression
 libraryDependencies += "dev.zio" %% "zio-streams-compress-snappy" % "@VERSION@"
+
+// zio-streams-compress-tar: Tar archiving and unarchiving
 libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "@VERSION@"
+
+// zio-streams-compress-zip: Zip archiving and unarchiving
 libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "@VERSION@"
+
+// zio-streams-compress-zip4j: Zip archiving through the Zip4j library
 libraryDependencies += "dev.zio" %% "zio-streams-compress-zip4j" % "@VERSION@"
+
+// zio-streams-compress-zstd: Zstandard (zstd) compression and decompression
 libraryDependencies += "dev.zio" %% "zio-streams-compress-zstd" % "@VERSION@"
 ```
 
