@@ -9,6 +9,7 @@ The `bzip2` module compresses and decompresses the Bzip2 format. It is built on 
 Add the module to your `build.sbt`:
 
 ```sbt
+// zio-streams-compress-bzip2: Bzip2 compression and decompression
 libraryDependencies += "dev.zio" %% "zio-streams-compress-bzip2" % "@VERSION@"
 ```
 

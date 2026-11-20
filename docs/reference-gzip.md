@@ -9,6 +9,7 @@ The `gzip` module compresses and decompresses the Gzip format. It is built on th
 Add the module to your `build.sbt`:
 
 ```sbt
+// zio-streams-compress-gzip: Gzip compression and decompression
 libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "@VERSION@"
 ```
 

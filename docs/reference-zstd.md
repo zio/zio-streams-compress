@@ -9,6 +9,7 @@ The `zstd` module compresses and decompresses the Zstandard format. It wraps the
 Add the module to your `build.sbt`:
 
 ```sbt
+// zio-streams-compress-zstd: Zstandard (zstd) compression and decompression
 libraryDependencies += "dev.zio" %% "zio-streams-compress-zstd" % "@VERSION@"
 ```
 
