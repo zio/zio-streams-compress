@@ -49,7 +49,7 @@ libraryDependencies ++= Seq(
   // LZ4 frame compressor and decompressor, built on lz4-java. JVM only.
   "dev.zio" %% "zio-streams-compress-lz4" % "@VERSION@",
 
-  // Snappy compressor and decompressor (framed, basic and Hadoop formats), built on snappy-java. JVM only.
+  // Snappy compressor and decompressor (framed and basic formats; Hadoop format write-only), built on snappy-java. JVM only.
   "dev.zio" %% "zio-streams-compress-snappy" % "@VERSION@"
 )
 ```
