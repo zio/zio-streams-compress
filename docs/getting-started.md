@@ -11,6 +11,7 @@ This page adds one module to a project, compresses and decompresses a stream wit
 Each compression format is its own module. We start with Gzip, because it needs no library beyond the JDK. Add it to your `build.sbt`:
 
 ```sbt
+// zio-streams-compress-gzip: Gzip compressor and decompressor, built on the JDK
 libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "@VERSION@"
 ```
 

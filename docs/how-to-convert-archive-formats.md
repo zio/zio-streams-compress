@@ -41,11 +41,14 @@ The library's pipelines avoid that bookkeeping and stream the content, but their
 The conversion uses three modules, one for each format and one for the Gzip layer:
 
 ```sbt
-libraryDependencies ++= Seq(
-  "dev.zio" %% "zio-streams-compress-zip" % "@VERSION@",
-  "dev.zio" %% "zio-streams-compress-tar" % "@VERSION@",
-  "dev.zio" %% "zio-streams-compress-gzip" % "@VERSION@"
-)
+// zio-streams-compress-zip: ZIP archiver and unarchiver, built on the JDK
+libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "@VERSION@"
+
+// zio-streams-compress-tar: Tar archiver and unarchiver, built on Apache Commons Compress
+libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "@VERSION@"
+
+// zio-streams-compress-gzip: Gzip compressor and decompressor, built on the JDK
+libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "@VERSION@"
 ```
 
 ## Convert One Entry

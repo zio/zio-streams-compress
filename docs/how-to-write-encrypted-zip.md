@@ -32,6 +32,7 @@ Zip4J can encrypt, but its own API writes to a `java.io.OutputStream` with mutab
 Add the Zip4J module to your `build.sbt`:
 
 ```sbt
+// zio-streams-compress-zip4j: ZIP archiver and unarchiver with password protection, built on Zip4J
 libraryDependencies += "dev.zio" %% "zio-streams-compress-zip4j" % "@VERSION@"
 ```
 

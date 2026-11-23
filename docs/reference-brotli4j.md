@@ -77,6 +77,7 @@ Brotli4J runs a native Brotli library. The `brotli4j` artifact selects a platfor
 When you build on one platform and run on another, for example when you package a fat jar on macOS and run it in a Linux container, the jar holds the native library of the build machine only. Add the native artifact of the target platform yourself, with the same version as the `brotli4j` artifact this module depends on. `sbt dependencyTree` shows that version:
 
 ```sbt
+// brotli4j native library for Linux x86-64 (third-party artifact)
 libraryDependencies += "com.aayushatharva.brotli4j" % "native-linux-x86_64" % "<brotli4j version>"
 ```
 

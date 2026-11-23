@@ -37,6 +37,7 @@ Neither function streams. The archive pipelines of this library do stream, but t
 Add the module of the archive format. This guide uses ZIP:
 
 ```sbt
+// zio-streams-compress-zip: ZIP archiver and unarchiver, built on the JDK
 libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "@VERSION@"
 ```
 

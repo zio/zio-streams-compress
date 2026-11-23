@@ -25,6 +25,7 @@ A deployment that cannot run that extra step cannot run the script. The underlyi
 Add the Tar module to your `build.sbt`:
 
 ```sbt
+// zio-streams-compress-tar: Tar archiver and unarchiver, built on Apache Commons Compress
 libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "@VERSION@"
 ```
 
