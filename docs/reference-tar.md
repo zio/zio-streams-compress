@@ -62,6 +62,8 @@ val names = ZStream
 
 `TarUnarchiver#list` reads each entry's content to fill in the uncompressed size. `TarUnarchiver#unarchive` gives the content as a stream, and it must be fully read before the next entry is emitted. See [Read Archives Safely](./how-to-read-archives-safely.md).
 
+The companion objects offer shortcuts with the default options: `TarArchiver.archive`, `TarUnarchiver.list` and `TarUnarchiver.unarchive` are the same pipelines as `TarArchiver().archive`, `TarUnarchiver().list` and `TarUnarchiver().unarchive`.
+
 ## Options
 
 | Option      | Type               | Default |
@@ -74,7 +76,9 @@ val names = ZStream
 
 Tar entries carry a name, a size, and optional timestamps. `TarArchiver` writes the `lastModified`, `lastAccess`, and `creation` fields of an `ArchiveEntry` when they are set. Set `isDirectory` to `true` to write a directory entry, and the name gets a trailing `/`.
 
-When an entry's `underlying` value is a `TarArchiveEntry` with the same directory flag, the writer copies that entry's header and then applies the name and the fields set on the `ArchiveEntry`.
+`TarUnarchiver` reads the name, the directory flag, the size and the three timestamps back. A size that the archive does not record is `None`.
+
+The underlying entry is a commons-compress `TarArchiveEntry`, which also holds the Unix permissions, the owner and the group. Read it with `entry.underlying[TarArchiveEntry]` after `import zio.compress.Tar._`. To write those fields, attach a `TarArchiveEntry` with `ArchiveEntry#withUnderlying`. When its directory flag matches the `ArchiveEntry`, the writer copies that entry's header and then applies the name and the fields set on the `ArchiveEntry`; otherwise it starts from a fresh header. [How to Set Format-Specific Entry Metadata](./how-to-set-entry-metadata.md) shows how to set the permissions of an entry.
 
 ## Notes
 

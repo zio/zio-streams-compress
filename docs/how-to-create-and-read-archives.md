@@ -118,5 +118,4 @@ val listTarGz: ZIO[Any, Throwable, Chunk[String]] =
 
 ## Notes
 
-- `ZipArchiver` accepts entries with or without a size. `TarArchiver` and `Zip4JArchiver` require the size.
-- For password-protected ZIP archives, use the Zip4J module. See [Zip4J](./reference-zip4j.md).
+`ZipArchiver` accepts entries with or without a size, while `TarArchiver` and `Zip4JArchiver` require the size. For password-protected ZIP archives, use the Zip4J module. See [Zip4J](./reference-zip4j.md).

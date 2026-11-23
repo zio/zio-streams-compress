@@ -47,14 +47,13 @@ val decompressed: ZStream[Any, Throwable, Byte] =
 
 ## Options
 
-| Option      | Type                          | Default                             |
-|-------------|-------------------------------|-------------------------------------|
-| `blockSize` | `Lz4CompressorBlockSize`      | 256 KiB                             |
-| `chunkSize` | `Int` (decompressor only)     | 4 KiB (`ZStream.DefaultChunkSize`)  |
+| Option      | Type                      | Default                            |
+|-------------|---------------------------|------------------------------------|
+| `blockSize` | `Lz4CompressorBlockSize`  | 256 KiB                            |
+| `chunkSize` | `Int` (decompressor only) | 4 KiB (`ZStream.DefaultChunkSize`) |
 
 `Lz4CompressorBlockSize` has four values: `BlockSize64KiB`, `BlockSize256KiB`, `BlockSize1MiB`, and `BlockSize4MiB`. A larger block size compresses better and uses more memory. To convert the numeric indicator of the LZ4 format (4 to 7), use `Lz4CompressorBlockSize.fromLz4BlockSizeIndicator`. It returns an `Option`, because other values are not valid.
 
 ## Notes
 
-- Both pipelines fail with a `Throwable` when the input is not a valid LZ4 frame.
-- The LZ4 frame format has no entry names or metadata. To compress several files, use a tar archive inside the LZ4 stream.
+Both pipelines fail with a `Throwable` when the input is not a valid LZ4 frame. The LZ4 frame format has no entry names or metadata, so to compress several files, use a tar archive inside the LZ4 stream.

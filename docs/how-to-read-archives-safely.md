@@ -33,7 +33,7 @@ val printSizes =
 
 If you only need the metadata of each entry, use `list` instead. `list` reads the content for you, and it fills in the uncompressed size. The same rule applies to all unarchivers.
 
-The rule replaces the behavior of zio-streams-compress 1.x. In 1.x, consuming the next entry, even by accident, corrupted the content of every entry. For example, buffering or rechunking the entries before reading them did that. Since 2.0 the unarchiver reads each entry on demand, so it can keep streaming without corrupting content. The price is that each entry must be read before the next one starts.
+[How Unarchiving Streams Entries](./streaming-unarchiving.md) explains why the rule exists and how it replaced the behavior of version 1.x.
 
 ## Rechunk, Buffer and Parallel Processing
 
@@ -61,7 +61,7 @@ val countBytes =
     .runDrain
 ```
 
-Reading only part of an entry counts as not reading it. If you stop an entry's content early, for example with `take`, the next entry waits forever. The size-limit example below avoids this, because it fails the stream when an entry is too large instead of stopping early.
+Reading only part of an entry counts as not reading it. If you stop an entry's content early, for example with `ZStream#take`, the next entry waits forever. The size-limit example below avoids this, because it fails the stream when an entry is too large instead of stopping early.
 
 ## Stop Entries That Are Too Large
 
@@ -100,10 +100,10 @@ The `rechunk` after the check groups the entries into batches of ten, so later s
 
 Use `list` when you need the name and the size of each entry, and nothing else. Use `unarchive` when you need the content. The table shows the difference:
 
-| Method      | Emits                                   | Reads content | Uncompressed size       |
-|-------------|-----------------------------------------|---------------|-------------------------|
-| `list`      | `ArchiveEntry`                          | Yes, to count | Always known            |
-| `unarchive` | `ArchiveEntry` and its content stream   | No            | Only when the archive says so |
+| Method      | Emits                                 | Reads content | Uncompressed size             |
+|-------------|---------------------------------------|---------------|-------------------------------|
+| `list`      | `ArchiveEntry`                        | Yes, to count | Always known                  |
+| `unarchive` | `ArchiveEntry` and its content stream | No            | Only when the archive says so |
 
 ## Notes
 

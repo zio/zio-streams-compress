@@ -4,7 +4,7 @@ title: "Zip"
 sidebar_label: "Zip"
 ---
 
-The `zip` module creates and reads ZIP archives. It is built on the JVM standard library's ZIP support. For password-protected archives, use the [Zip4J](./reference-zip4j.md) module instead. Also use the Zip4J module when you need to use the 'Stored' zip-method and the archive entries are large, as this module needs to pull the full content of each entry in memory to calculate a checksum.
+The `zip` module creates and reads ZIP archives. It is built on the JVM standard library's ZIP support. For password-protected archives, use the [Zip4J](./reference-zip4j.md) module instead. Also use the Zip4J module when you need `ZipMethod.Stored` and the archive entries are large, as this module needs to pull the full content of each entry in memory to calculate a checksum.
 
 Add the module to your `build.sbt`:
 
@@ -50,6 +50,8 @@ val entries: ZStream[Any, Throwable, (String, Long)] =
 
 `ZipUnarchiver#list` reads each entry's content to fill in the uncompressed size. To process the content itself, use `ZipUnarchiver#unarchive` instead, and read each entry's content before the next entry is emitted. See [Read Archives Safely](./how-to-read-archives-safely.md) for the rules.
 
+The companion objects offer shortcuts with the default options: `ZipArchiver.archive`, `ZipUnarchiver.list` and `ZipUnarchiver.unarchive` are the same pipelines as `ZipArchiver().archive`, `ZipUnarchiver().list` and `ZipUnarchiver().unarchive`.
+
 ## Options
 
 | Option      | Type                                         | Default                          |
@@ -58,13 +60,32 @@ val entries: ZStream[Any, Throwable, (String, Long)] =
 | `zipMethod` | `ZipMethod` (archiver)                       | `Deflated`                       |
 | `chunkSize` | `Int` (unarchiver)                           | 64 KiB                           |
 
-`level` applies only to deflated entries. `ZipMethod` has two values: `ZipMethod.Deflated` compresses each entry, and `ZipMethod.Stored` writes each entry without compression.
+`level` applies only to deflated entries. `ZipMethod` has two values: `ZipMethod.Deflated` compresses each entry, and `ZipMethod.Stored` writes each entry without compression. `ZipMethod.Values` lists both.
+
+`ZipMethod` lives in the package `zio.compress.zip`, so it needs its own import. To write a deflated archive at the best compression level, and a stored archive:
+
+```scala mdoc:compile-only
+import zio.compress._
+import zio.compress.zip._
+
+val best = ZipArchiver(level = Some(DeflateCompressionLevel.BestCompressionLevel))
+
+val stored = ZipArchiver(zipMethod = ZipMethod.Stored)
+```
+
+The Zip4J module has its own `ZipMethod` in the package `zio.compress.zip4j`. The two types are not interchangeable.
 
 ## Stored Entries
 
-`ZipMethod.Stored` only works in v3.0.0 and later, earlier versions produced broken zip files.
+`ZipMethod.Stored` only works in v3.0.0 and later. Earlier versions produce broken ZIP files.
 
 Zip support from the JVM requires a CRC32 to be calculated up front. To do this, the full content of each entry is pulled into memory. The Zip4J module does not do this, and will have lower memory usage.
+
+## Entry Metadata
+
+`ZipArchiver` writes the `lastModified`, `lastAccess` and `creation` fields of an `ArchiveEntry` when they are set, and `ZipUnarchiver` reads them back when the archive records them. A directory entry is always written stored, with size 0.
+
+The underlying entry is a `java.util.zip.ZipEntry`. Read it with `entry.underlying[ZipEntry]` after `import zio.compress.Zip._`, for example to get the compression method with `ZipEntry#getMethod`. Fields that ZIP keeps only in the central directory at the end of the archive, such as the entry comment, are not available, because the unarchiver reads the archive as a stream. To write ZIP-specific fields, attach a `ZipEntry` with `ArchiveEntry#withUnderlying`; it is kept only when its name and directory flag match the `ArchiveEntry`. [Core Interfaces](./reference-core.md#underlying-entries) describes underlying entries.
 
 ## Notes
 

@@ -1,7 +1,7 @@
 ---
 id: tutorial-compress-and-archive
 title: "Tutorial: Compress and Archive Files"
-sidebar_label: "Compress and Archive Files"
+sidebar_label: "Tutorial"
 ---
 
 Welcome! In this tutorial you will compress a text file with Gzip, then bundle several files into a ZIP archive and read the archive back. Each step builds on the one before. By the end, you will have a small program that does all of it.

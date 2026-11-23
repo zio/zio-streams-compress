@@ -54,11 +54,11 @@ The decompressor accepts several concatenated Gzip members in one input and emit
 
 ## Options
 
-| Option           | Type                                    | Default                         |
-|------------------|-----------------------------------------|---------------------------------|
-| `deflateLevel`   | `Option[DeflateCompressionLevel]`       | `None` (ZIO's default, level 6) |
-| `deflateStrategy`| `Option[DeflateStrategy]`               | `None` (default strategy)       |
-| `bufferSize`     | `Int` (compressor and decompressor)     | 64 KiB                          |
+| Option            | Type                                | Default                         |
+|-------------------|-------------------------------------|---------------------------------|
+| `deflateLevel`    | `Option[DeflateCompressionLevel]`   | `None` (ZIO's default, level 6) |
+| `deflateStrategy` | `Option[DeflateStrategy]`           | `None` (default strategy)       |
+| `bufferSize`      | `Int` (compressor and decompressor) | 64 KiB                          |
 
 `DeflateCompressionLevel` ranges from 0 (no compression) to 9 (best compression). See [Core Interfaces](./reference-core.md#compression-levels) for the named constants.
 
