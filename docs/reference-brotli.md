@@ -9,6 +9,7 @@ The `brotli` module decompresses the Brotli format. It is built on the official 
 Add the module to your `build.sbt`:
 
 ```sbt
+// zio-streams-compress-brotli: Brotli compression and decompression
 libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli" % "@VERSION@"
 ```
 

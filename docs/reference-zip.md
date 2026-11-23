@@ -9,6 +9,7 @@ The `zip` module creates and reads ZIP archives. It is built on the JVM standard
 Add the module to your `build.sbt`:
 
 ```sbt
+// zio-streams-compress-zip: Zip archiving and unarchiving
 libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "@VERSION@"
 ```
 

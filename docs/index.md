@@ -15,10 +15,8 @@ The library is published for Scala 3, 2.13 and 2.12, and runs on the JVM only. S
 The `core` module holds the shared interfaces. Every codec and archive module in [Modules](#modules) depends on it and pulls it in, so you rarely add it on its own:
 
 ```sbt
-libraryDependencies ++= Seq(
-  // Compressor, Decompressor, Archiver, Unarchiver and ArchiveEntry interfaces. JVM only.
-  "dev.zio" %% "zio-streams-compress-core" % "@VERSION@"
-)
+// zio-streams-compress-core: Compressor, Decompressor, Archiver, Unarchiver and ArchiveEntry interfaces
+libraryDependencies += "dev.zio" %% "zio-streams-compress-core" % "@VERSION@"
 ```
 
 ## Modules
@@ -30,28 +28,26 @@ Each format lives in its own module, so a project only pulls in the third-party 
 A codec compresses or decompresses one stream of bytes:
 
 ```sbt
-libraryDependencies ++= Seq(
-  // Gzip compressor and decompressor, built on the JDK. JVM only.
-  "dev.zio" %% "zio-streams-compress-gzip" % "@VERSION@",
+// zio-streams-compress-gzip: Gzip compressor and decompressor, built on the JDK
+libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "@VERSION@"
 
-  // Zstandard compressor and decompressor, built on zstd-jni (native). JVM only.
-  "dev.zio" %% "zio-streams-compress-zstd" % "@VERSION@",
+// zio-streams-compress-zstd: Zstandard compressor and decompressor, built on zstd-jni (native)
+libraryDependencies += "dev.zio" %% "zio-streams-compress-zstd" % "@VERSION@"
 
-  // Brotli decompressor only, built on the pure-Java Brotli decoder. JVM only.
-  "dev.zio" %% "zio-streams-compress-brotli" % "@VERSION@",
+// zio-streams-compress-brotli: Brotli decompressor only, built on the pure-Java Brotli decoder
+libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli" % "@VERSION@"
 
-  // Brotli compressor and decompressor, built on Brotli4J (native). JVM only.
-  "dev.zio" %% "zio-streams-compress-brotli4j" % "@VERSION@",
+// zio-streams-compress-brotli4j: Brotli compressor and decompressor, built on Brotli4J (native)
+libraryDependencies += "dev.zio" %% "zio-streams-compress-brotli4j" % "@VERSION@"
 
-  // Bzip2 compressor and decompressor, built on Apache Commons Compress. JVM only.
-  "dev.zio" %% "zio-streams-compress-bzip2" % "@VERSION@",
+// zio-streams-compress-bzip2: Bzip2 compressor and decompressor, built on Apache Commons Compress
+libraryDependencies += "dev.zio" %% "zio-streams-compress-bzip2" % "@VERSION@"
 
-  // LZ4 frame compressor and decompressor, built on lz4-java. JVM only.
-  "dev.zio" %% "zio-streams-compress-lz4" % "@VERSION@",
+// zio-streams-compress-lz4: LZ4 frame compressor and decompressor, built on lz4-java
+libraryDependencies += "dev.zio" %% "zio-streams-compress-lz4" % "@VERSION@"
 
-  // Snappy compressor and decompressor (framed and basic formats; Hadoop format write-only), built on snappy-java. JVM only.
-  "dev.zio" %% "zio-streams-compress-snappy" % "@VERSION@"
-)
+// zio-streams-compress-snappy: Snappy compressor and decompressor (framed and basic formats; Hadoop format write-only), built on snappy-java
+libraryDependencies += "dev.zio" %% "zio-streams-compress-snappy" % "@VERSION@"
 ```
 
 Each codec has a reference page: [Gzip](./reference-gzip.md), [Zstd](./reference-zstd.md), [Brotli](./reference-brotli.md), [Brotli4J](./reference-brotli4j.md), [Bzip2](./reference-bzip2.md), [LZ4](./reference-lz4.md) and [Snappy](./reference-snappy.md). [Choosing a Codec or Archive Format](./choosing-a-codec.md) compares them.
@@ -61,16 +57,14 @@ Each codec has a reference page: [Gzip](./reference-gzip.md), [Zstd](./reference
 An archive format bundles many named entries into one stream of bytes:
 
 ```sbt
-libraryDependencies ++= Seq(
-  // ZIP archiver and unarchiver, built on the JDK; entry sizes may be unknown. JVM only.
-  "dev.zio" %% "zio-streams-compress-zip" % "@VERSION@",
+// zio-streams-compress-zip: ZIP archiver and unarchiver, built on the JDK; entry sizes may be unknown
+libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "@VERSION@"
 
-  // ZIP archiver and unarchiver with password protection (ZIP standard and AES), built on Zip4J. JVM only.
-  "dev.zio" %% "zio-streams-compress-zip4j" % "@VERSION@",
+// zio-streams-compress-zip4j: ZIP archiver and unarchiver with password protection (ZIP standard and AES), built on Zip4J
+libraryDependencies += "dev.zio" %% "zio-streams-compress-zip4j" % "@VERSION@"
 
-  // Tar archiver and unarchiver, built on Apache Commons Compress. JVM only.
-  "dev.zio" %% "zio-streams-compress-tar" % "@VERSION@"
-)
+// zio-streams-compress-tar: Tar archiver and unarchiver, built on Apache Commons Compress
+libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "@VERSION@"
 ```
 
 Each archive format has a reference page: [Zip](./reference-zip.md), [Zip4J](./reference-zip4j.md) and [Tar](./reference-tar.md).

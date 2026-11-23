@@ -13,10 +13,11 @@ You need Scala and sbt, and a project with ZIO Streams. The steps use the `gzip`
 Add the two modules to your `build.sbt` file:
 
 ```sbt
-libraryDependencies ++= Seq(
-  "dev.zio" %% "zio-streams-compress-gzip" % "@VERSION@",
-  "dev.zio" %% "zio-streams-compress-zip" % "@VERSION@",
-)
+// zio-streams-compress-gzip: Gzip compression and decompression
+libraryDependencies += "dev.zio" %% "zio-streams-compress-gzip" % "@VERSION@"
+
+// zio-streams-compress-zip: Zip archiving and unarchiving
+libraryDependencies += "dev.zio" %% "zio-streams-compress-zip" % "@VERSION@"
 ```
 
 The `gzip` module provides `GzipCompressor` and `GzipDecompressor`. The `zip` module provides `ZipArchiver` and `ZipUnarchiver`. Both modules depend on `core`, which is pulled in automatically.

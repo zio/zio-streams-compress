@@ -9,6 +9,7 @@ The `tar` module creates and reads Tar archives. It is built on the Apache Commo
 Add the module to your `build.sbt`:
 
 ```sbt
+// zio-streams-compress-tar: Tar archiving and unarchiving
 libraryDependencies += "dev.zio" %% "zio-streams-compress-tar" % "@VERSION@"
 ```
 
