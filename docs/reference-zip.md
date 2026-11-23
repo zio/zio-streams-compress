@@ -84,7 +84,7 @@ Zip support from the JVM requires a CRC32 to be calculated up front. To do this,
 
 `ZipArchiver` writes the `lastModified`, `lastAccess` and `creation` fields of an `ArchiveEntry` when they are set, and `ZipUnarchiver` reads them back when the archive records them. A directory entry is always written stored, with size 0.
 
-The underlying entry is a `java.util.zip.ZipEntry`. Read it with `entry.underlying[ZipEntry]` after `import zio.compress.Zip._`, for example to get the entry comment or the compressed size. To write ZIP-specific fields, attach a `ZipEntry` with `ArchiveEntry#withUnderlying`; it is kept only when its name and directory flag match the `ArchiveEntry`. [Core Interfaces](./reference-core.md#underlying-entries) describes underlying entries.
+The underlying entry is a `java.util.zip.ZipEntry`. Read it with `entry.underlying[ZipEntry]` after `import zio.compress.Zip._`, for example to get the compression method with `ZipEntry#getMethod`. Fields that ZIP keeps only in the central directory at the end of the archive, such as the entry comment, are not available, because the unarchiver reads the archive as a stream. To write ZIP-specific fields, attach a `ZipEntry` with `ArchiveEntry#withUnderlying`; it is kept only when its name and directory flag match the `ArchiveEntry`. [Core Interfaces](./reference-core.md#underlying-entries) describes underlying entries.
 
 ## Notes
 
