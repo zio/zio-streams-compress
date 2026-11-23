@@ -42,6 +42,8 @@ const config = {
       {
         docs: {
           id: 'default',
+          // Generated from ../docs by mdoc. Run `sbt docs/mdoc` (or `sbt docs/previewWebsite`)
+          // first; `npm start` and `npm run build` do not create this directory.
           path: './docs',
           routeBasePath: '/',
           sidebarPath: require.resolve('./docs/sidebars.js'),
