@@ -8,9 +8,10 @@ import zio.stream._
 
 import java.io.BufferedInputStream
 
+/** Constructor for [[Lz4Compressor]], and `compress` for the default block size. */
 object Lz4Compressor {
 
-  /** A [[Compressor]] for LZ4, based on official LZ4 java library.
+  /** A [[Compressor]] for LZ4, based on the lz4-java library.
     *
     * @param blockSize
     *   the block size to use. Defaults to 256KiB.
@@ -24,6 +25,10 @@ object Lz4Compressor {
   def compress: ZPipeline[Any, Throwable, Byte, Byte] = apply().compress
 }
 
+/** A [[Compressor]] that writes the LZ4 frame format with the lz4-java library (`LZ4FrameOutputStream`). The frame
+  * format has no field for a file name. Make one with `Lz4Compressor.apply`, or use `Lz4Compressor.compress` for the
+  * default block size of 256 KiB.
+  */
 final class Lz4Compressor private (blockSize: Lz4CompressorBlockSize) extends Compressor {
 
   override def compress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] = {
@@ -37,9 +42,10 @@ final class Lz4Compressor private (blockSize: Lz4CompressorBlockSize) extends Co
   }
 }
 
+/** Constructor for [[Lz4Decompressor]], and `decompress` for the default chunk size. */
 object Lz4Decompressor {
 
-  /** A [[Decompressor]] for LZ4, based on official LZ4 java library.
+  /** A [[Decompressor]] for LZ4, based on the lz4-java library.
     *
     * @param chunkSize
     *   The maximum chunk size of the outgoing ZStream. Defaults to `ZStream.DefaultChunkSize` (4KiB).
@@ -51,6 +57,10 @@ object Lz4Decompressor {
   def decompress: ZPipeline[Any, Throwable, Byte, Byte] = apply().decompress
 }
 
+/** A [[Decompressor]] that reads the LZ4 frame format with the lz4-java library (`LZ4FrameInputStream`). Input that is
+  * not an LZ4 frame, or is empty, fails the stream with a `java.io.IOException`. Make one with `Lz4Decompressor.apply`,
+  * or use `Lz4Decompressor.decompress` for the default chunk size.
+  */
 final class Lz4Decompressor private (chunkSize: Int) extends Decompressor {
 
   override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =

@@ -15,26 +15,27 @@ import zio.stream._
 import java.io.IOException
 import java.time.Instant
 
+/** Constructors for [[Zip4JArchiver]], and `archive` for the default options. */
 object Zip4JArchiver {
 
   /** An [[Archiver]] for ZIP, based on the Zip4J library.
     *
     * The archive entries require the uncompressed size.
     *
+    * NOTE: when password is `Some`, the extremely weak standard ZIP encryption is used. Use
+    * `Zip4JArchiver.encrypted(...)` to set another encryption method.
+    *
     * @param password
     *   password of the ZIP archive, or `None` if the archive is not password protected.
     * @param zipMethod
     *   zip method, either Deflated (the default) or Stored
-    *
-    * NOTE: when password is `Some`, the extremely weak standard ZIP encryption is used. Use
-    * `Zip4JArchiver.encrypted(...)` to set another encryption method.
     */
   def apply(password: Option[String] = None, zipMethod: ZipMethod = ZipMethod.Deflated): Zip4JArchiver =
     password.fold(new Zip4JArchiver(None, zipMethod))(pw => encrypted(pw, EncryptionMethod.ZipStandard, zipMethod))
 
   /** An [[Archiver]] for encrypted ZIP, based on the Zip4J library.
     *
-    * The archive entries require the uncompressed size.
+    * The archive entries require the uncompressed size. File entries are encrypted; directory entries are not.
     *
     * @param password
     *   password of the ZIP archive
@@ -55,6 +56,15 @@ object Zip4JArchiver {
     apply().archive
 }
 
+/** An [[Archiver]] that writes ZIP archives with the Zip4J library, optionally password-protected.
+  *
+  * It takes `ArchiveEntry[Some, _]`: every entry needs its uncompressed size, and when the content has a different
+  * number of bytes the archive stream dies with a `java.lang.IllegalStateException`. It writes the name, the size and
+  * the `lastModified` time of each entry, not `lastAccess` or `creation`. Directory entries are written stored and
+  * unencrypted. `ZipUnarchiver` cannot read the stored file entries it writes (it fails with
+  * `java.util.zip.ZipException: only DEFLATED entries can have EXT descriptor`), while `Zip4JUnarchiver` can. Make one
+  * with `Zip4JArchiver.apply` or `Zip4JArchiver.encrypted`.
+  */
 final class Zip4JArchiver private (encryption: Option[(String, EncryptionMethod)], zipMethod: ZipMethod)
     extends Archiver[Some] {
 
@@ -112,6 +122,7 @@ final class Zip4JArchiver private (encryption: Option[(String, EncryptionMethod)
     }
 }
 
+/** Constructors for [[Zip4JUnarchiver]], and `list` and `unarchive` for the default options (no password). */
 object Zip4JUnarchiver {
 
   /** An [[Unarchiver]] for ZIP, based on the Zip4J library.
@@ -135,8 +146,8 @@ object Zip4JUnarchiver {
 
   /** See [[apply]] and [[Unarchiver.unarchive]].
     *
-    * ⚠️Note: the entry's content must be fully read before the next archive entry is emitted. See the project's README
-    * for the consequences, tips and workarounds.
+    * ⚠️Note: the entry's content must be fully read before the next archive entry is emitted. Until then the pipeline
+    * waits: when a content stream is not read, or read only in part, it waits forever.
     */
   def unarchive
     : ZPipeline[Any, Throwable, Byte, (ArchiveEntry[Option, LocalFileHeader], ZStream[Any, IOException, Byte])] =
@@ -144,6 +155,20 @@ object Zip4JUnarchiver {
 
 }
 
+/** An [[Unarchiver]] that reads ZIP archives with the Zip4J library, including entries encrypted with the ZIP standard
+  * encryption or AES when it has the password.
+  *
+  * It reads the archive as a stream, front to back, and emits each entry with its content stream; the content of an
+  * entry must be read to its end before the next entry is emitted. A wrong password fails the stream with a
+  * `net.lingala.zip4j.exception.ZipException`, with the message `Wrong password!` for ZIP standard encryption and
+  * `Wrong Password` for AES. The underlying entry is Zip4J's `LocalFileHeader`. The entries carry what the local header
+  * records:
+  *
+  *   - The uncompressed size is `Some(0)` for entries whose local header leaves the size to a data descriptor, such as
+  *     the deflated file entries that `ZipArchiver` writes. Use `list` to get counted sizes.
+  *   - The `lastModified` time is the header's packed ZIP date-time field read as milliseconds since the epoch, so it
+  *     falls in early 1970 instead of the time the archive records.
+  */
 final class Zip4JUnarchiver private (password: Option[String], chunkSize: Int)
     extends Unarchiver[Option, LocalFileHeader] {
 
@@ -179,9 +204,18 @@ final class Zip4JUnarchiver private (password: Option[String], chunkSize: Int)
 
 }
 
+/** The conversions between [[ArchiveEntry]] and the Zip4J types: `ZipParameters` for writing and `LocalFileHeader` for
+  * reading. Import `zio.compress.Zip4J._` to call `entry.underlying[ZipParameters]` or
+  * `entry.underlying[LocalFileHeader]`.
+  */
 object Zip4J {
 
-  /** Implicit underlying extractor for archiving. */
+  /** Converts an [[ArchiveEntry]] into Zip4J `ZipParameters`, for `Zip4JArchiver` and `ArchiveEntry#underlying`.
+    *
+    * It copies the underlying `ZipParameters`, or starts from new ones when there is none, and then sets the file name
+    * (with a trailing `/` for a directory, without one for a file), the entry size when set, and the last-modified time
+    * when set. Throws an [[IllegalUnderlyingEntry]] when the underlying value is neither `ZipParameters` nor absent.
+    */
   implicit val zip4jArchiveEntryToUnderlying: ArchiveEntryToUnderlying[ZipParameters] =
     new ArchiveEntryToUnderlying[ZipParameters] {
       override def underlying[S[A] <: Option[A]](entry: ArchiveEntry[S, Any], underlying: Any): ZipParameters = {
@@ -204,7 +238,10 @@ object Zip4J {
       }
     }
 
-  /** Implicit underlying extractor for unarchiving. */
+  /** Returns the underlying `LocalFileHeader` of an [[ArchiveEntry]] itself, not a copy, or an empty `LocalFileHeader`
+    * when the entry has none. Used by `ArchiveEntry#underlying` on the entries of `Zip4JUnarchiver`. Throws an
+    * [[IllegalUnderlyingEntry]] when the underlying value is neither a `LocalFileHeader` nor absent.
+    */
   implicit val zip4jUnarchiveEntryToUnderlying: ArchiveEntryToUnderlying[LocalFileHeader] =
     new ArchiveEntryToUnderlying[LocalFileHeader] {
       override def underlying[S[A] <: Option[A]](entry: ArchiveEntry[S, Any], underlying: Any): LocalFileHeader =
@@ -216,6 +253,11 @@ object Zip4J {
     }
 
   // noinspection ConvertExpressionToSAM
+  /** Builds an [[ArchiveEntry]] from Zip4J `ZipParameters`, keeping them as the underlying entry. The name is the file
+    * name in the ZIP, the entry is a directory when that name ends with `/`, the size is `None` when the parameters
+    * give -1, and `lastModified` is the parameters' last-modified time (the epoch, `1970-01-01T00:00:00Z`, when it was
+    * never set).
+    */
   implicit val zip4jArchiveEntryFromUnderlying: ArchiveEntryFromUnderlying[Option, ZipParameters] =
     new ArchiveEntryFromUnderlying[Option, ZipParameters] {
       override def archiveEntry(underlying: ZipParameters): ArchiveEntry[Option, ZipParameters] =
@@ -229,6 +271,11 @@ object Zip4J {
     }
 
   // noinspection ConvertExpressionToSAM
+  /** Builds an [[ArchiveEntry]] from a Zip4J `LocalFileHeader`, for `Zip4JUnarchiver`, keeping the header as the
+    * underlying entry. It takes the file name and the directory flag, sets the size to `None` when the header gives -1,
+    * and reads the header's packed ZIP date-time field as milliseconds since the epoch for `lastModified`, which gives
+    * a time in early 1970.
+    */
   implicit val zip4jLocalFileHeaderArchiveEntryFromUnderlying: ArchiveEntryFromUnderlying[Option, LocalFileHeader] =
     new ArchiveEntryFromUnderlying[Option, LocalFileHeader] {
       override def archiveEntry(underlying: LocalFileHeader): ArchiveEntry[Option, LocalFileHeader] =

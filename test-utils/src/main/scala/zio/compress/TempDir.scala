@@ -6,14 +6,16 @@ import java.io.IOException
 import java.nio.file.{FileVisitResult, Files, Path, SimpleFileVisitor}
 import java.nio.file.attribute.BasicFileAttributes
 
+/** Test helper that creates temporary directories. */
 object TempDir {
 
   /**
-   * Create a temporary directory for testing purposes.
-   * The directory is deleted once the test's scope completes.
+   * Creates a temporary directory for testing purposes, in the default temporary-file directory with a name that
+   * starts with `ziotest`. The directory and everything in it are deleted once the test's scope completes.
    *
    * Example:
    * {{{
+   *   // no-check: needs zio-test and the unpublished test-utils module
    *   test("test something") {
    *     for {
    *       tmpDir <- temporaryDirectory
