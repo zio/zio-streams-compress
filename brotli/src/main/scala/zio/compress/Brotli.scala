@@ -6,9 +6,12 @@ import zio.stream._
 import zio.Trace
 
 //noinspection ScalaFileName
+/** Creates [[BrotliDecompressor]]s: `apply` takes the options, and `decompress` gives the pipeline with the default
+  * options.
+  */
 object BrotliDecompressor {
 
-  /** A [[Decompressor]] for Brotli, based on the official Brotli library.
+  /** A [[Decompressor]] for Brotli, based on the official Brotli Java decoder (`org.brotli:dec`).
     *
     * @param customDictionary
     *   a custom dictionary, or `None` for no custom dictionary
@@ -21,11 +24,18 @@ object BrotliDecompressor {
   ): BrotliDecompressor =
     new BrotliDecompressor(customDictionary, chunkSize)
 
-  /** See [[apply]] and [[Decompressor.decompress]]. */
+  /** Returns the decompression pipeline of a [[BrotliDecompressor]] with the default options, the same as
+    * `BrotliDecompressor().decompress`.
+    */
   def decompress: ZPipeline[Any, Throwable, Byte, Byte] = apply().decompress
 }
 
 //noinspection ScalaFileName
+/** A [[Decompressor]] that reads the Brotli format, using the official Brotli decoder for Java (`org.brotli:dec`),
+  * which is written in Java and loads no native library. It only decompresses: to compress Brotli, use
+  * `Brotli4JCompressor` from the `zio-streams-compress-brotli4j` module. Input that is not Brotli, input that is cut
+  * short, and empty input fail the stream with `java.io.IOException: Brotli stream decoding failed`.
+  */
 final class BrotliDecompressor private (customDictionary: Option[Array[Byte]], chunkSize: Int) extends Decompressor {
 
   override def decompress(implicit trace: Trace): ZPipeline[Any, Throwable, Byte, Byte] =
