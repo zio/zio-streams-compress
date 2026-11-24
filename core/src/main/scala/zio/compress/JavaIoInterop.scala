@@ -12,6 +12,7 @@ private[compress] object JavaIoInterop {
     *
     * This illustrates how data flows in the pipeline implementation:
     * {{{
+    * // no-check: ASCII data-flow diagram, not Scala code
     * Incoming ZStream --> queue <-- InputStream <-- wrapped InputStream <-- outgoing ZStream
     *
     * --> push
@@ -46,6 +47,7 @@ private[compress] object JavaIoInterop {
     *
     * This illustrates how data flows in the pipeline implementation:
     * {{{
+    * // no-check: ASCII data-flow diagram, not Scala code
     * Incoming ZStream --> queue <-- InputStream <-- wrapped InputStream <--streamReader-- outgoing ZStream
     *
     * --> push
@@ -100,6 +102,7 @@ private[compress] object JavaIoInterop {
     *
     * This illustrates how data flows in the pipeline implementation:
     * {{{
+    * // no-check: ASCII data-flow diagram, not Scala code
     * Incoming ZStream --> wrapping OutputStream --> buffered OutputStream --> queue <-- outgoing ZStream
     *
     * --> push
@@ -138,6 +141,7 @@ private[compress] object JavaIoInterop {
     *
     * This illustrates how data flows in the pipeline implementation:
     * {{{
+    * // no-check: ASCII data-flow diagram, not Scala code
     * Incoming ZStream --streamWriter--> wrapping OutputStream --> buffered OutputStream --> queue <-- outgoing ZStream
     *
     * --> push
