@@ -121,3 +121,7 @@ When you read an archive with `Unarchiver#unarchive`, read each entry's content 
 - The reference pages describe every option and default, from [Core Interfaces](./reference-core.md) to [Tar](./reference-tar.md).
 - [Tutorial: Compress and Archive Files](./tutorial-compress-and-archive.md) walks through the basics in order.
 - The How-to Guides solve one task each, for example [How to Write a Password-Protected ZIP](./how-to-write-encrypted-zip.md).
+
+## AI statement
+
+AI is used to complete and validate all documentation and scaladocs of the public APIs. The code is 100% architected and 99%+ written by humans; AI contributions are limited to a few lines at a time.
